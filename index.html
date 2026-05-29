@@ -15,11 +15,8 @@
 <meta name="apple-mobile-web-app-title" content="Finanças"/>
 <link rel="manifest" href="manifest.json"/>
 <link rel="apple-touch-icon" href="icon-192.png"/>
-<!-- Firebase compat (funciona em todos os browsers) -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script>
+<!-- Firebase carregado no final do body -->
+<script id="firebase-init-placeholder">
   const firebaseConfig = {
     apiKey:            "AIzaSyCAMHiEkEUFIdHi0c3gE9MT5kf6Wmb-TCo",
     authDomain:        "financas-pessoais-906ee.firebaseapp.com",
@@ -106,6 +103,61 @@ h2{font-size:18px;font-weight:700;margin-bottom:16px}
 </style>
 </head>
 <body>
+
+<!-- ═══ TELA DE LOGIN ═══ -->
+<div id="tela-login" style="display:flex;flex-direction:column;align-items:center;justify-content:center;position:fixed;top:0;left:0;width:100%;height:100%;background:#0d0d1a;z-index:10000;overflow-y:auto;padding:20px">
+  <div style="width:100%;max-width:400px">
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="font-size:52px;margin-bottom:12px">💰</div>
+      <h1 style="font-size:24px;font-weight:800;color:#fff;margin-bottom:6px">Finanças Pessoais</h1>
+      <p style="color:#6060a0;font-size:13px">Controle seus gastos, rendas e investimentos</p>
+      <p id="firebase-loading" style="color:#6060a0;font-size:12px;margin-top:8px">⏳ Conectando...</p>
+    </div>
+
+    <div style="display:flex;gap:0;background:#13132b;border-radius:10px;padding:4px;margin-bottom:20px;border:1px solid #1e1e3a">
+      <button id="aba-login-btn" onclick="setAbaAuth('login')" style="flex:1;padding:9px;border:none;border-radius:8px;background:#1e1e3a;color:#e8e8f0;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit">Entrar</button>
+      <button id="aba-cadastro-btn" onclick="setAbaAuth('cadastro')" style="flex:1;padding:9px;border:none;border-radius:8px;background:transparent;color:#6060a0;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit">Criar conta</button>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+      <div id="campo-nome" style="display:none">
+        <p style="font-size:12px;color:#6060a0;margin-bottom:4px">Nome</p>
+        <input id="auth-nome" type="text" placeholder="Seu nome" style="background:#13132b;border:1px solid #2d2d4e;border-radius:10px;color:#e8e8f0;font-family:inherit;font-size:14px;padding:12px 14px;width:100%;outline:none"/>
+      </div>
+      <div>
+        <p style="font-size:12px;color:#6060a0;margin-bottom:4px">Email</p>
+        <input id="auth-email" type="email" placeholder="seu@email.com" style="background:#13132b;border:1px solid #2d2d4e;border-radius:10px;color:#e8e8f0;font-family:inherit;font-size:14px;padding:12px 14px;width:100%;outline:none"/>
+      </div>
+      <div>
+        <p style="font-size:12px;color:#6060a0;margin-bottom:4px">Senha</p>
+        <input id="auth-senha" type="password" placeholder="Mínimo 6 caracteres" style="background:#13132b;border:1px solid #2d2d4e;border-radius:10px;color:#e8e8f0;font-family:inherit;font-size:14px;padding:12px 14px;width:100%;outline:none"/>
+      </div>
+    </div>
+
+    <p id="auth-erro" style="color:#F28C8C;font-size:13px;margin-bottom:10px;text-align:center;display:none"></p>
+
+    <button id="btn-auth-email" onclick="authComEmail()" style="width:100%;padding:13px;background:linear-gradient(135deg,#5B8DB8,#4FBDBA);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;font-family:inherit;margin-bottom:12px">Entrar</button>
+
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <div style="flex:1;height:1px;background:#1e1e3a"></div>
+      <span style="color:#6060a0;font-size:12px">ou</span>
+      <div style="flex:1;height:1px;background:#1e1e3a"></div>
+    </div>
+
+    <button onclick="authComGoogle()" style="width:100%;padding:13px;background:#13132b;color:#e8e8f0;border:1px solid #2d2d4e;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Continuar com Google
+    </button>
+    <p style="color:#6060a0;font-size:11px;margin-top:18px;text-align:center">Dados salvos com segurança na nuvem</p>
+  </div>
+</div>
+
+<!-- Barra do usuário -->
+<div id="user-bar" style="display:none;background:#13132b;border-bottom:1px solid #1e1e3a;padding:8px 20px;justify-content:flex-end;align-items:center;gap:10px">
+  <span id="user-nome" style="font-size:13px;color:#a0a0c0"></span>
+  <button onclick="fazerLogout()" style="background:#1e1e3a;border:1px solid #2d2d4e;border-radius:8px;color:#6060a0;font-size:12px;padding:5px 12px;cursor:pointer;font-family:inherit">Sair</button>
+</div>
+
 
 <div id="app-wrapper" style="display:none">
 <!-- HEADER -->
@@ -2271,8 +2323,8 @@ document.getElementById("r-data").value = todayS();
 // Mostrar tela de login ou app
 // Firebase compat carrega de forma síncrona — não precisa de timeout
 
-initAuth();
-// render() será chamado após login
+// initAuth() é chamado pelo Firebase após carregar
+// render() é chamado após login
 
 // ── PWA: Registrar Service Worker ──
 if ("serviceWorker" in navigator) {
@@ -2314,5 +2366,38 @@ function instalarApp() {
   </div>
 </div>
 
+<!-- Firebase carregado no final do body -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey:            "AIzaSyCAMHiEkEUFIdHi0c3gE9MT5kf6Wmb-TCo",
+    authDomain:        "financas-pessoais-906ee.firebaseapp.com",
+    projectId:         "financas-pessoais-906ee",
+    storageBucket:     "financas-pessoais-906ee.firebasestorage.app",
+    messagingSenderId: "273250303164",
+    appId:             "1:273250303164:web:a644e96292f9fef679e4b9"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const _auth = firebase.auth();
+  const _db   = firebase.firestore();
+  window._fb = {
+    auth: _auth,
+    db:   _db,
+    GoogleAuthProvider:              firebase.auth.GoogleAuthProvider,
+    signInWithPopup:                 (auth, p) => auth.signInWithPopup(p),
+    createUserWithEmailAndPassword:  (auth, e, s) => auth.createUserWithEmailAndPassword(e, s),
+    signInWithEmailAndPassword:      (auth, e, s) => auth.signInWithEmailAndPassword(e, s),
+    signOut:                         (auth) => auth.signOut(),
+    onAuthStateChanged:              (auth, cb) => auth.onAuthStateChanged(cb),
+    doc:     (db, col, id) => db.collection(col).doc(id),
+    setDoc:  (ref, data)   => ref.set(data),
+    getDoc:  (ref)         => ref.get().then(snap => snap.exists ? { exists: () => true, data: () => snap.data() } : { exists: () => false }),
+  };
+  const loadingEl = document.getElementById("firebase-loading");
+  if (loadingEl) loadingEl.style.display = "none";
+  initAuth();
+</script>
 </body>
 </html>
