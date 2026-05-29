@@ -45,6 +45,8 @@
     getDoc:  (ref)         => ref.get().then(snap => snap.exists ? { exists: () => true, data: () => snap.data() } : { exists: () => false }),
   };
   console.log("Firebase carregado!");
+  const loadingEl = document.getElementById("firebase-loading");
+  if (loadingEl) loadingEl.style.display = "none";
 </script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -2273,22 +2275,8 @@ initAuth();
 // render() será chamado após login
 
 // ── PWA: Registrar Service Worker ──
-// Versão do app — muda para forçar atualização
-const APP_VER = "v5";
-if (localStorage.getItem("app_ver") !== APP_VER) {
-  // Nova versão — limpar tudo e recarregar
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.getRegistrations().then(regs => {
-      regs.forEach(r => r.unregister());
-    });
-  }
-  localStorage.clear();
-  localStorage.setItem("app_ver", APP_VER);
-  location.reload(true);
-} else {
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("sw.js").catch(() => {});
-  }
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
 }
 
 // ── PWA: Banner de instalação ──
