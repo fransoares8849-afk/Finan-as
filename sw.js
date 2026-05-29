@@ -1,4 +1,4 @@
-const CACHE = "financas-v1";
+const CACHE = "financas-v3";
 const FILES = [
   "./financas-pessoais.html",
   "./manifest.json",
