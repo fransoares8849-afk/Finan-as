@@ -700,37 +700,31 @@ function load() {
 }
 
 async function loadFromCloud(uid) {
-  if (!window._fb) return;
   try {
-    const { db, doc, getDoc } = window._fb;
-    const snap = await getDoc(doc(db, "usuarios", uid));
-    if (snap.exists()) {
-      state = sanitizeState(snap.data());
+    const data = await fbLoadData(uid);
+    if (data) {
+      state = sanitizeState(data);
       localStorage.setItem(STORE, JSON.stringify(state));
     } else {
-      // Primeiro acesso: subir dados locais para nuvem
       await saveToCloud(uid);
     }
-    render();
   } catch(e) {
     console.warn("Erro ao carregar da nuvem:", e);
   }
 }
 
 async function saveToCloud(uid) {
-  if (!window._fb || !uid) return;
+  if (!uid) return;
   try {
-    const { db, doc, setDoc } = window._fb;
-    await setDoc(doc(db, "usuarios", uid), state);
+    await fbSaveData(uid, state);
     localStorage.setItem(STORE, JSON.stringify(state));
   } catch(e) {
-    console.warn("Erro ao salvar na nuvem:", e);
     localStorage.setItem(STORE, JSON.stringify(state));
   }
 }
 function persist() {
   try { localStorage.setItem(STORE, JSON.stringify(state)); } catch(_) {}
-  if (currentUser) saveToCloud(currentUser.uid);
+  if (fbUserId) saveToCloud(fbUserId);
 }
 
 // ══════════════════════════════════════════════
@@ -2239,36 +2233,27 @@ function mostrarErroAuth(msg) {
 }
 
 async function authComEmail() {
-  if (!window._fb) {
-    mostrarErroAuth("Aguarde, conectando...");
-    // Esperar Firebase carregar por até 5 segundos
-    let tries = 0;
-    while (!window._fb && tries < 50) {
-      await new Promise(r => setTimeout(r, 100));
-      tries++;
-    }
-    if (!window._fb) { mostrarErroAuth("Erro de conexão. Recarregue a página."); return; }
-  }
-  const { auth, createUserWithEmailAndPassword, signInWithEmailAndPassword } = window._fb;
   const email = document.getElementById("auth-email").value.trim();
   const senha = document.getElementById("auth-senha").value;
+  const nome  = document.getElementById("auth-nome") ? document.getElementById("auth-nome").value.trim() : "";
   if (!email || !senha) { mostrarErroAuth("Preencha email e senha."); return; }
+  document.getElementById("btn-auth-email").textContent = "Aguarde...";
+  document.getElementById("btn-auth-email").disabled = true;
   try {
     if (abaAuth === "cadastro") {
-      await createUserWithEmailAndPassword(auth, email, senha);
+      await fbSignUp(email, senha, nome);
     } else {
-      await signInWithEmailAndPassword(auth, email, senha);
+      await fbSignIn(email, senha);
     }
+    const user = {displayName: fbUserName, email: fbUserEmail, uid: fbUserId};
+    mostrarApp(user);
+    await loadFromCloud(fbUserId);
+    render();
   } catch(e) {
-    const msgs = {
-      "auth/email-already-in-use": "Email já cadastrado. Faça login.",
-      "auth/invalid-email": "Email inválido.",
-      "auth/weak-password": "Senha muito fraca (mínimo 6 caracteres).",
-      "auth/user-not-found": "Usuário não encontrado.",
-      "auth/wrong-password": "Senha incorreta.",
-      "auth/invalid-credential": "Email ou senha incorretos.",
-    };
-    mostrarErroAuth(msgs[e.code] || "Erro: " + e.message);
+    mostrarErroAuth(e.message);
+  } finally {
+    const btn = document.getElementById("btn-auth-email");
+    if (btn) { btn.disabled = false; btn.textContent = abaAuth==="cadastro"?"Criar conta":"Entrar"; }
   }
 }
 
@@ -2291,8 +2276,12 @@ async function authComGoogle() {
 }
 
 async function fazerLogout() {
-  if (!window._fb) return;
-  await window._fb.signOut(window._fb.auth);
+  fbToken = null; fbUserId = null; fbUserEmail = null; fbUserName = null;
+  localStorage.removeItem("fb_token");
+  localStorage.removeItem("fb_uid");
+  localStorage.removeItem("fb_email");
+  localStorage.removeItem("fb_name");
+  mostrarLogin();
 }
 
 function mostrarApp(user) {
@@ -2323,13 +2312,7 @@ function onUsuarioLogado(user) {
 }
 
 // Iniciar listener de auth quando Firebase estiver pronto
-function initAuth() {
-  if (window._fb) {
-    window._fb.onAuthStateChanged(window._fb.auth, onUsuarioLogado);
-  } else {
-    setTimeout(initAuth, 300);
-  }
-}
+function initAuth() { /* handled by REST API */ }
 
 // INIT
 // ══════════════════════════════════════════════
@@ -2383,39 +2366,122 @@ function instalarApp() {
   </div>
 </div>
 
-<!-- Firebase carregado no final do body -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<!-- Firebase REST API - sem scripts externos -->
 <script>
-  const firebaseConfig = {
-    apiKey:            "AIzaSyCAMHiEkEUFIdHi0c3gE9MT5kf6Wmb-TCo",
-    authDomain:        "financas-pessoais-906ee.firebaseapp.com",
-    projectId:         "financas-pessoais-906ee",
-    storageBucket:     "financas-pessoais-906ee.firebasestorage.app",
-    messagingSenderId: "273250303164",
-    appId:             "1:273250303164:web:a644e96292f9fef679e4b9"
+// ══════════════════════════════════════════════
+// FIREBASE REST API (sem CDN externo)
+// ══════════════════════════════════════════════
+const FB_API_KEY   = "AIzaSyCAMHiEkEUFIdHi0c3gE9MT5kf6Wmb-TCo";
+const FB_PROJECT   = "financas-pessoais-906ee";
+const FB_AUTH_URL  = "https://identitytoolkit.googleapis.com/v1/accounts";
+const FB_DB_URL    = "https://firestore.googleapis.com/v1/projects/" + FB_PROJECT + "/databases/(default)/documents";
+
+let fbToken = null;
+let fbUserId = null;
+let fbUserEmail = null;
+let fbUserName  = null;
+
+// Auth: criar conta
+async function fbSignUp(email, senha, nome) {
+  const r = await fetch(FB_AUTH_URL + ":signUp?key=" + FB_API_KEY, {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({email, password:senha, returnSecureToken:true})
+  });
+  const d = await r.json();
+  if (d.error) throw new Error(traduzirErroFb(d.error.message));
+  fbToken    = d.idToken;
+  fbUserId   = d.localId;
+  fbUserEmail= email;
+  fbUserName = nome || email;
+  localStorage.setItem("fb_token", fbToken);
+  localStorage.setItem("fb_uid",   fbUserId);
+  localStorage.setItem("fb_email", fbUserEmail);
+  localStorage.setItem("fb_name",  fbUserName);
+  return d;
+}
+
+// Auth: entrar
+async function fbSignIn(email, senha) {
+  const r = await fetch(FB_AUTH_URL + ":signInWithPassword?key=" + FB_API_KEY, {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({email, password:senha, returnSecureToken:true})
+  });
+  const d = await r.json();
+  if (d.error) throw new Error(traduzirErroFb(d.error.message));
+  fbToken    = d.idToken;
+  fbUserId   = d.localId;
+  fbUserEmail= email;
+  fbUserName = d.displayName || email;
+  localStorage.setItem("fb_token", fbToken);
+  localStorage.setItem("fb_uid",   fbUserId);
+  localStorage.setItem("fb_email", fbUserEmail);
+  localStorage.setItem("fb_name",  fbUserName);
+  return d;
+}
+
+// Firestore: salvar dados
+async function fbSaveData(uid, data) {
+  if (!fbToken) return;
+  // Converter state para formato Firestore
+  const fields = { dados: { stringValue: JSON.stringify(data) } };
+  await fetch(FB_DB_URL + "/usuarios/" + uid + "?updateMask.fieldPaths=dados", {
+    method:"PATCH",
+    headers:{"Content-Type":"application/json","Authorization":"Bearer " + fbToken},
+    body: JSON.stringify({fields})
+  });
+}
+
+// Firestore: carregar dados
+async function fbLoadData(uid) {
+  if (!fbToken) return null;
+  const r = await fetch(FB_DB_URL + "/usuarios/" + uid, {
+    headers:{"Authorization":"Bearer " + fbToken}
+  });
+  if (r.status === 404) return null;
+  const d = await r.json();
+  if (d.fields && d.fields.dados) {
+    return JSON.parse(d.fields.dados.stringValue);
+  }
+  return null;
+}
+
+function traduzirErroFb(msg) {
+  const erros = {
+    "EMAIL_EXISTS":          "Email já cadastrado. Faça login.",
+    "INVALID_EMAIL":         "Email inválido.",
+    "WEAK_PASSWORD":         "Senha fraca (mínimo 6 caracteres).",
+    "EMAIL_NOT_FOUND":       "Email não encontrado. Crie uma conta.",
+    "INVALID_PASSWORD":      "Senha incorreta.",
+    "INVALID_LOGIN_CREDENTIALS": "Email ou senha incorretos.",
+    "USER_DISABLED":         "Conta desativada.",
+    "TOO_MANY_ATTEMPTS_TRY_LATER": "Muitas tentativas. Tente mais tarde.",
   };
-  firebase.initializeApp(firebaseConfig);
-  const _auth = firebase.auth();
-  const _db   = firebase.firestore();
-  window._fb = {
-    auth: _auth,
-    db:   _db,
-    GoogleAuthProvider:              firebase.auth.GoogleAuthProvider,
-    signInWithPopup:                 (auth, p) => auth.signInWithPopup(p),
-    createUserWithEmailAndPassword:  (auth, e, s) => auth.createUserWithEmailAndPassword(e, s),
-    signInWithEmailAndPassword:      (auth, e, s) => auth.signInWithEmailAndPassword(e, s),
-    signOut:                         (auth) => auth.signOut(),
-    onAuthStateChanged:              (auth, cb) => auth.onAuthStateChanged(cb),
-    doc:     (db, col, id) => db.collection(col).doc(id),
-    setDoc:  (ref, data)   => ref.set(data),
-    getDoc:  (ref)         => ref.get().then(snap => snap.exists ? { exists: () => true, data: () => snap.data() } : { exists: () => false }),
-  };
-  const loadingEl = document.getElementById("firebase-loading");
-  if (loadingEl) loadingEl.textContent = "✅ Conectado";
-  setTimeout(() => { if (loadingEl) loadingEl.style.display = "none"; }, 1000);
-  initAuth();
+  return erros[msg] || msg;
+}
+
+// Restaurar sessão salva
+const savedToken = localStorage.getItem("fb_token");
+const savedUid   = localStorage.getItem("fb_uid");
+if (savedToken && savedUid) {
+  fbToken     = savedToken;
+  fbUserId    = savedUid;
+  fbUserEmail = localStorage.getItem("fb_email") || "";
+  fbUserName  = localStorage.getItem("fb_name")  || fbUserEmail;
+}
+
+// Inicializar app
+const loadingEl2 = document.getElementById("firebase-loading");
+if (loadingEl2) { loadingEl2.textContent = "✅ Pronto"; setTimeout(()=>loadingEl2.style.display="none",800); }
+
+if (fbToken && fbUserId) {
+  // Usuário com sessão salva
+  mostrarApp({displayName: fbUserName, email: fbUserEmail, uid: fbUserId});
+  loadFromCloud(fbUserId);
+  render();
+} else {
+  // Sem sessão — mostrar login
+  mostrarLogin();
+}
 </script>
 </body>
 </html>
