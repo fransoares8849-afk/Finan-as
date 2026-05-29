@@ -2,7 +2,7 @@
   "name": "Finanças Pessoais",
   "short_name": "Finanças",
   "description": "Controle seus gastos, rendas e investimentos",
-  "start_url": "./financas-pessoais.html",
+  "start_url": "/Finan-as/",
   "display": "standalone",
   "background_color": "#0d0d1a",
   "theme_color": "#0d0d1a",

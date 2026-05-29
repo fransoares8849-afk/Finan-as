@@ -12,19 +12,11 @@
 <meta name="apple-mobile-web-app-title" content="Finanças"/>
 <link rel="manifest" href="manifest.json"/>
 <link rel="apple-touch-icon" href="icon-192.png"/>
-<!-- Firebase -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword,
-           signInWithEmailAndPassword, signOut, onAuthStateChanged }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { getFirestore, doc, setDoc, getDoc, onSnapshot }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-  // ══════════════════════════════════════════════
-  // FIREBASE CONFIG — substitua pelos seus dados
-  // Acesse: console.firebase.google.com
-  // ══════════════════════════════════════════════
+<!-- Firebase compat (funciona em todos os browsers) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
   const firebaseConfig = {
     apiKey:            "AIzaSyCAMHiEkEUFIdHi0c3gE9MT5kf6Wmb-TCo",
     authDomain:        "financas-pessoais-906ee.firebaseapp.com",
@@ -33,15 +25,23 @@
     messagingSenderId: "273250303164",
     appId:             "1:273250303164:web:a644e96292f9fef679e4b9"
   };
-
-  const app  = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db   = getFirestore(app);
-
-  // Expor globalmente
-  window._fb = { auth, db, GoogleAuthProvider, signInWithPopup,
-    createUserWithEmailAndPassword, signInWithEmailAndPassword,
-    signOut, onAuthStateChanged, doc, setDoc, getDoc, onSnapshot };
+  firebase.initializeApp(firebaseConfig);
+  const _auth = firebase.auth();
+  const _db   = firebase.firestore();
+  window._fb = {
+    auth: _auth,
+    db:   _db,
+    GoogleAuthProvider:              firebase.auth.GoogleAuthProvider,
+    signInWithPopup:                 (auth, p) => auth.signInWithPopup(p),
+    createUserWithEmailAndPassword:  (auth, e, s) => auth.createUserWithEmailAndPassword(e, s),
+    signInWithEmailAndPassword:      (auth, e, s) => auth.signInWithEmailAndPassword(e, s),
+    signOut:                         (auth) => auth.signOut(),
+    onAuthStateChanged:              (auth, cb) => auth.onAuthStateChanged(cb),
+    doc:     (db, col, id) => db.collection(col).doc(id),
+    setDoc:  (ref, data)   => ref.set(data),
+    getDoc:  (ref)         => ref.get().then(snap => snap.exists ? { exists: () => true, data: () => snap.data() } : { exists: () => false }),
+  };
+  console.log("Firebase carregado!");
 </script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -2251,16 +2251,7 @@ document.getElementById("g-data").value = todayS();
 document.getElementById("r-data").value = todayS();
 
 // Mostrar tela de login ou app
-// Não esconder o login automaticamente — esperar o Firebase
-// Se Firebase não carregar em 3s, mostrar app sem login
-setTimeout(() => {
-  if (!window._fb) {
-    console.log("Firebase não disponível, rodando sem login");
-    const telaLogin = document.getElementById("tela-login");
-    if (telaLogin) telaLogin.style.display = "none";
-    render();
-  }
-}, 3000);
+// Firebase compat carrega de forma síncrona — não precisa de timeout
 
 initAuth();
 render();
