@@ -2224,9 +2224,10 @@ function onUsuarioLogado(user) {
   const userNome  = document.getElementById("user-nome");
   if (user) {
     if (telaLogin) telaLogin.style.display = "none";
-    if (userBar)   userBar.style.display   = "flex";
+    if (userBar)   { userBar.style.display = "flex"; }
     if (userNome)  userNome.textContent    = user.displayName || user.email;
     loadFromCloud(user.uid);
+    render();
   } else {
     currentUser = null;
     if (telaLogin) telaLogin.style.display = "flex";
@@ -2250,13 +2251,16 @@ document.getElementById("g-data").value = todayS();
 document.getElementById("r-data").value = todayS();
 
 // Mostrar tela de login ou app
+// Não esconder o login automaticamente — esperar o Firebase
+// Se Firebase não carregar em 3s, mostrar app sem login
 setTimeout(() => {
   if (!window._fb) {
+    console.log("Firebase não disponível, rodando sem login");
     const telaLogin = document.getElementById("tela-login");
     if (telaLogin) telaLogin.style.display = "none";
     render();
   }
-}, 500);
+}, 3000);
 
 initAuth();
 render();
