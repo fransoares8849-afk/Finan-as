@@ -2,6 +2,9 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>💰 Finanças Pessoais</title>
 <meta name="description" content="Controle suas finanças pessoais, gastos, rendas e investimentos"/>
@@ -2270,8 +2273,22 @@ initAuth();
 // render() será chamado após login
 
 // ── PWA: Registrar Service Worker ──
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js").catch(() => {});
+// Versão do app — muda para forçar atualização
+const APP_VER = "v5";
+if (localStorage.getItem("app_ver") !== APP_VER) {
+  // Nova versão — limpar tudo e recarregar
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.getRegistrations().then(regs => {
+      regs.forEach(r => r.unregister());
+    });
+  }
+  localStorage.clear();
+  localStorage.setItem("app_ver", APP_VER);
+  location.reload(true);
+} else {
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  }
 }
 
 // ── PWA: Banner de instalação ──
