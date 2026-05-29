@@ -1,0 +1,27 @@
+{
+  "name": "Finanças Pessoais",
+  "short_name": "Finanças",
+  "description": "Controle seus gastos, rendas e investimentos",
+  "start_url": "./financas-pessoais.html",
+  "display": "standalone",
+  "background_color": "#0d0d1a",
+  "theme_color": "#0d0d1a",
+  "orientation": "portrait-primary",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "categories": ["finance", "productivity"]
+}
