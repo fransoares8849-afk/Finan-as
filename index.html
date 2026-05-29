@@ -2238,7 +2238,16 @@ function mostrarErroAuth(msg) {
 }
 
 async function authComEmail() {
-  if (!window._fb) { mostrarErroAuth("Firebase não configurado ainda."); return; }
+  if (!window._fb) {
+    mostrarErroAuth("Aguarde, conectando...");
+    // Esperar Firebase carregar por até 5 segundos
+    let tries = 0;
+    while (!window._fb && tries < 50) {
+      await new Promise(r => setTimeout(r, 100));
+      tries++;
+    }
+    if (!window._fb) { mostrarErroAuth("Erro de conexão. Recarregue a página."); return; }
+  }
   const { auth, createUserWithEmailAndPassword, signInWithEmailAndPassword } = window._fb;
   const email = document.getElementById("auth-email").value.trim();
   const senha = document.getElementById("auth-senha").value;
@@ -2263,7 +2272,14 @@ async function authComEmail() {
 }
 
 async function authComGoogle() {
-  if (!window._fb) { mostrarErroAuth("Firebase não configurado ainda."); return; }
+  if (!window._fb) {
+    let tries = 0;
+    while (!window._fb && tries < 50) {
+      await new Promise(r => setTimeout(r, 100));
+      tries++;
+    }
+    if (!window._fb) { mostrarErroAuth("Erro de conexão. Recarregue a página."); return; }
+  }
   const { auth, GoogleAuthProvider, signInWithPopup } = window._fb;
   try {
     const provider = new GoogleAuthProvider();
@@ -2396,7 +2412,8 @@ function instalarApp() {
     getDoc:  (ref)         => ref.get().then(snap => snap.exists ? { exists: () => true, data: () => snap.data() } : { exists: () => false }),
   };
   const loadingEl = document.getElementById("firebase-loading");
-  if (loadingEl) loadingEl.style.display = "none";
+  if (loadingEl) loadingEl.textContent = "✅ Conectado";
+  setTimeout(() => { if (loadingEl) loadingEl.style.display = "none"; }, 1000);
   initAuth();
 </script>
 </body>
