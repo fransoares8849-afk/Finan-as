@@ -958,32 +958,30 @@ function load() {
 async function loadFromCloud(uid) {
   try {
     const storedUid = localStorage.getItem("last_uid");
-    // Sempre limpar se uid diferente ou não definido
-    if (storedUid !== uid) {
+
+    // Só limpar se for usuário DIFERENTE
+    if (storedUid && storedUid !== uid) {
       limparTodoLocalStorage();
       state = estadoVazio();
     }
     localStorage.setItem("last_uid", uid);
 
-    // Sempre resetar state antes de carregar da nuvem
-    state = estadoVazio();
-
+    // Carregar da nuvem SEM apagar o state atual (dados locais ficam como fallback)
     const data = await fbLoadData(uid);
+
     if (data && data.gastos !== undefined) {
-      // Dados encontrados na nuvem - usar eles
+      // Nuvem retornou dados — usar dados da nuvem (são os mais atualizados)
       state = sanitizeState(data);
-    } else {
-      // Conta nova sem dados - salvar estado vazio
-      state = estadoVazio();
+      localStorage.setItem(STORE, JSON.stringify(state));
+    } else if (!storedUid || storedUid !== uid) {
+      // Conta nova ou uid diferente sem dados na nuvem — salvar estado atual
       await saveToCloud(uid);
+      localStorage.setItem(STORE, JSON.stringify(state));
     }
-    localStorage.setItem(STORE, JSON.stringify(state));
+    // Se nuvem falhou mas temos dados locais, manter os dados locais (não apagar)
   } catch(e) {
-    console.warn("Erro ao carregar da nuvem:", e);
-    // Mesmo com erro, garantir estado vazio para conta nova
-    if (!localStorage.getItem("last_uid")) {
-      state = estadoVazio();
-    }
+    console.warn("Erro ao carregar da nuvem — mantendo dados locais:", e);
+    // Não apagar os dados! Manter o que está em state (carregado do localStorage)
   }
 }
 
@@ -997,8 +995,14 @@ async function saveToCloud(uid) {
   }
 }
 function persist() {
+  // Salvar LOCAL primeiro (instantâneo — garante dados ao recarregar)
   try { localStorage.setItem(STORE, JSON.stringify(state)); } catch(_) {}
-  if (fbUserId) saveToCloud(fbUserId);
+  // Salvar na nuvem em segundo plano
+  if (fbUserId) {
+    saveToCloud(fbUserId).catch(() => {
+      // Falhou na nuvem mas já salvou local — ok
+    });
+  }
   if (localStorage.getItem("push_ativo") === "1") {
     setTimeout(salvarDadosParaSW, 500);
   }
@@ -3375,11 +3379,15 @@ const loadingEl2 = document.getElementById("firebase-loading");
 if (loadingEl2) { loadingEl2.textContent = "✅ Pronto"; setTimeout(()=>loadingEl2.style.display="none",800); }
 
 if (fbToken && fbUserId) {
-  // Usuário com sessão salva — mostrar app imediatamente com dados locais
+  // 1. Mostrar app imediatamente com dados do localStorage (sem esperar nuvem)
   mostrarApp({displayName: fbUserName, email: fbUserEmail, uid: fbUserId});
-  render(); // mostrar dados locais primeiro
-  // Depois sincronizar com nuvem em segundo plano
-  loadFromCloud(fbUserId).then(() => render()).catch(() => {});
+  render();
+  // 2. Sincronizar com nuvem em segundo plano (atualiza sem apagar dados)
+  setTimeout(() => {
+    loadFromCloud(fbUserId).then(() => render()).catch(() => {
+      console.warn("Sync nuvem falhou — usando dados locais");
+    });
+  }, 1500); // pequeno delay para não travar a tela inicial
 } else {
   // Sem sessão — mostrar login
   mostrarLogin();
