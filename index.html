@@ -936,22 +936,22 @@ function sanitizeState(s) {
 }
 
 function load() {
-  // Só carregar localStorage se o uid salvo corresponder ao último usuário
-  // Isso evita dados de outro usuário aparecendo antes do login
   try {
-    const lastUid = localStorage.getItem("last_uid");
+    const lastUid    = localStorage.getItem("last_uid");
     const savedToken = localStorage.getItem("fb_token");
-    // Só usa localStorage se houver sessão salva
-    if (lastUid && savedToken) {
+    const savedUid   = localStorage.getItem("fb_uid");
+    // Carregar se houver token E dados pertencentes ao mesmo usuário
+    if (savedToken && lastUid && savedUid && lastUid === savedUid) {
       const s = localStorage.getItem(STORE);
       if (s) {
         const parsed = JSON.parse(s);
-        state = sanitizeState(parsed);
-        return;
+        if (parsed && typeof parsed === "object") {
+          state = sanitizeState(parsed);
+          return;
+        }
       }
     }
   } catch(_) {}
-  // Sem sessão: começar com estado vazio
   state = estadoVazio();
 }
 
@@ -1043,29 +1043,47 @@ function rangeMeses(ini, fim) {
 
 function allMeses() {
   const s = new Set();
-  // meses explícitos
-  state.gastos.forEach(g => s.add(mesStr(g.data)));
-  state.rendas.forEach(r => s.add(mesStr(r.data)));
+  // meses explícitos de gastos e rendas
+  state.gastos.forEach(g => { if(g.data) s.add(mesStr(g.data)); });
+  state.rendas.forEach(r => { if(r.data) s.add(mesStr(r.data)); });
   // expandir rendas recorrentes
   state.rendas.forEach(r => {
-    if (r.recorrente && r.mesFim) {
+    if (r.recorrente && r.mesFim && r.data) {
       rangeMeses(r.data.slice(0,7), r.mesFim).forEach(m => s.add(m));
     }
   });
   // expandir gastos recorrentes
   state.gastos.forEach(g => {
-    if (g.recorrente && g.mesFimRec) {
+    if (g.recorrente && g.mesFimRec && g.data) {
       rangeMeses(g.data.slice(0,7), g.mesFimRec).forEach(m => s.add(m));
     }
   });
   // expandir gastos parcelados
   state.gastos.forEach(g => {
-    if (g.parcelado && g.totalParcelas) {
+    if (g.parcelado && g.totalParcelas && g.data) {
       const ini = g.data.slice(0,7);
       const fim = calcFimMes(ini, g.totalParcelas);
       rangeMeses(ini, fim).forEach(m => s.add(m));
     }
   });
+
+  // Garantir intervalo contínuo do primeiro lançamento até hoje+12 meses
+  const todos = [...s].sort();
+  if (todos.length > 0) {
+    const hoje = new Date();
+    const fim12 = new Date(hoje.getFullYear(), hoje.getMonth() + 12, 1);
+    const fimStr = fim12.getFullYear() + "-" + String(fim12.getMonth()+1).padStart(2,"0");
+    // Preencher todos os meses entre o primeiro e fim12
+    rangeMeses(todos[0], fimStr).forEach(m => s.add(m));
+  } else {
+    // Sem lançamentos: mostrar mês atual + 11 futuros
+    const hoje = new Date();
+    for (let i = 0; i <= 11; i++) {
+      const d = new Date(hoje.getFullYear(), hoje.getMonth() + i, 1);
+      s.add(d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0"));
+    }
+  }
+
   return [...s].sort();
 }
 
@@ -1096,9 +1114,10 @@ function gastosDoMes(m) {
 
 function calcResumo() {
   let acum = state.saldoInicial;
+  // Usar allMeses que agora é contínuo e inclui meses sem lançamento
   return allMeses().map(m => {
-    const renda    = rendasDoMes(m).reduce((s,r)=>s+r.valor, 0);
-    const gasto    = gastosDoMes(m).reduce((s,g)=>s+g.valor, 0);
+    const renda    = rendasDoMes(m).reduce((s,r) => s + (r.valor||0), 0);
+    const gasto    = gastosDoMes(m).reduce((s,g) => s + (g.valor||0), 0);
     const saldoMes = renda - gasto;
     acum += saldoMes;
     return {mes:m, label:mesLabel(m), renda, gasto, saldoMes, acum};
@@ -3356,10 +3375,11 @@ const loadingEl2 = document.getElementById("firebase-loading");
 if (loadingEl2) { loadingEl2.textContent = "✅ Pronto"; setTimeout(()=>loadingEl2.style.display="none",800); }
 
 if (fbToken && fbUserId) {
-  // Usuário com sessão salva
+  // Usuário com sessão salva — mostrar app imediatamente com dados locais
   mostrarApp({displayName: fbUserName, email: fbUserEmail, uid: fbUserId});
-  loadFromCloud(fbUserId);
-  render();
+  render(); // mostrar dados locais primeiro
+  // Depois sincronizar com nuvem em segundo plano
+  loadFromCloud(fbUserId).then(() => render()).catch(() => {});
 } else {
   // Sem sessão — mostrar login
   mostrarLogin();
