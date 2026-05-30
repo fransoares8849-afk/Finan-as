@@ -152,8 +152,10 @@ h2{font-size:18px;font-weight:700;margin-bottom:16px}
   <div id="user-avatar" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#5B8DB8,#4FBDBA);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;flex-shrink:0;cursor:pointer" title="" onclick="toggleUserMenu()"></div>
   <span id="user-nome" style="font-size:13px;color:#a0a0c0;display:none"></span>
   <div id="user-menu" style="display:none;position:absolute;top:62px;right:16px;background:#1a1a2e;border:1px solid #2d2d4e;border-radius:12px;padding:8px;z-index:999;min-width:200px;box-shadow:0 8px 24px rgba(0,0,0,.5)">
-    <div id="user-menu-nome" style="padding:10px 12px;font-weight:700;font-size:14px;color:#e8e8f0;border-bottom:1px solid #2d2d4e;margin-bottom:6px"></div>
-    <div id="user-menu-email" style="padding:0 12px 10px;font-size:12px;color:#6060a0;border-bottom:1px solid #2d2d4e;margin-bottom:6px"></div>
+    <div style="padding:12px;border-bottom:1px solid #2d2d4e;margin-bottom:6px">
+      <div id="user-menu-nome" style="font-weight:700;font-size:15px;color:#e8e8f0;margin-bottom:3px"></div>
+      <div id="user-menu-email" style="font-size:12px;color:#6060a0"></div>
+    </div>
     <button onclick="fazerLogout()" style="width:100%;background:none;border:none;color:#F28C8C;font-size:13px;padding:9px 12px;cursor:pointer;font-family:inherit;text-align:left;border-radius:8px;font-weight:600" onmouseover="this.style.background='#2a1010'" onmouseout="this.style.background='none'">🚪 Sair da conta</button>
   </div>
 </div>
@@ -291,7 +293,7 @@ h2{font-size:18px;font-weight:700;margin-bottom:16px}
   <div id="sub-rendas" style="display:none">
     <div class="card" style="margin-bottom:14px">
       <h2 id="form-r-titulo" style="font-size:14px;margin-bottom:12px">➕ Nova Renda</h2>
-      <div class="grid" style="grid-template-columns:2fr 1fr 1.2fr 1fr;gap:9px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
         <div><p class="txt-muted" style="margin-bottom:4px">Descrição</p><input id="r-desc" placeholder="Ex: Salário"/></div>
         <div><p class="txt-muted" style="margin-bottom:4px">Valor (R$)</p><input id="r-valor" type="number" placeholder="0,00"/></div>
         <div><p class="txt-muted" style="margin-bottom:4px">Categoria</p><select id="r-cat"></select></div>
@@ -320,6 +322,13 @@ h2{font-size:18px;font-weight:700;margin-bottom:16px}
 
 <!-- ═══ EVOLUÇÃO ═══ -->
 <div id="sec-evolucao" class="section">
+  <!-- Aviso para limpar dados antigos se necessário -->
+  <div id="aviso-dados-antigos" style="display:none;background:#1a1010;border:1px solid #F28C8C33;border-radius:11px;padding:14px;margin-bottom:14px">
+    <p style="font-weight:700;color:#F28C8C;margin-bottom:6px">⚠️ Dados inconsistentes detectados</p>
+    <p style="font-size:13px;color:#a0a0c0;margin-bottom:10px">Há dados do localStorage antigo que não correspondem à sua conta. Limpe para sincronizar com a nuvem.</p>
+    <button onclick="limparDadosLocais()" class="btn" style="background:#F28C8C22;color:#F28C8C;border:1px solid #F28C8C44;padding:8px 16px;font-size:13px">🗑️ Limpar e sincronizar</button>
+  </div>
+
   <div class="card" style="margin-bottom:16px">
     <h2 style="font-size:14px;margin-bottom:4px">💼 Saldo Inicial</h2>
     <p class="txt-muted" style="margin-bottom:12px">Quanto você já tinha antes do primeiro mês registrado</p>
@@ -644,7 +653,11 @@ h2{font-size:18px;font-weight:700;margin-bottom:16px}
     <div style="background:#0d0d1a;border-radius:11px;padding:14px;border:1px solid #1e1e3a">
       <p style="font-weight:700;font-size:14px;margin-bottom:10px">⏰ Avisar com quantos dias de antecedência?</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        ${[1,2,3,5,7].map(d => `<button onclick="setDiasAlerta(${d})" id="dias-btn-${d}" class="btn btn-gray" style="padding:8px 16px;font-size:13px">${d} dia${d>1?'s':''}</button>`).join('')}
+        <button onclick="setDiasAlerta(1)" id="dias-btn-1" class="btn btn-gray" style="padding:8px 16px;font-size:13px">1 dia</button>
+        <button onclick="setDiasAlerta(2)" id="dias-btn-2" class="btn btn-gray" style="padding:8px 16px;font-size:13px">2 dias</button>
+        <button onclick="setDiasAlerta(3)" id="dias-btn-3" class="btn btn-gray" style="padding:8px 16px;font-size:13px">3 dias</button>
+        <button onclick="setDiasAlerta(5)" id="dias-btn-5" class="btn btn-gray" style="padding:8px 16px;font-size:13px">5 dias</button>
+        <button onclick="setDiasAlerta(7)" id="dias-btn-7" class="btn btn-gray" style="padding:8px 16px;font-size:13px">7 dias</button>
       </div>
       <p id="dias-alerta-msg" class="txt-muted" style="margin-top:8px;font-size:12px"></p>
     </div>
@@ -2114,6 +2127,20 @@ function setDiasAlerta(dias) {
   toast("Alerta configurado para " + dias + " dia(s) antes ✓");
 }
 
+function limparDadosLocais() {
+  if (!confirm("Isso vai limpar os dados locais e recarregar da nuvem. Continuar?")) return;
+  const keys = ["fin_v2", "fin2-gastos","fin2-rendas","fin2-meta","fin2-saldo-ini","financas_pessoais_v1"];
+  keys.forEach(k => localStorage.removeItem(k));
+  state = {gastos:[], rendas:[], meta:20, saldoInicial:0, poupancas:[], pagamentos:{}, recebimentos:{}, antecipados:{}, investimentos:[], aportes:[]};
+  if (fbUserId) {
+    loadFromCloud(fbUserId).then(() => render());
+  } else {
+    render();
+  }
+  document.getElementById("aviso-dados-antigos").style.display = "none";
+  toast("Dados sincronizados com a nuvem ✓");
+}
+
 function desativarPush() {
   localStorage.removeItem("push_ativo");
   localStorage.removeItem("periodic_sync");
@@ -2624,6 +2651,17 @@ function mostrarApp(user) {
   const email = user.email || "";
 
   if (userBar)    { userBar.style.display = "flex"; userBar.style.position = "relative"; }
+  // Verificar dados antigos no localStorage
+  setTimeout(() => {
+    const dadosAntigos = localStorage.getItem("fin2-gastos") || localStorage.getItem("financas_pessoais_v1");
+    const aviso = document.getElementById("aviso-dados-antigos");
+    if (dadosAntigos && aviso) {
+      try {
+        const d = JSON.parse(dadosAntigos);
+        if (d.gastos && d.gastos.length > 0) aviso.style.display = "block";
+      } catch(_) {}
+    }
+  }, 2000);
   if (userAvatar) {
     userAvatar.textContent = getIniciais(nome);
     userAvatar.style.background = getCorAvatar(nome);
