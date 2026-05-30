@@ -101,6 +101,18 @@ h2{font-size:18px;font-weight:700;margin-bottom:16px}
   .g2,.g3,.g6{grid-template-columns:1fr}
   #header-tabs{flex-wrap:wrap}
 }
+
+/* TEMA CLARO */
+body.tema-claro { background:#f0f2f8; color:#1a1a2e; }
+body.tema-claro .card { background:#fff; border-color:#dde2f0; }
+body.tema-claro input, body.tema-claro select { background:#f8f9ff; border-color:#dde2f0; color:#1a1a2e; }
+body.tema-claro #user-bar, body.tema-claro #app-wrapper > div[style*="background:#13132b"] { background:#fff !important; border-color:#dde2f0 !important; }
+body.tema-claro .tab { color:#4a5568; }
+body.tema-claro .tab.on { background:#fff; color:#1a1a2e; }
+body.tema-claro .txt-muted { color:#718096; }
+body.tema-claro .row-item { background:#fff; border-color:#dde2f0; }
+body.tema-claro #tela-login { background:#f0f2f8; }
+
 </style>
 </head>
 <body>
@@ -160,6 +172,7 @@ h2{font-size:18px;font-weight:700;margin-bottom:16px}
   <div style="display:flex;gap:8px;align-items:center">
     <button onclick="mostrarUpgrade('badge')" id="btn-ver-planos" style="background:linear-gradient(135deg,#E8B84B,#E07B54);border:none;border-radius:8px;color:#fff;font-size:11px;padding:6px 12px;cursor:pointer;font-family:inherit;font-weight:700;display:none">⭐ Premium</button>
     <button onclick="mostrarUpgrade('geral')" id="btn-upgrade-header" style="background:#1e1e3a;border:1px solid #E8B84B44;border-radius:8px;color:#E8B84B;font-size:11px;padding:6px 12px;cursor:pointer;font-family:inherit;font-weight:600">🚀 Upgrade</button>
+    <button onclick="toggleTema()" id="btn-tema" style="background:#1e1e3a;border:1px solid #2d2d4e;border-radius:8px;color:#a0a0c0;font-size:14px;padding:6px 10px;cursor:pointer;font-family:inherit">🌙</button>
     <button onclick="fazerLogout()" style="background:#1e1e3a;border:1px solid #2d2d4e;border-radius:8px;color:#F28C8C;font-size:12px;padding:6px 14px;cursor:pointer;font-family:inherit;font-weight:600;flex-shrink:0">Sair</button>
   </div>
 </div>
@@ -767,6 +780,22 @@ h2{font-size:18px;font-weight:700;margin-bottom:16px}
     <button onclick="testarNotificacao()" class="btn btn-gray" style="width:100%;margin-top:12px;padding:10px;font-size:13px">🧪 Testar notificação agora</button>
   </div>
 
+  <!-- Categorias Personalizadas -->
+  <div class="card" style="margin-bottom:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h2 style="font-size:15px">🏷️ Categorias Personalizadas</h2>
+      <button onclick="adicionarCategoria()" class="btn btn-primary" style="padding:7px 14px;font-size:12px">+ Nova</button>
+    </div>
+    <div id="cats-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"></div>
+    <div id="form-cat" style="display:none;gap:8px;flex-direction:column">
+      <input id="nova-cat-nome" placeholder="Nome da categoria" style="font-size:16px"/>
+      <div style="display:flex;gap:8px">
+        <button onclick="salvarCategoria()" class="btn btn-primary" style="flex:1;padding:10px">Salvar</button>
+        <button onclick="document.getElementById('form-cat').style.display='none'" class="btn btn-gray" style="padding:10px 16px">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
   <div class="card">
     <h2 style="font-size:14px;margin-bottom:12px">🚀 Estratégias para Economizar</h2>
     <div class="grid g2" style="gap:9px">
@@ -807,6 +836,65 @@ h2{font-size:18px;font-weight:700;margin-bottom:16px}
   </div>
 </div>
 
+
+
+<!-- ═══ SCORE FINANCEIRO ═══ -->
+<div id="sec-score" class="section" style="display:none">
+
+  <!-- Pontuação Financeira -->
+  <div class="card" style="margin-bottom:14px;text-align:center">
+    <p style="font-size:13px;font-weight:600;color:#a0a0c0;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Sua Pontuação Financeira</p>
+    <div id="score-circle" style="width:130px;height:130px;border-radius:50%;border:8px solid #1e1e3a;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;flex-direction:column;position:relative">
+      <p id="score-num" style="font-size:38px;font-weight:900;color:#E8B84B">--</p>
+      <p style="font-size:11px;color:#6060a0">/100</p>
+    </div>
+    <p id="score-label" style="font-size:16px;font-weight:700;color:#E8B84B;margin-bottom:4px">Calculando...</p>
+    <p id="score-desc" style="font-size:13px;color:#6060a0"></p>
+  </div>
+
+  <!-- Insights Automáticos -->
+  <div class="card" style="margin-bottom:14px">
+    <h2 style="font-size:15px;margin-bottom:12px">🤖 Insights do Mês</h2>
+    <div id="insights-list" style="display:flex;flex-direction:column;gap:10px"></div>
+  </div>
+
+  <!-- Previsão do Mês -->
+  <div class="card" style="margin-bottom:14px">
+    <h2 style="font-size:15px;margin-bottom:4px">🔮 Previsão do Mês</h2>
+    <p class="txt-muted" style="margin-bottom:14px">Baseado nos seus gastos fixos</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div style="background:#0d0d1a;border-radius:10px;padding:12px;text-align:center">
+        <p style="font-size:11px;color:#6060a0;margin-bottom:4px">Gastos fixos</p>
+        <p id="prev-fixos" style="font-size:18px;font-weight:700;color:#F28C8C">R$ 0</p>
+      </div>
+      <div style="background:#0d0d1a;border-radius:10px;padding:12px;text-align:center">
+        <p style="font-size:11px;color:#6060a0;margin-bottom:4px">Previsão sobra</p>
+        <p id="prev-sobra" style="font-size:18px;font-weight:700;color:#6DBE8C">R$ 0</p>
+      </div>
+    </div>
+    <div style="background:#0d0d1a;border-radius:10px;padding:12px;margin-top:10px">
+      <p style="font-size:12px;color:#6060a0;margin-bottom:6px">Progresso do mês atual</p>
+      <div style="background:#1e1e3a;border-radius:4px;height:8px;overflow:hidden">
+        <div id="prev-bar" style="height:100%;background:linear-gradient(90deg,#6DBE8C,#4FBDBA);border-radius:4px;transition:width .5s;width:0%"></div>
+      </div>
+      <p id="prev-msg" style="font-size:12px;color:#a0a0c0;margin-top:6px"></p>
+    </div>
+  </div>
+
+  <!-- Conquistas -->
+  <div class="card" style="margin-bottom:14px">
+    <h2 style="font-size:15px;margin-bottom:12px">🏆 Conquistas</h2>
+    <div id="conquistas-list" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"></div>
+  </div>
+
+  <!-- Desafio do Mês -->
+  <div class="card" style="margin-bottom:14px">
+    <h2 style="font-size:15px;margin-bottom:4px">🎯 Desafio do Mês</h2>
+    <p class="txt-muted" style="margin-bottom:14px">Complete desafios para melhorar sua saúde financeira</p>
+    <div id="desafios-list" style="display:flex;flex-direction:column;gap:10px"></div>
+  </div>
+
+</div>
 
 </div><!-- /app-wrapper -->
 
@@ -1202,15 +1290,18 @@ function showSubAba(id) {
 // RENDER
 // ══════════════════════════════════════════════
 function render() {
-  renderMesSelect();      // primeiro: popular o seletor
-  ajustarMesAtivo();      // depois: ajustar para mês com dados se necessário
-  renderMesSelect();      // atualizar seletor com mês ajustado
+  renderMesSelect();
+  ajustarMesAtivo();
+  renderMesSelect();
   renderAlertas();
   renderDashboard();
   renderLancamentos();
   renderResumoRendas();
   renderEvolucao();
   renderPlano();
+  // Score só renderiza se a aba estiver visível
+  const secScore = document.getElementById("sec-score");
+  if (secScore && secScore.style.display !== "none") renderScore();
 }
 
 function renderMesSelect() {
@@ -3019,6 +3110,9 @@ function mostrarApp(user) {
   if (userBar)    { userBar.style.display = "flex"; userBar.style.position = "relative"; }
   // Mostrar instruções na primeira visita
   setTimeout(verificarInstrucoes, 500);
+  carregarTema();
+  renderCategorias();
+  atualizarSelectsCategorias();
   // Verificar retorno do Mercado Pago
   verificarRetornoMP();
   // Atualizar badge premium
@@ -3065,6 +3159,487 @@ function onUsuarioLogado(user) {
 // Iniciar listener de auth quando Firebase estiver pronto
 function initAuth() { /* handled by REST API */ }
 
+
+
+
+
+// ══════════════════════════════════════════════
+// TEMA CLARO/ESCURO
+// ══════════════════════════════════════════════
+function toggleTema() {
+  const temaClaroAtivo = document.body.classList.toggle("tema-claro");
+  localStorage.setItem("tema", temaClaroAtivo ? "claro" : "escuro");
+  document.getElementById("btn-tema").textContent = temaClaroAtivo ? "☀️" : "🌙";
+}
+
+function carregarTema() {
+  const tema = localStorage.getItem("tema");
+  if (tema === "claro") {
+    document.body.classList.add("tema-claro");
+    const btn = document.getElementById("btn-tema");
+    if (btn) btn.textContent = "☀️";
+  }
+}
+
+// ══════════════════════════════════════════════
+// CATEGORIAS PERSONALIZADAS
+// ══════════════════════════════════════════════
+function getCatsPersonalizadas() {
+  try { return JSON.parse(localStorage.getItem("cats_personalizadas") || "[]"); } catch(_) { return []; }
+}
+
+function adicionarCategoria() {
+  const form = document.getElementById("form-cat");
+  if (form) { form.style.display = "flex"; document.getElementById("nova-cat-nome").focus(); }
+}
+
+function salvarCategoria() {
+  const nome = document.getElementById("nova-cat-nome").value.trim();
+  if (!nome) { toast("Digite o nome da categoria", "#F28C8C"); return; }
+  const cats = getCatsPersonalizadas();
+  if (cats.includes(nome)) { toast("Categoria já existe!", "#E8B84B"); return; }
+  cats.push(nome);
+  localStorage.setItem("cats_personalizadas", JSON.stringify(cats));
+  document.getElementById("nova-cat-nome").value = "";
+  document.getElementById("form-cat").style.display = "none";
+  renderCategorias();
+  atualizarSelectsCategorias();
+  toast("Categoria criada ✓");
+}
+
+function removerCategoria(nome) {
+  const cats = getCatsPersonalizadas().filter(c => c !== nome);
+  localStorage.setItem("cats_personalizadas", JSON.stringify(cats));
+  renderCategorias();
+  atualizarSelectsCategorias();
+}
+
+function renderCategorias() {
+  const el = document.getElementById("cats-list");
+  if (!el) return;
+  const cats = getCatsPersonalizadas();
+  if (!cats.length) {
+    el.innerHTML = '<p class="txt-muted" style="font-size:12px">Nenhuma categoria personalizada ainda.</p>';
+    return;
+  }
+  el.innerHTML = cats.map(c=>`
+    <div style="background:#1e1e3a;border-radius:20px;padding:6px 12px;display:flex;align-items:center;gap:6px">
+      <span style="font-size:13px;color:#e8e8f0">${c}</span>
+      <button onclick="removerCategoria('${c}')" style="background:none;border:none;color:#6060a0;font-size:14px;cursor:pointer;padding:0;line-height:1">×</button>
+    </div>`).join("");
+}
+
+function atualizarSelectsCategorias() {
+  const extras = getCatsPersonalizadas();
+  const todasCats = [...CATS_GASTO, ...extras];
+  ["g-cat","qg-cat"].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const atual = sel.value;
+    sel.innerHTML = todasCats.map(c=>`<option value="${c}">${c}</option>`).join("");
+    if (todasCats.includes(atual)) sel.value = atual;
+  });
+}
+
+// ══════════════════════════════════════════════
+// SCORE FINANCEIRO + INSIGHTS + GAMIFICAÇÃO
+// ══════════════════════════════════════════════
+
+function calcScore() {
+  const ra = resumoAtivo();
+  if (!ra.renda) return 50;
+  let score = 100;
+  const pctGasto  = ra.renda > 0 ? (ra.gasto / ra.renda) * 100 : 0;
+  const pctInvest = ra.renda > 0 ? ((state.investimentos||[]).reduce((s,inv)=>s+(inv.aporte||0),0) / ra.renda) * 100 : 0;
+  const resumo    = calcResumo();
+  const mesesNeg  = resumo.filter(r => r.saldoMes < 0 && r.mes <= mesAtivo).length;
+
+  // Penalidades
+  if (pctGasto > 90) score -= 30;
+  else if (pctGasto > 70) score -= 15;
+  else if (pctGasto > 50) score -= 5;
+
+  if (pctInvest < 5)  score -= 20;
+  else if (pctInvest < 10) score -= 10;
+  else if (pctInvest >= 20) score += 10;
+
+  if (mesesNeg > 3) score -= 20;
+  else if (mesesNeg > 1) score -= 10;
+  else if (mesesNeg === 0) score += 5;
+
+  // Bônus por usar o app
+  if ((state.gastos||[]).length > 5)  score += 5;
+  if ((state.rendas||[]).length > 1)  score += 5;
+
+  return Math.max(10, Math.min(100, Math.round(score)));
+}
+
+function renderScore() {
+  const score = calcScore();
+  const circle = document.getElementById("score-circle");
+  const numEl  = document.getElementById("score-num");
+  const label  = document.getElementById("score-label");
+  const desc   = document.getElementById("score-desc");
+
+  if (!numEl) return;
+
+  const cor = score >= 80 ? "#6DBE8C" : score >= 60 ? "#E8B84B" : score >= 40 ? "#F28C8C" : "#cc3333";
+  const info = score >= 80 ? ["Excelente! 🏆", "Suas finanças estão muito saudáveis!"]
+             : score >= 60 ? ["Bom! 👍", "Você está no caminho certo, continue melhorando."]
+             : score >= 40 ? ["Regular 😐", "Há oportunidades de melhoria nas suas finanças."]
+             : ["Atenção! ⚠️", "Suas finanças precisam de cuidado urgente."];
+
+  numEl.textContent = score;
+  numEl.style.color = cor;
+  circle.style.borderColor = cor;
+  label.textContent = info[0]; label.style.color = cor;
+  desc.textContent  = info[1];
+
+  // Insights
+  renderInsights();
+  // Previsão
+  renderPrevisao();
+  // Conquistas
+  renderConquistas();
+  // Desafios
+  renderDesafios();
+}
+
+function renderInsights() {
+  const ra   = resumoAtivo();
+  const gm   = gastosMes();
+  const el   = document.getElementById("insights-list");
+  if (!el) return;
+
+  const insights = [];
+  const pctGasto = ra.renda > 0 ? (ra.gasto / ra.renda * 100).toFixed(1) : 0;
+
+  // Insight 1: maior categoria de gasto
+  const porCat = {};
+  gm.forEach(g => { porCat[g.cat] = (porCat[g.cat]||0) + g.valor; });
+  const maisCat = Object.entries(porCat).sort((a,b)=>b[1]-a[1])[0];
+  if (maisCat) {
+    insights.push({ icon:"📊", cor:"#5B8DB8",
+      txt: `Maior gasto: <b>${maisCat[0]}</b> com ${fmt(maisCat[1])} (${ra.renda>0?((maisCat[1]/ra.renda)*100).toFixed(0):0}% da renda)` });
+  }
+
+  // Insight 2: comparativo com mês anterior
+  const resumo = calcResumo();
+  const idx = resumo.findIndex(r=>r.mes===mesAtivo);
+  if (idx > 0) {
+    const ant = resumo[idx-1];
+    const atual = resumo[idx];
+    const diff  = atual.gasto - ant.gasto;
+    if (diff > 0)
+      insights.push({ icon:"📈", cor:"#F28C8C",
+        txt:`Gastou ${fmt(Math.abs(diff))} <b>a mais</b> que ${mesLabel(ant.mes)}` });
+    else if (diff < 0)
+      insights.push({ icon:"📉", cor:"#6DBE8C",
+        txt:`Gastou ${fmt(Math.abs(diff))} <b>a menos</b> que ${mesLabel(ant.mes)} 🎉` });
+  }
+
+  // Insight 3: gastos fixos
+  const fixos = gm.filter(g=>g.tipo==="fixo").reduce((s,g)=>s+g.valor,0);
+  if (fixos > 0 && ra.renda > 0) {
+    const pct = (fixos/ra.renda*100).toFixed(0);
+    insights.push({ icon:"🔒", cor:"#E8B84B",
+      txt:`Gastos fixos representam <b>${pct}%</b> da sua renda (${fmt(fixos)})` });
+  }
+
+  // Insight 4: meta de economia
+  const metaV = (ra.renda * (state.meta||20)) / 100;
+  if (ra.saldoMes >= metaV && metaV > 0) {
+    insights.push({ icon:"✅", cor:"#6DBE8C", txt:`Meta de economia atingida! Você guardou ${fmt(ra.saldoMes)}` });
+  } else if (metaV > 0) {
+    insights.push({ icon:"🎯", cor:"#A87BC9", txt:`Faltam ${fmt(metaV - ra.saldoMes)} para atingir sua meta de economia` });
+  }
+
+  // Insight 5: saldo acumulado
+  const acum = resumo.find(r=>r.mes===mesAtivo);
+  if (acum && acum.acum > 0) {
+    insights.push({ icon:"🏦", cor:"#4FBDBA", txt:`Patrimônio acumulado: <b>${fmt(acum.acum)}</b>` });
+  }
+
+  if (!insights.length) {
+    insights.push({ icon:"💡", cor:"#6060a0", txt:"Adicione lançamentos para ver insights personalizados" });
+  }
+
+  el.innerHTML = insights.map(i=>`
+    <div style="background:#0d0d1a;border-radius:10px;padding:12px;border-left:3px solid ${i.cor};display:flex;gap:10px;align-items:flex-start">
+      <span style="font-size:20px">${i.icon}</span>
+      <p style="font-size:13px;color:#a0a0c0;line-height:1.4">${i.txt}</p>
+    </div>`).join("");
+}
+
+function renderPrevisao() {
+  const ra    = resumoAtivo();
+  const fixos = (state.gastos||[]).filter(g=>g.tipo==="fixo").reduce((s,g)=>s+g.valor,0);
+  const sobra = ra.renda - fixos;
+  const pct   = ra.renda > 0 ? Math.min((ra.gasto/ra.renda)*100,100) : 0;
+
+  const pF = document.getElementById("prev-fixos");
+  const pS = document.getElementById("prev-sobra");
+  const pB = document.getElementById("prev-bar");
+  const pM = document.getElementById("prev-msg");
+  if (!pF) return;
+
+  pF.textContent = fmt(fixos);
+  pS.textContent = fmt(Math.max(0,sobra));
+  pS.style.color = sobra >= 0 ? "#6DBE8C" : "#F28C8C";
+  pB.style.width = pct + "%";
+  pB.style.background = pct > 80 ? "linear-gradient(90deg,#F28C8C,#cc3333)" : "linear-gradient(90deg,#6DBE8C,#4FBDBA)";
+  pM.textContent = pct < 50 ? "Ótimo! Você está gastando pouco até agora." :
+                   pct < 80 ? "Atenção ao ritmo de gastos para não ultrapassar a renda." :
+                   "Cuidado! Seus gastos estão altos para o mês.";
+}
+
+const TODAS_CONQUISTAS = [
+  { id:"primeiro_gasto",  icon:"🌱", nome:"Primeiro Passo",     desc:"Registrou o primeiro gasto",   check: s => (s.gastos||[]).length >= 1 },
+  { id:"meta_atingida",   icon:"🎯", nome:"Meta Atingida",      desc:"Atingiu a meta de economia",   check: s => { const ra=resumoAtivo(); const mv=(ra.renda*(s.meta||20))/100; return ra.saldoMes>=mv && mv>0; } },
+  { id:"sem_dividas",     icon:"✅", nome:"Sem Dívidas",         desc:"Saldo positivo no mês",        check: s => resumoAtivo().saldoMes >= 0 },
+  { id:"investidor",      icon:"📈", nome:"Investidor",          desc:"Cadastrou um investimento",    check: s => (s.investimentos||[]).length >= 1 },
+  { id:"organizado",      icon:"📋", nome:"Organizado",          desc:"10 ou mais lançamentos",       check: s => (s.gastos||[]).length + (s.rendas||[]).length >= 10 },
+  { id:"economista",      icon:"💰", nome:"Economista",          desc:"Poupou mais de R$500",         check: s => resumoAtivo().saldoMes >= 500 },
+  { id:"consistente",     icon:"🏆", nome:"Consistente",         desc:"3 meses com saldo positivo",  check: s => { const r=calcResumo(); return r.filter(m=>m.saldoMes>=0).length>=3; } },
+  { id:"milionario",      icon:"💎", nome:"Caminho p/ Riqueza",  desc:"Acumulou R$10.000+",          check: s => { const r=calcResumo(); return r.some(m=>m.acum>=10000); } },
+];
+
+function renderConquistas() {
+  const el = document.getElementById("conquistas-list");
+  if (!el) return;
+  el.innerHTML = TODAS_CONQUISTAS.map(c => {
+    const ok = c.check(state);
+    return `<div style="background:#0d0d1a;border-radius:10px;padding:12px;text-align:center;border:1px solid ${ok?"#E8B84B44":"#1e1e3a"};opacity:${ok?1:.5}">
+      <div style="font-size:28px;margin-bottom:4px">${c.icon}</div>
+      <p style="font-size:12px;font-weight:700;color:${ok?"#E8B84B":"#6060a0"}">${c.nome}</p>
+      <p style="font-size:10px;color:#6060a0;margin-top:2px">${c.desc}</p>
+      ${ok?'<p style="font-size:10px;color:#6DBE8C;margin-top:4px">✅ Conquistado!</p>':''}
+    </div>`;
+  }).join("");
+}
+
+function renderDesafios() {
+  const el = document.getElementById("desafios-list");
+  if (!el) return;
+  const ra = resumoAtivo();
+  const desafios = [
+    { icon:"💸", nome:"Registrar todos os gastos", desc:"Adicione pelo menos 5 gastos este mês",
+      progresso: Math.min((gastosMes().length/5)*100,100), ok: gastosMes().length >= 5 },
+    { icon:"🎯", nome:"Atingir meta de economia",  desc:`Economizar ${state.meta||20}% da renda`,
+      progresso: ra.renda>0?Math.min((ra.saldoMes/((ra.renda*(state.meta||20))/100))*100,100):0,
+      ok: ra.saldoMes >= (ra.renda*(state.meta||20))/100 && ra.renda>0 },
+    { icon:"📊", nome:"Diversificar gastos", desc:"Ter gastos em pelo menos 3 categorias",
+      progresso: Math.min((new Set(gastosMes().map(g=>g.cat)).size/3)*100,100),
+      ok: new Set(gastosMes().map(g=>g.cat)).size >= 3 },
+    { icon:"💰", nome:"Investir no mês", desc:"Registrar pelo menos um investimento",
+      progresso: (state.investimentos||[]).length > 0 ? 100 : 0,
+      ok: (state.investimentos||[]).length > 0 },
+  ];
+
+  el.innerHTML = desafios.map(d=>`
+    <div style="background:#0d0d1a;border-radius:11px;padding:13px;border:1px solid ${d.ok?"#6DBE8C44":"#1e1e3a"}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:20px">${d.icon}</span>
+          <div>
+            <p style="font-size:13px;font-weight:700;color:${d.ok?"#6DBE8C":"#e8e8f0"}">${d.nome}</p>
+            <p style="font-size:11px;color:#6060a0">${d.desc}</p>
+          </div>
+        </div>
+        <span style="font-size:12px;font-weight:700;color:${d.ok?"#6DBE8C":"#E8B84B"}">${d.ok?"✅":Math.round(d.progresso)+"%"}</span>
+      </div>
+      <div style="background:#1e1e3a;border-radius:4px;height:6px">
+        <div style="width:${d.progresso}%;height:100%;background:${d.ok?"#6DBE8C":"linear-gradient(90deg,#5B8DB8,#4FBDBA)"};border-radius:4px;transition:width .5s"></div>
+      </div>
+    </div>`).join("");
+}
+
+
+// ══════════════════════════════════════════════
+// FOTO / RECIBO COM IA
+// ══════════════════════════════════════════════
+
+function fabAbrirFoto() {
+  toggleFab();
+  document.getElementById("fab-overlay").style.display = "block";
+  document.getElementById("modal-foto").style.display = "block";
+  // Popular categorias
+  const sel = document.getElementById("foto-cat");
+  const cats = [...CATS_GASTO, ...getCatsPersonalizadas()];
+  sel.innerHTML = cats.map(c=>`<option value="${c}">${c}</option>`).join("");
+  // Reset
+  document.getElementById("foto-preview-img").style.display = "none";
+  document.getElementById("foto-placeholder").style.display = "block";
+  document.getElementById("foto-resultado").style.display = "none";
+  document.getElementById("foto-loading").style.display = "none";
+}
+
+async function processarFoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  // Mostrar preview
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const base64 = e.target.result;
+    const img = document.getElementById("foto-preview-img");
+    img.src = base64;
+    img.style.display = "block";
+    document.getElementById("foto-placeholder").style.display = "none";
+
+    // Mostrar loading
+    document.getElementById("foto-loading").style.display = "block";
+    document.getElementById("foto-resultado").style.display = "none";
+
+    try {
+      // Chamar Claude API para analisar a imagem
+      const base64Data = base64.split(",")[1];
+      const mediaType  = file.type || "image/jpeg";
+
+      const resp = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 300,
+          messages: [{
+            role: "user",
+            content: [
+              { type: "image", source: { type: "base64", media_type: mediaType, data: base64Data } },
+              { type: "text", text: `Analise este recibo/nota fiscal e extraia as informações. Responda APENAS em JSON válido sem markdown:
+{"valor": 0.00, "estabelecimento": "nome do local", "categoria": "uma das opções: Moradia, Alimentação, Transporte, Saúde, Lazer, Educação, Vestuário, Outros", "data": "YYYY-MM-DD ou null"}
+
+Se não encontrar alguma informação, use null. Para valor use número decimal com ponto.` }
+            ]
+          }]
+        })
+      });
+
+      const data = await resp.json();
+      const texto = data.content && data.content[0] ? data.content[0].text : "";
+
+      let resultado = {};
+      try {
+        const clean = texto.replace(/```json|```/g,"").trim();
+        resultado = JSON.parse(clean);
+      } catch(_) {
+        // Se não parsear, tentar extrair valores com regex
+        const valorMatch = texto.match(/\d+[,.]\d{2}/);
+        if (valorMatch) resultado.valor = parseFloat(valorMatch[0].replace(",","."));
+        resultado.estabelecimento = "Compra";
+        resultado.categoria = "Alimentação";
+      }
+
+      // Preencher formulário
+      document.getElementById("foto-desc").value  = resultado.estabelecimento || "";
+      document.getElementById("foto-valor").value = resultado.valor || "";
+      if (resultado.categoria) {
+        const sel = document.getElementById("foto-cat");
+        for (let i=0; i<sel.options.length; i++) {
+          if (sel.options[i].value.toLowerCase().includes(resultado.categoria.toLowerCase())) {
+            sel.selectedIndex = i; break;
+          }
+        }
+      }
+
+      // Mostrar dados encontrados
+      const partes = [];
+      if (resultado.valor)          partes.push(`💰 Valor: <b>R$ ${resultado.valor}</b>`);
+      if (resultado.estabelecimento) partes.push(`🏪 Local: <b>${resultado.estabelecimento}</b>`);
+      if (resultado.categoria)      partes.push(`🏷️ Categoria sugerida: <b>${resultado.categoria}</b>`);
+      if (resultado.data)           partes.push(`📅 Data: <b>${resultado.data}</b>`);
+
+      document.getElementById("foto-dados-encontrados").innerHTML =
+        partes.length ? partes.join("<br>") : "Preencha os dados manualmente abaixo.";
+
+      document.getElementById("foto-loading").style.display = "none";
+      document.getElementById("foto-resultado").style.display = "block";
+
+    } catch(err) {
+      document.getElementById("foto-loading").style.display = "none";
+      document.getElementById("foto-resultado").style.display = "block";
+      document.getElementById("foto-dados-encontrados").innerHTML =
+        "⚠️ Não foi possível analisar automaticamente. Preencha manualmente.";
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function confirmarGastoFoto() {
+  const desc  = document.getElementById("foto-desc").value.trim();
+  const valor = parseFloat(document.getElementById("foto-valor").value);
+  const cat   = document.getElementById("foto-cat").value;
+  if (!desc || !valor || valor <= 0) { toast("Preencha descrição e valor", "#F28C8C"); return; }
+  const id = Date.now();
+  state.gastos.push({ id, desc, valor, cat, data: todayS(), tipo: "variavel", recorrente: false });
+  persist(); render(); fecharModaisRapidos();
+  toast("✅ Gasto adicionado da foto!");
+}
+
+// ══════════════════════════════════════════════
+// FAB - LANÇAMENTO RÁPIDO
+// ══════════════════════════════════════════════
+function toggleFab() {
+  const menu = document.getElementById("fab-menu");
+  const btn  = document.getElementById("fab-btn");
+  const open = menu.style.display === "flex";
+  menu.style.display = open ? "none" : "flex";
+  menu.style.flexDirection = "column";
+  btn.textContent = open ? "+" : "×";
+  btn.style.transform = open ? "rotate(0)" : "rotate(45deg)";
+}
+
+function fabAbrirGasto() {
+  toggleFab();
+  document.getElementById("fab-overlay").style.display = "block";
+  document.getElementById("modal-gasto-rapido").style.display = "block";
+  // Popular categorias
+  const sel = document.getElementById("qg-cat");
+  sel.innerHTML = CATS_GASTO.map(c => `<option>${c}</option>`).join("");
+  document.getElementById("qg-desc").focus();
+}
+
+function fabAbrirRenda() {
+  toggleFab();
+  document.getElementById("fab-overlay").style.display = "block";
+  document.getElementById("modal-renda-rapida").style.display = "block";
+  document.getElementById("qr-desc").focus();
+}
+
+function fecharModaisRapidos() {
+  document.getElementById("modal-gasto-rapido").style.display = "none";
+  document.getElementById("modal-renda-rapida").style.display = "none";
+  document.getElementById("fab-overlay").style.display = "none";
+  const menu = document.getElementById("fab-menu");
+  const btn  = document.getElementById("fab-btn");
+  if (menu) { menu.style.display = "none"; btn.textContent = "+"; btn.style.transform = "rotate(0)"; }
+}
+
+function salvarGastoRapido() {
+  const desc  = document.getElementById("qg-desc").value.trim();
+  const valor = parseFloat(document.getElementById("qg-valor").value);
+  const cat   = document.getElementById("qg-cat").value;
+  if (!desc || !valor || valor <= 0) { toast("Preencha descrição e valor", "#F28C8C"); return; }
+  const id = Date.now();
+  state.gastos.push({ id, desc, valor, cat, data: todayS(), tipo: "variavel", recorrente: false });
+  persist(); render(); fecharModaisRapidos();
+  toast("Gasto adicionado ✓");
+}
+
+function salvarRendaRapida() {
+  const desc  = document.getElementById("qr-desc").value.trim();
+  const valor = parseFloat(document.getElementById("qr-valor").value);
+  if (!desc || !valor || valor <= 0) { toast("Preencha descrição e valor", "#F28C8C"); return; }
+  const id = Date.now();
+  state.rendas.push({ id, desc, valor, cat: "Outros", data: todayS(), recorrente: false });
+  persist(); render(); fecharModaisRapidos();
+  toast("Renda adicionada ✓");
+}
+
+function mostrarFab() {
+  const fab = document.getElementById("fab-container");
+  if (fab) fab.style.display = "flex";
+}
 
 // ══════════════════════════════════════════════
 // PREMIUM / UPGRADE
@@ -3443,5 +4018,105 @@ if (fbToken && fbUserId) {
   mostrarLogin();
 }
 </script>
+
+<!-- FAB - Botão flutuante de lançamento rápido -->
+<div id="fab-container" style="position:fixed;bottom:80px;right:16px;z-index:800;display:none;flex-direction:column;align-items:flex-end;gap:8px">
+  <div id="fab-menu" style="display:none;flex-direction:column;gap:8px;align-items:flex-end;margin-bottom:8px">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="background:#13132b;color:#e8e8f0;font-size:12px;padding:5px 10px;border-radius:20px;border:1px solid #2d2d4e">Foto do Recibo</span>
+      <button onclick="fabAbrirFoto()" style="width:44px;height:44px;border-radius:50%;background:#A87BC9;border:none;color:#fff;font-size:20px;cursor:pointer;box-shadow:0 3px 10px rgba(168,123,201,.5)">📷</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="background:#13132b;color:#e8e8f0;font-size:12px;padding:5px 10px;border-radius:20px;border:1px solid #2d2d4e">Adicionar Gasto</span>
+      <button onclick="fabAbrirGasto()" style="width:44px;height:44px;border-radius:50%;background:#F28C8C;border:none;color:#fff;font-size:20px;cursor:pointer;box-shadow:0 3px 10px rgba(242,140,140,.5)">💸</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="background:#13132b;color:#e8e8f0;font-size:12px;padding:5px 10px;border-radius:20px;border:1px solid #2d2d4e">Adicionar Renda</span>
+      <button onclick="fabAbrirRenda()" style="width:44px;height:44px;border-radius:50%;background:#6DBE8C;border:none;color:#fff;font-size:20px;cursor:pointer;box-shadow:0 3px 10px rgba(109,190,140,.5)">💰</button>
+    </div>
+  </div>
+  <button id="fab-btn" onclick="toggleFab()" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#5B8DB8,#4FBDBA);border:none;color:#fff;font-size:26px;cursor:pointer;box-shadow:0 4px 16px rgba(91,141,184,.6);transition:transform .2s">+</button>
+</div>
+
+
+<!-- Modal Foto Recibo -->
+<div id="modal-foto" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#13132b;border-radius:20px 20px 0 0;border-top:1px solid #2d2d4e;padding:20px;z-index:900;box-shadow:0 -8px 30px rgba(0,0,0,.5);max-height:90vh;overflow-y:auto">
+  <div style="width:40px;height:4px;background:#2d2d4e;border-radius:2px;margin:0 auto 16px"></div>
+  <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;text-align:center">📷 Gasto por Foto</h3>
+
+  <!-- Área de foto -->
+  <div id="foto-preview-area" style="background:#0d0d1a;border:2px dashed #2d2d4e;border-radius:12px;padding:20px;text-align:center;margin-bottom:14px;cursor:pointer" onclick="document.getElementById('input-foto').click()">
+    <img id="foto-preview-img" style="display:none;max-width:100%;border-radius:8px;margin-bottom:10px"/>
+    <div id="foto-placeholder">
+      <div style="font-size:48px;margin-bottom:8px">📸</div>
+      <p style="color:#6060a0;font-size:13px">Toque para tirar foto ou escolher da galeria</p>
+      <p style="color:#4060a0;font-size:11px;margin-top:4px">Nota fiscal, recibo ou comprovante</p>
+    </div>
+  </div>
+  <input id="input-foto" type="file" accept="image/*" capture="environment" style="display:none" onchange="processarFoto(this)"/>
+
+  <!-- Resultado da análise -->
+  <div id="foto-resultado" style="display:none">
+    <div style="background:#0d1a10;border:1px solid #6DBE8C33;border-radius:10px;padding:12px;margin-bottom:14px">
+      <p style="font-size:12px;color:#6DBE8C;font-weight:700;margin-bottom:8px">✅ Dados identificados pela IA:</p>
+      <div id="foto-dados-encontrados" style="font-size:13px;color:#a0a0c0"></div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div>
+        <p class="txt-muted" style="margin-bottom:4px">Descrição</p>
+        <input id="foto-desc" placeholder="Ex: Supermercado" style="font-size:16px"/>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <p class="txt-muted" style="margin-bottom:4px">Valor (R$)</p>
+          <input id="foto-valor" type="number" placeholder="0,00" style="font-size:16px"/>
+        </div>
+        <div>
+          <p class="txt-muted" style="margin-bottom:4px">Categoria</p>
+          <select id="foto-cat" style="font-size:16px"></select>
+        </div>
+      </div>
+      <button onclick="confirmarGastoFoto()" style="padding:13px;background:linear-gradient(135deg,#A87BC9,#5B8DB8);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;font-family:inherit">💾 Confirmar e Salvar</button>
+    </div>
+  </div>
+
+  <div id="foto-loading" style="display:none;text-align:center;padding:20px">
+    <div style="font-size:40px;margin-bottom:12px">🤖</div>
+    <p style="color:#a0a0c0;font-size:14px">Analisando imagem com IA...</p>
+    <p style="color:#6060a0;font-size:12px;margin-top:4px">Identificando valor e estabelecimento</p>
+  </div>
+
+  <button onclick="fecharModaisRapidos()" style="width:100%;padding:10px;background:transparent;color:#6060a0;border:none;font-size:13px;cursor:pointer;font-family:inherit;margin-top:10px">Cancelar</button>
+</div>
+
+<!-- Modal gasto rápido -->
+<div id="modal-gasto-rapido" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#13132b;border-radius:20px 20px 0 0;border-top:1px solid #2d2d4e;padding:20px;z-index:900;box-shadow:0 -8px 30px rgba(0,0,0,.5)">
+  <div style="width:40px;height:4px;background:#2d2d4e;border-radius:2px;margin:0 auto 16px"></div>
+  <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;text-align:center">💸 Gasto Rápido</h3>
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <input id="qg-desc" placeholder="Descrição (ex: Almoço)" style="font-size:16px"/>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <input id="qg-valor" type="number" placeholder="Valor" style="font-size:16px"/>
+      <select id="qg-cat" style="font-size:16px"></select>
+    </div>
+    <button onclick="salvarGastoRapido()" style="padding:13px;background:linear-gradient(135deg,#F28C8C,#E07B54);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;font-family:inherit">Adicionar Gasto</button>
+    <button onclick="fecharModaisRapidos()" style="padding:10px;background:transparent;color:#6060a0;border:none;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
+  </div>
+</div>
+
+<!-- Modal renda rápida -->
+<div id="modal-renda-rapida" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#13132b;border-radius:20px 20px 0 0;border-top:1px solid #2d2d4e;padding:20px;z-index:900;box-shadow:0 -8px 30px rgba(0,0,0,.5)">
+  <div style="width:40px;height:4px;background:#2d2d4e;border-radius:2px;margin:0 auto 16px"></div>
+  <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;text-align:center">💰 Renda Rápida</h3>
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <input id="qr-desc" placeholder="Descrição (ex: Salário)" style="font-size:16px"/>
+    <input id="qr-valor" type="number" placeholder="Valor" style="font-size:16px"/>
+    <button onclick="salvarRendaRapida()" style="padding:13px;background:linear-gradient(135deg,#6DBE8C,#4FBDBA);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;font-family:inherit">Adicionar Renda</button>
+    <button onclick="fecharModaisRapidos()" style="padding:10px;background:transparent;color:#6060a0;border:none;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
+  </div>
+</div>
+<div id="fab-overlay" onclick="fecharModaisRapidos()" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:850"></div>
+
 </body>
 </html>
