@@ -1202,7 +1202,9 @@ function showSubAba(id) {
 // RENDER
 // ══════════════════════════════════════════════
 function render() {
-  renderMesSelect();
+  renderMesSelect();      // primeiro: popular o seletor
+  ajustarMesAtivo();      // depois: ajustar para mês com dados se necessário
+  renderMesSelect();      // atualizar seletor com mês ajustado
   renderAlertas();
   renderDashboard();
   renderLancamentos();
