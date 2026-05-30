@@ -965,35 +965,39 @@ async function loadFromCloud(uid) {
     }
     localStorage.setItem("last_uid", uid);
 
-    // Carregar da nuvem SEM apagar o state atual (dados locais ficam como fallback)
+    // Dados locais atuais (antes de ir para nuvem)
+    const localGastos = (state.gastos || []).length;
+    const localRendas = (state.rendas || []).length;
+    const temDadosLocais = localGastos > 0 || localRendas > 0;
+
+    // Buscar da nuvem
     const data = await fbLoadData(uid);
 
     if (data && data.gastos !== undefined) {
-      // Nuvem retornou dados — usar dados da nuvem
-      state = sanitizeState(data);
-      localStorage.setItem(STORE, JSON.stringify(state));
-    } else if (data === null && (!storedUid || storedUid !== uid)) {
-      // Conta REALMENTE nova (nunca teve dados na nuvem) — salvar estado atual
-      // MAS só se não há dados locais para proteger
-      const dadosLocais = localStorage.getItem(STORE);
-      if (!dadosLocais) {
+      const nuvemGastos = (data.gastos || []).length;
+      const nuvemRendas = (data.rendas || []).length;
+      const temDadosNuvem = nuvemGastos > 0 || nuvemRendas > 0;
+
+      if (temDadosNuvem) {
+        // Nuvem tem dados reais — usar nuvem
+        state = sanitizeState(data);
+        localStorage.setItem(STORE, JSON.stringify(state));
+      } else if (temDadosLocais) {
+        // Nuvem vazia mas local tem dados — subir local para nuvem
         await saveToCloud(uid);
+      } else {
+        // Ambos vazios — ok, conta nova
+        localStorage.setItem(STORE, JSON.stringify(state));
       }
-      // Se há dados locais, subir eles para a nuvem (não sobrescrever com vazio!)
-      else {
-        const localState = JSON.parse(dadosLocais);
-        if (localState && localState.gastos && localState.gastos.length > 0) {
-          state = sanitizeState(localState);
-          await saveToCloud(uid);
-        }
-      }
-      localStorage.setItem(STORE, JSON.stringify(state));
+    } else if (!data && temDadosLocais) {
+      // Nuvem não retornou dados mas local tem — subir local para nuvem
+      await saveToCloud(uid);
+    } else if (!data && !temDadosLocais) {
+      // Primeira vez — salvar estado vazio
+      await saveToCloud(uid);
     }
-    // Se nuvem retornou null mas storedUid === uid = dados podem estar na nuvem
-    // NÃO sobrescrever — manter dados locais como estão
   } catch(e) {
-    console.warn("Erro ao carregar da nuvem — mantendo dados locais:", e);
-    // Não apagar os dados! Manter o que está em state (carregado do localStorage)
+    console.warn("Erro ao sincronizar com nuvem — mantendo dados locais:", e);
   }
 }
 
@@ -1023,6 +1027,25 @@ function persist() {
 // ══════════════════════════════════════════════
 // HELPERS
 // ══════════════════════════════════════════════
+
+function ajustarMesAtivo() {
+  // Se o mês ativo não tem dados, ir para o mês mais recente com dados
+  const rm = gastosMes().length + rendasMes().length;
+  if (rm > 0) return; // mês atual já tem dados
+
+  // Encontrar mês com dados mais recente
+  const meses = allMeses().filter(m => {
+    const g = gastosDoMes(m).length;
+    const r = rendasDoMes(m).length;
+    return g > 0 || r > 0;
+  });
+  if (meses.length > 0) {
+    mesAtivo = meses[meses.length - 1]; // último mês com dados
+    const sel = document.getElementById("sel-mes");
+    if (sel) sel.value = mesAtivo;
+  }
+}
+
 function fmt(v) {
   return v.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 }
@@ -1190,17 +1213,25 @@ function render() {
 
 function renderMesSelect() {
   const sel = document.getElementById("sel-mes");
-  if (sel.options.length) return; // já populado
-  for (let i=0; i<36; i++) {
-    const d = new Date(2025, i, 1);
-    const val = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
-    const opt = document.createElement("option");
-    opt.value = val;
-    opt.textContent = MESES[d.getMonth()]+" "+d.getFullYear();
-    sel.appendChild(opt);
+  if (!sel) return;
+  // Sempre garantir que mesAtivo está no seletor
+  let found = false;
+  for (let i=0; i<sel.options.length; i++) {
+    if (sel.options[i].value === mesAtivo) { found = true; break; }
+  }
+  if (!found || sel.options.length === 0) {
+    sel.innerHTML = "";
+    for (let i=0; i<36; i++) {
+      const d = new Date(2025, i, 1);
+      const val = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+      const opt = document.createElement("option");
+      opt.value = val;
+      opt.textContent = MESES[d.getMonth()]+" "+d.getFullYear();
+      sel.appendChild(opt);
+    }
+    sel.onchange = function() { mesAtivo = this.value; render(); };
   }
   sel.value = mesAtivo;
-  sel.onchange = function() { mesAtivo = this.value; render(); };
 }
 
 function renderDashboard() {
