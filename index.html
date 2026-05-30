@@ -937,18 +937,17 @@ function sanitizeState(s) {
 
 function load() {
   try {
-    const lastUid    = localStorage.getItem("last_uid");
-    const savedToken = localStorage.getItem("fb_token");
     const savedUid   = localStorage.getItem("fb_uid");
-    // Carregar se houver token E dados pertencentes ao mesmo usuário
-    if (savedToken && lastUid && savedUid && lastUid === savedUid) {
-      const s = localStorage.getItem(STORE);
-      if (s) {
-        const parsed = JSON.parse(s);
-        if (parsed && typeof parsed === "object") {
-          state = sanitizeState(parsed);
-          return;
-        }
+    const lastUid    = localStorage.getItem("last_uid");
+    const s          = localStorage.getItem(STORE);
+
+    if (s) {
+      const parsed = JSON.parse(s);
+      if (parsed && typeof parsed === "object") {
+        // Carregar dados locais independente do token
+        // (token pode ter expirado mas dados ainda são válidos)
+        state = sanitizeState(parsed);
+        return;
       }
     }
   } catch(_) {}
@@ -970,15 +969,28 @@ async function loadFromCloud(uid) {
     const data = await fbLoadData(uid);
 
     if (data && data.gastos !== undefined) {
-      // Nuvem retornou dados — usar dados da nuvem (são os mais atualizados)
+      // Nuvem retornou dados — usar dados da nuvem
       state = sanitizeState(data);
       localStorage.setItem(STORE, JSON.stringify(state));
-    } else if (!storedUid || storedUid !== uid) {
-      // Conta nova ou uid diferente sem dados na nuvem — salvar estado atual
-      await saveToCloud(uid);
+    } else if (data === null && (!storedUid || storedUid !== uid)) {
+      // Conta REALMENTE nova (nunca teve dados na nuvem) — salvar estado atual
+      // MAS só se não há dados locais para proteger
+      const dadosLocais = localStorage.getItem(STORE);
+      if (!dadosLocais) {
+        await saveToCloud(uid);
+      }
+      // Se há dados locais, subir eles para a nuvem (não sobrescrever com vazio!)
+      else {
+        const localState = JSON.parse(dadosLocais);
+        if (localState && localState.gastos && localState.gastos.length > 0) {
+          state = sanitizeState(localState);
+          await saveToCloud(uid);
+        }
+      }
       localStorage.setItem(STORE, JSON.stringify(state));
     }
-    // Se nuvem falhou mas temos dados locais, manter os dados locais (não apagar)
+    // Se nuvem retornou null mas storedUid === uid = dados podem estar na nuvem
+    // NÃO sobrescrever — manter dados locais como estão
   } catch(e) {
     console.warn("Erro ao carregar da nuvem — mantendo dados locais:", e);
     // Não apagar os dados! Manter o que está em state (carregado do localStorage)
@@ -3326,6 +3338,7 @@ async function fbSignIn(email, senha) {
 
 // Firestore: salvar dados
 async function fbSaveData(uid, data) {
+  if (!fbToken) fbToken = localStorage.getItem("fb_token");
   if (!fbToken) return;
   // Converter state para formato Firestore
   const fields = { dados: { stringValue: JSON.stringify(data) } };
@@ -3338,6 +3351,8 @@ async function fbSaveData(uid, data) {
 
 // Firestore: carregar dados
 async function fbLoadData(uid) {
+  // Garantir que fbToken está carregado
+  if (!fbToken) fbToken = localStorage.getItem("fb_token");
   if (!fbToken) return null;
   const r = await fetch(FB_DB_URL + "/usuarios/" + uid, {
     headers:{"Authorization":"Bearer " + fbToken}
