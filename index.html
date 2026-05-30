@@ -3111,6 +3111,10 @@ function mostrarApp(user) {
   const email = user.email || "";
 
   if (userBar)    { userBar.style.display = "flex"; userBar.style.position = "relative"; }
+  if (userAvatar) { userAvatar.textContent = getIniciais(nome); userAvatar.style.background = getCorAvatar(nome); }
+  if (menuNome)   menuNome.textContent  = nome;
+  if (menuEmail)  menuEmail.textContent = email;
+  mostrarFab();
   // Mostrar instruções na primeira visita
   setTimeout(verificarInstrucoes, 500);
   carregarTema();
