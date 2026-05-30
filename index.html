@@ -3613,12 +3613,14 @@ function fabAbrirRenda() {
 }
 
 function fecharModaisRapidos() {
-  document.getElementById("modal-gasto-rapido").style.display = "none";
-  document.getElementById("modal-renda-rapida").style.display = "none";
-  document.getElementById("fab-overlay").style.display = "none";
+  ["modal-gasto-rapido","modal-renda-rapida","modal-foto","fab-overlay"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "none";
+  });
   const menu = document.getElementById("fab-menu");
   const btn  = document.getElementById("fab-btn");
-  if (menu) { menu.style.display = "none"; btn.textContent = "+"; btn.style.transform = "rotate(0)"; }
+  if (menu) { menu.style.display = "none"; }
+  if (btn)  { btn.textContent = "+"; btn.style.transform = "rotate(0)"; }
 }
 
 function salvarGastoRapido() {
