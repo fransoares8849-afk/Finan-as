@@ -3496,18 +3496,39 @@ async function processarFoto(input) {
     document.getElementById("foto-loading").innerHTML = `
       <div style="font-size:40px;margin-bottom:12px">🔍</div>
       <p style="color:#a0a0c0;font-size:14px">Lendo texto do recibo...</p>
+      <p style="color:#6060a0;font-size:11px;margin-top:4px">Tire a foto na posição vertical para melhor resultado</p>
       <p id="ocr-progress" style="color:#6060a0;font-size:12px;margin-top:4px">0%</p>`;
     document.getElementById("foto-resultado").style.display = "none";
 
     try {
-      // OCR local com Tesseract.js
-      const { data: { text } } = await Tesseract.recognize(base64, "por", {
+      // Pré-processar imagem: aumentar contraste e converter para escala de cinza
+      const canvas = document.createElement("canvas");
+      const ctxC = canvas.getContext("2d");
+      const imgEl = document.getElementById("foto-preview-img");
+      canvas.width = imgEl.naturalWidth || 1200;
+      canvas.height = imgEl.naturalHeight || 1600;
+      ctxC.drawImage(imgEl, 0, 0, canvas.width, canvas.height);
+      
+      // Aumentar contraste para melhorar OCR
+      const imageData = ctxC.getImageData(0, 0, canvas.width, canvas.height);
+      const d = imageData.data;
+      for (let i = 0; i < d.length; i += 4) {
+        const avg = (d[i] + d[i+1] + d[i+2]) / 3;
+        const val = avg > 128 ? 255 : 0; // binarizar
+        d[i] = d[i+1] = d[i+2] = val;
+      }
+      ctxC.putImageData(imageData, 0, 0);
+      const processedBase64 = canvas.toDataURL("image/png");
+
+      // OCR local com Tesseract.js - configurar para detectar rotação
+      const { data: { text } } = await Tesseract.recognize(processedBase64, "por+eng", {
         logger: m => {
           if (m.status === "recognizing text") {
             const prog = document.getElementById("ocr-progress");
             if (prog) prog.textContent = Math.round(m.progress * 100) + "%";
           }
-        }
+        },
+        tessedit_pageseg_mode: "1", // auto com OSD
       });
 
       // Extrair valor total do texto
@@ -3517,11 +3538,17 @@ async function processarFoto(input) {
       // PRIORIDADE 1: padrões exatos de total (excluindo tributos)
       const padroesPrioritarios = [
         /valor\s*a\s*pagar\s*r?\$?\s*:?\s*(\d{1,6}[\.,]\d{2})/i,
+        /val\.?\s*pago\s*r?\$?\s*:?\s*(\d{1,6}[\.,]\d{2})/i,
+        /vl\.?\s*pago\s*r?\$?\s*:?\s*(\d{1,6}[\.,]\d{2})/i,
         /total\s*a\s*pagar\s*r?\$?\s*:?\s*(\d{1,6}[\.,]\d{2})/i,
         /valor\s*pago\s*r?\$?\s*:?\s*(\d{1,6}[\.,]\d{2})/i,
+        /valor\s*cobrado\s*r?\$?\s*:?\s*(\d{1,6}[\.,]\d{2})/i,
         /^total\s*r?\$?\s*:?\s*(\d{1,6}[\.,]\d{2})/im,
         /total\s*:?\s*r?\$?\s*(\d{1,6}[\.,]\d{2})/i,
         /valor\s*recebido\s*r?\$?\s*:?\s*(\d{1,6}[\.,]\d{2})/i,
+        /pagar\s*r?\$?\s*(\d{1,6}[\.,]\d{2})/i,
+        /pos\s+(\d{1,6}[\.,]\d{2})/i,
+        /subtotal\s*r?\$?\s*:?\s*(\d{1,6}[\.,]\d{2})/i,
       ];
 
       for (const regex of padroesPrioritarios) {
