@@ -14,6 +14,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="Finanças"/>
 <link rel="manifest" href="manifest.json"/>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <link rel="apple-touch-icon" href="icon-192.png"/>
 <!-- Firebase carregado no final do body -->
 <script id="firebase-init-placeholder">
@@ -3484,7 +3485,6 @@ async function processarFoto(input) {
   const file = input.files[0];
   if (!file) return;
 
-  // Mostrar preview
   const reader = new FileReader();
   reader.onload = async (e) => {
     const base64 = e.target.result;
@@ -3492,72 +3492,81 @@ async function processarFoto(input) {
     img.src = base64;
     img.style.display = "block";
     document.getElementById("foto-placeholder").style.display = "none";
-
-    // Mostrar loading
     document.getElementById("foto-loading").style.display = "block";
+    document.getElementById("foto-loading").innerHTML = `
+      <div style="font-size:40px;margin-bottom:12px">🔍</div>
+      <p style="color:#a0a0c0;font-size:14px">Lendo texto do recibo...</p>
+      <p id="ocr-progress" style="color:#6060a0;font-size:12px;margin-top:4px">0%</p>`;
     document.getElementById("foto-resultado").style.display = "none";
 
     try {
-      // Chamar Claude API para analisar a imagem
-      const base64Data = base64.split(",")[1];
-      const mediaType  = file.type || "image/jpeg";
-
-      const resp = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 300,
-          messages: [{
-            role: "user",
-            content: [
-              { type: "image", source: { type: "base64", media_type: mediaType, data: base64Data } },
-              { type: "text", text: `Analise este recibo/nota fiscal e extraia as informações. Responda APENAS em JSON válido sem markdown:
-{"valor": 0.00, "estabelecimento": "nome do local", "categoria": "uma das opções: Moradia, Alimentação, Transporte, Saúde, Lazer, Educação, Vestuário, Outros", "data": "YYYY-MM-DD ou null"}
-
-Se não encontrar alguma informação, use null. Para valor use número decimal com ponto.` }
-            ]
-          }]
-        })
+      // OCR local com Tesseract.js
+      const { data: { text } } = await Tesseract.recognize(base64, "por", {
+        logger: m => {
+          if (m.status === "recognizing text") {
+            const prog = document.getElementById("ocr-progress");
+            if (prog) prog.textContent = Math.round(m.progress * 100) + "%";
+          }
+        }
       });
 
-      const data = await resp.json();
-      const texto = data.content && data.content[0] ? data.content[0].text : "";
+      // Extrair valor total do texto
+      const linhas = text.split("\n").map(l => l.trim()).filter(l => l);
+      let valor = null, estabelecimento = null;
 
-      let resultado = {};
-      try {
-        const clean = texto.replace(/```json|```/g,"").trim();
-        resultado = JSON.parse(clean);
-      } catch(_) {
-        // Se não parsear, tentar extrair valores com regex
-        const valorMatch = texto.match(/\d+[,.]\d{2}/);
-        if (valorMatch) resultado.valor = parseFloat(valorMatch[0].replace(",","."));
-        resultado.estabelecimento = "Compra";
-        resultado.categoria = "Alimentação";
-      }
-
-      // Preencher formulário
-      document.getElementById("foto-desc").value  = resultado.estabelecimento || "";
-      document.getElementById("foto-valor").value = resultado.valor || "";
-      if (resultado.categoria) {
-        const sel = document.getElementById("foto-cat");
-        for (let i=0; i<sel.options.length; i++) {
-          if (sel.options[i].value.toLowerCase().includes(resultado.categoria.toLowerCase())) {
-            sel.selectedIndex = i; break;
-          }
+      // Procurar TOTAL, VALOR TOTAL, SUBTOTAL etc
+      const regexTotal = /(?:total|valor\s*total|subtotal|valor\s*recebido|pagou)[^\d]*(\d+[\.,]\d{2})/i;
+      for (const linha of linhas) {
+        const m = linha.match(regexTotal);
+        if (m) {
+          valor = parseFloat(m[1].replace(",", "."));
+          break;
         }
       }
 
-      // Mostrar dados encontrados
+      // Se não achou total, pegar o maior valor na nota
+      if (!valor) {
+        const valores = [];
+        const regexValor = /(\d{1,4}[\.,]\d{2})/g;
+        let mv;
+        while ((mv = regexValor.exec(text)) !== null) {
+          const v = parseFloat(mv[1].replace(",", "."));
+          if (v > 0 && v < 100000) valores.push(v);
+        }
+        if (valores.length) valor = Math.max(...valores);
+      }
+
+      // Estabelecimento: geralmente está na primeira linha
+      estabelecimento = linhas[0] || linhas[1] || "Compra";
+      // Limpar caracteres estranhos
+      estabelecimento = estabelecimento.replace(/[^a-zA-ZÀ-ú0-9 ]/g, "").trim().slice(0, 40);
+      if (!estabelecimento || estabelecimento.length < 3) estabelecimento = "Compra";
+
+      // Categoria automática baseada no texto
+      const textoLower = text.toLowerCase();
+      let categoria = "Outros";
+      if (/mercado|supermercado|aliment|restaurante|lanche|padaria|açougue|peixe|fruta|verdura/i.test(textoLower)) categoria = "Alimentação";
+      else if (/farmácia|farmacia|remédio|remedio|médico|medico|hospital|clínica|clinica/i.test(textoLower)) categoria = "Saúde";
+      else if (/posto|combustível|combustivel|estacionamento|uber|99|táxi|taxi|ônibus|onibus/i.test(textoLower)) categoria = "Transporte";
+      else if (/roupa|vestuário|vestuario|calçado|calcado|moda/i.test(textoLower)) categoria = "Vestuário";
+      else if (/lazer|cinema|parque|show|entretenimento|diversão/i.test(textoLower)) categoria = "Lazer";
+
+      // Preencher formulário
+      document.getElementById("foto-desc").value  = estabelecimento;
+      document.getElementById("foto-valor").value = valor ? valor.toFixed(2) : "";
+
+      const sel = document.getElementById("foto-cat");
+      for (let i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].value === categoria) { sel.selectedIndex = i; break; }
+      }
+
+      // Mostrar resultados
       const partes = [];
-      if (resultado.valor)          partes.push(`💰 Valor: <b>R$ ${resultado.valor}</b>`);
-      if (resultado.estabelecimento) partes.push(`🏪 Local: <b>${resultado.estabelecimento}</b>`);
-      if (resultado.categoria)      partes.push(`🏷️ Categoria sugerida: <b>${resultado.categoria}</b>`);
-      if (resultado.data)           partes.push(`📅 Data: <b>${resultado.data}</b>`);
+      if (valor)          partes.push(`💰 Valor encontrado: <b>R$ ${valor.toFixed(2).replace(".", ",")}</b>`);
+      if (estabelecimento) partes.push(`🏪 Estabelecimento: <b>${estabelecimento}</b>`);
+      partes.push(`🏷️ Categoria sugerida: <b>${categoria}</b>`);
 
-      document.getElementById("foto-dados-encontrados").innerHTML =
-        partes.length ? partes.join("<br>") : "Preencha os dados manualmente abaixo.";
-
+      document.getElementById("foto-dados-encontrados").innerHTML = partes.join("<br>");
       document.getElementById("foto-loading").style.display = "none";
       document.getElementById("foto-resultado").style.display = "block";
 
@@ -3565,7 +3574,7 @@ Se não encontrar alguma informação, use null. Para valor use número decimal 
       document.getElementById("foto-loading").style.display = "none";
       document.getElementById("foto-resultado").style.display = "block";
       document.getElementById("foto-dados-encontrados").innerHTML =
-        "⚠️ Não foi possível analisar automaticamente. Preencha manualmente.";
+        "⚠️ Não foi possível ler o texto. Preencha manualmente.";
     }
   };
   reader.readAsDataURL(file);
