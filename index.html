@@ -3163,20 +3163,41 @@ function instalarApp() {
         <div style="font-size:12px;font-weight:700;color:#6060a0">GRÁTIS</div>
         <div style="font-size:12px;font-weight:700;color:#E8B84B">PREMIUM</div>
       </div>
-      ${[
-        ["Gastos por mês","10","Ilimitado"],
-        ["Rendas","5","Ilimitado"],
-        ["Histórico","3 meses","Todo período"],
-        ["Investimentos","❌","✅"],
-        ["Sync na nuvem","❌","✅"],
-        ["Notificações push","❌","✅"],
-        ["Backup automático","❌","✅"],
-      ].map(([feat, free, prem]) => `
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;padding:8px 0;border-top:1px solid #1e1e3a;align-items:center">
-          <p style="font-size:12px;color:#a0a0c0">${feat}</p>
-          <p style="font-size:12px;color:#6060a0;text-align:center">${free}</p>
-          <p style="font-size:12px;color:#6DBE8C;text-align:center">${prem}</p>
-        </div>`).join("")}
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;padding:8px 0;border-top:1px solid #1e1e3a;align-items:center">
+        <p style="font-size:12px;color:#a0a0c0">Gastos/mês</p>
+        <p style="font-size:12px;color:#6060a0;text-align:center">10</p>
+        <p style="font-size:12px;color:#6DBE8C;text-align:center">Ilimitado</p>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;padding:8px 0;border-top:1px solid #1e1e3a;align-items:center">
+        <p style="font-size:12px;color:#a0a0c0">Rendas</p>
+        <p style="font-size:12px;color:#6060a0;text-align:center">5</p>
+        <p style="font-size:12px;color:#6DBE8C;text-align:center">Ilimitado</p>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;padding:8px 0;border-top:1px solid #1e1e3a;align-items:center">
+        <p style="font-size:12px;color:#a0a0c0">Histórico</p>
+        <p style="font-size:12px;color:#6060a0;text-align:center">3 meses</p>
+        <p style="font-size:12px;color:#6DBE8C;text-align:center">Todo período</p>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;padding:8px 0;border-top:1px solid #1e1e3a;align-items:center">
+        <p style="font-size:12px;color:#a0a0c0">Investimentos</p>
+        <p style="font-size:12px;color:#6060a0;text-align:center">❌</p>
+        <p style="font-size:12px;color:#6DBE8C;text-align:center">✅</p>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;padding:8px 0;border-top:1px solid #1e1e3a;align-items:center">
+        <p style="font-size:12px;color:#a0a0c0">Nuvem</p>
+        <p style="font-size:12px;color:#6060a0;text-align:center">❌</p>
+        <p style="font-size:12px;color:#6DBE8C;text-align:center">✅</p>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;padding:8px 0;border-top:1px solid #1e1e3a;align-items:center">
+        <p style="font-size:12px;color:#a0a0c0">Notificações</p>
+        <p style="font-size:12px;color:#6060a0;text-align:center">❌</p>
+        <p style="font-size:12px;color:#6DBE8C;text-align:center">✅</p>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;padding:8px 0;border-top:1px solid #1e1e3a;align-items:center">
+        <p style="font-size:12px;color:#a0a0c0">Backup auto</p>
+        <p style="font-size:12px;color:#6060a0;text-align:center">❌</p>
+        <p style="font-size:12px;color:#6DBE8C;text-align:center">✅</p>
+      </div>
     </div>
 
     <!-- Preço -->
