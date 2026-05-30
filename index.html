@@ -104,15 +104,80 @@ h2{font-size:18px;font-weight:700;margin-bottom:16px}
 }
 
 /* TEMA CLARO */
-body.tema-claro { background:#f0f2f8; color:#1a1a2e; }
-body.tema-claro .card { background:#fff; border-color:#dde2f0; }
-body.tema-claro input, body.tema-claro select { background:#f8f9ff; border-color:#dde2f0; color:#1a1a2e; }
-body.tema-claro #user-bar, body.tema-claro #app-wrapper > div[style*="background:#13132b"] { background:#fff !important; border-color:#dde2f0 !important; }
-body.tema-claro .tab { color:#4a5568; }
-body.tema-claro .tab.on { background:#fff; color:#1a1a2e; }
-body.tema-claro .txt-muted { color:#718096; }
-body.tema-claro .row-item { background:#fff; border-color:#dde2f0; }
-body.tema-claro #tela-login { background:#f0f2f8; }
+body.tema-claro {
+  background: #f5f6fa;
+  color: #1a1a2e;
+}
+body.tema-claro .card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+body.tema-claro input,
+body.tema-claro select {
+  background: #f8faff;
+  border-color: #cbd5e0;
+  color: #1a1a2e;
+}
+body.tema-claro input::placeholder { color: #a0aec0; }
+body.tema-claro #user-bar {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+body.tema-claro #header-tabs {
+  background: #f0f2f8;
+}
+body.tema-claro .tab {
+  color: #4a5568;
+  background: transparent;
+}
+body.tema-claro .tab.on {
+  background: #ffffff;
+  color: #1a1a2e;
+  box-shadow: 0 1px 4px rgba(0,0,0,.1);
+}
+body.tema-claro .txt-muted { color: #718096; }
+body.tema-claro .row-item {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+}
+body.tema-claro #tela-login { background: #f5f6fa; }
+body.tema-claro #tela-login input {
+  background: #ffffff;
+  border-color: #cbd5e0;
+  color: #1a1a2e;
+}
+body.tema-claro #modal-gasto-rapido,
+body.tema-claro #modal-renda-rapida,
+body.tema-claro #modal-foto,
+body.tema-claro #modal-upgrade {
+  background: #ffffff;
+  border-top-color: #e2e8f0;
+}
+body.tema-claro .btn-gray {
+  background: #edf2f7;
+  color: #4a5568;
+  border-color: #e2e8f0;
+}
+body.tema-claro #fab-container button {
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,.15));
+}
+body.tema-claro .section { background: #f5f6fa; }
+body.tema-claro [style*="background:#0d0d1a"],
+body.tema-claro [style*="background:#13132b"],
+body.tema-claro [style*="background:#1a1a3a"],
+body.tema-claro [style*="background:#1e1e3a"] {
+  background: #f0f4ff !important;
+  border-color: #e2e8f0 !important;
+}
+body.tema-claro [style*="color:#e8e8f0"],
+body.tema-claro [style*="color:#a0a0c0"] {
+  color: #2d3748 !important;
+}
+body.tema-claro [style*="color:#6060a0"] { color: #718096 !important; }
+body.tema-claro [style*="background:#2d2d4e"] { background: #e2e8f0 !important; }
 
 </style>
 </head>
@@ -1301,9 +1366,9 @@ function render() {
   renderResumoRendas();
   renderEvolucao();
   renderPlano();
-  // Score só renderiza se a aba estiver visível
   const secScore = document.getElementById("sec-score");
-  if (secScore && secScore.style.display !== "none") renderScore();
+  if (secScore && secScore.classList.contains("on")) renderScore();
+  mostrarFab(); // garantir FAB sempre visível
 }
 
 function renderMesSelect() {
