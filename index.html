@@ -157,7 +157,11 @@ h2{font-size:18px;font-weight:700;margin-bottom:16px}
       <p id="user-menu-email" style="font-size:11px;color:#6060a0;line-height:1.2"></p>
     </div>
   </div>
-  <button onclick="fazerLogout()" style="background:#1e1e3a;border:1px solid #2d2d4e;border-radius:8px;color:#F28C8C;font-size:12px;padding:6px 14px;cursor:pointer;font-family:inherit;font-weight:600;flex-shrink:0">Sair</button>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button onclick="mostrarUpgrade('badge')" id="btn-ver-planos" style="background:linear-gradient(135deg,#E8B84B,#E07B54);border:none;border-radius:8px;color:#fff;font-size:11px;padding:6px 12px;cursor:pointer;font-family:inherit;font-weight:700;display:none">⭐ Premium</button>
+    <button onclick="mostrarUpgrade('geral')" id="btn-upgrade-header" style="background:#1e1e3a;border:1px solid #E8B84B44;border-radius:8px;color:#E8B84B;font-size:11px;padding:6px 12px;cursor:pointer;font-family:inherit;font-weight:600">🚀 Upgrade</button>
+    <button onclick="fazerLogout()" style="background:#1e1e3a;border:1px solid #2d2d4e;border-radius:8px;color:#F28C8C;font-size:12px;padding:6px 14px;cursor:pointer;font-family:inherit;font-weight:600;flex-shrink:0">Sair</button>
+  </div>
 </div>
 
 
@@ -1663,6 +1667,7 @@ function renderPlano() {
 function setFiltCat(cat) { filtCat=cat; renderLancamentos(); }
 
 function salvarGasto() {
+  if (!verificarLimite("gasto")) return;
   const desc    = document.getElementById("g-desc").value.trim();
   const valor   = parseFloat(document.getElementById("g-valor").value);
   const cat     = document.getElementById("g-cat").value;
@@ -1749,6 +1754,7 @@ function delGasto(id) {
 }
 
 function salvarRenda() {
+  if (!verificarLimite("renda")) return;
   const desc   = document.getElementById("r-desc").value.trim();
   const valor  = parseFloat(document.getElementById("r-valor").value);
   const cat    = document.getElementById("r-cat").value;
@@ -3001,7 +3007,8 @@ function mostrarUpgrade(motivo) {
     invest:  "Investimentos é um recurso Premium. Faça upgrade para desbloquear!",
     notif:   "Notificações push são um recurso Premium.",
     nuvem:   "Sincronização na nuvem é um recurso Premium.",
-    badge:   "Gerencie sua assinatura Premium."
+    badge:   "Gerencie sua assinatura Premium ⭐",
+    geral:   "Desbloqueie todos os recursos ilimitados por apenas R$ 14,90/mês!"
   };
   const el = document.getElementById("upgrade-motivo");
   if (el) el.textContent = msgs[motivo] || "Desbloqueie recursos ilimitados";
@@ -3070,13 +3077,19 @@ async function ativarPremiumLocal() {
 }
 
 function atualizarBadgePremium() {
+  const prem = isPremium();
+  // Badge flutuante
   const badge = document.getElementById("badge-premium");
-  if (badge) badge.style.display = isPremium() ? "flex" : "none";
-  // Mostrar badge de usuário premium no avatar
+  if (badge) badge.style.display = "none"; // esconder badge flutuante
+  // Botões no header
+  const btnPremium  = document.getElementById("btn-ver-planos");
+  const btnUpgrade  = document.getElementById("btn-upgrade-header");
+  if (btnPremium)  btnPremium.style.display  = prem ? "block" : "none";
+  if (btnUpgrade)  btnUpgrade.style.display  = prem ? "none"  : "block";
+  // Avatar dourado para premium
   const avatar = document.getElementById("user-avatar");
-  if (avatar && isPremium()) {
+  if (avatar && prem) {
     avatar.style.background = "linear-gradient(135deg,#E8B84B,#E07B54)";
-    avatar.title = "Conta Premium ⭐";
   }
 }
 
