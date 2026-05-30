@@ -4057,8 +4057,11 @@ if (fbToken && fbUserId) {
 
 <!-- Modal Foto Recibo -->
 <div id="modal-foto" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#13132b;border-radius:20px 20px 0 0;border-top:1px solid #2d2d4e;padding:20px;z-index:900;box-shadow:0 -8px 30px rgba(0,0,0,.5);max-height:90vh;overflow-y:auto">
-  <div style="width:40px;height:4px;background:#2d2d4e;border-radius:2px;margin:0 auto 16px"></div>
-  <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;text-align:center">📷 Gasto por Foto</h3>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div style="width:40px;height:4px;background:#2d2d4e;border-radius:2px"></div>
+    <h3 style="font-size:15px;font-weight:700">📷 Gasto por Foto</h3>
+    <button onclick="fecharModaisRapidos()" style="background:#1e1e3a;border:1px solid #2d2d4e;border-radius:50%;width:32px;height:32px;color:#a0a0c0;font-size:18px;cursor:pointer;font-family:inherit;line-height:1">×</button>
+  </div>
 
   <!-- Área de foto -->
   <div id="foto-preview-area" style="background:#0d0d1a;border:2px dashed #2d2d4e;border-radius:12px;padding:20px;text-align:center;margin-bottom:14px;cursor:pointer" onclick="document.getElementById('input-foto').click()">
@@ -4103,13 +4106,15 @@ if (fbToken && fbUserId) {
     <p style="color:#6060a0;font-size:12px;margin-top:4px">Identificando valor e estabelecimento</p>
   </div>
 
-  <button onclick="fecharModaisRapidos()" style="width:100%;padding:10px;background:transparent;color:#6060a0;border:none;font-size:13px;cursor:pointer;font-family:inherit;margin-top:10px">Cancelar</button>
+  <button onclick="fecharModaisRapidos()" style="width:100%;padding:12px;background:#1e1e3a;color:#F28C8C;border:1px solid #F28C8C33;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:10px">✕ Fechar</button>
 </div>
 
 <!-- Modal gasto rápido -->
 <div id="modal-gasto-rapido" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#13132b;border-radius:20px 20px 0 0;border-top:1px solid #2d2d4e;padding:20px;z-index:900;box-shadow:0 -8px 30px rgba(0,0,0,.5)">
-  <div style="width:40px;height:4px;background:#2d2d4e;border-radius:2px;margin:0 auto 16px"></div>
-  <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;text-align:center">💸 Gasto Rápido</h3>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <h3 style="font-size:15px;font-weight:700">💸 Gasto Rápido</h3>
+    <button onclick="fecharModaisRapidos()" style="background:#1e1e3a;border:1px solid #2d2d4e;border-radius:50%;width:32px;height:32px;color:#a0a0c0;font-size:18px;cursor:pointer;line-height:1">×</button>
+  </div>
   <div style="display:flex;flex-direction:column;gap:10px">
     <input id="qg-desc" placeholder="Descrição (ex: Almoço)" style="font-size:16px"/>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -4123,8 +4128,10 @@ if (fbToken && fbUserId) {
 
 <!-- Modal renda rápida -->
 <div id="modal-renda-rapida" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#13132b;border-radius:20px 20px 0 0;border-top:1px solid #2d2d4e;padding:20px;z-index:900;box-shadow:0 -8px 30px rgba(0,0,0,.5)">
-  <div style="width:40px;height:4px;background:#2d2d4e;border-radius:2px;margin:0 auto 16px"></div>
-  <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;text-align:center">💰 Renda Rápida</h3>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <h3 style="font-size:15px;font-weight:700">💰 Renda Rápida</h3>
+    <button onclick="fecharModaisRapidos()" style="background:#1e1e3a;border:1px solid #2d2d4e;border-radius:50%;width:32px;height:32px;color:#a0a0c0;font-size:18px;cursor:pointer;line-height:1">×</button>
+  </div>
   <div style="display:flex;flex-direction:column;gap:10px">
     <input id="qr-desc" placeholder="Descrição (ex: Salário)" style="font-size:16px"/>
     <input id="qr-valor" type="number" placeholder="Valor" style="font-size:16px"/>
