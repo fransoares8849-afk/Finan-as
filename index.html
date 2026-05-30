@@ -2945,7 +2945,9 @@ async function authComEmail() {
     }
     const user = {displayName: fbUserName, email: fbUserEmail, uid: fbUserId};
     mostrarApp(user);
+    // Ao fazer LOGIN: carregar da nuvem (pode estar em outro dispositivo)
     await loadFromCloud(fbUserId);
+    ajustarMesAtivo();
     render();
   } catch(e) {
     mostrarErroAuth(e.message || "Erro desconhecido. Tente novamente.");
