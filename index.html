@@ -58,10 +58,10 @@ a{color:inherit;text-decoration:none}
 .btn-green{background:linear-gradient(135deg,#6DBE8C,#4FBDBA);color:#0d0d1a}
 .btn-gray{background:#1e1e3a;color:#a0a0c0;border:1px solid #2d2d4e}
 .btn-danger{background:rgba(255,80,80,.1);color:#ff6060;border:1px solid rgba(255,80,80,.2)}
-input,select{background:#0d0d1a;border:1px solid #2d2d4e;border-radius:9px;color:#e8e8f0;font-family:inherit;font-size:13px;padding:9px 12px;width:100%;outline:none;transition:border-color .2s}
+input,select{background:#0d0d1a;border:1px solid #2d2d4e;border-radius:9px;color:#e8e8f0;font-family:inherit;font-size:16px;padding:11px 14px;width:100%;outline:none;transition:border-color .2s}
 input:focus,select:focus{border-color:#5b8db8}
 select option{background:#1a1a2e}
-.tab{cursor:pointer;padding:8px 16px;border-radius:9px;font-weight:600;font-size:13px;border:1px solid transparent;background:transparent;color:#6060a0;font-family:inherit;transition:all .2s}
+.tab{cursor:pointer;padding:9px 14px;border-radius:9px;font-weight:600;font-size:14px;border:1px solid transparent;background:transparent;color:#6060a0;font-family:inherit;transition:all .2s}
 .tab.on{background:#1e1e3a;border-color:#2d2d4e;color:#e8e8f0}
 .badge{display:inline-block;padding:2px 9px;border-radius:14px;font-size:11px;font-weight:600}
 .pbar{height:9px;background:#1e1e3a;border-radius:6px;overflow:hidden;margin-top:8px}
@@ -71,7 +71,7 @@ select option{background:#1a1a2e}
 .g3{grid-template-columns:1fr 1fr 1fr}
 .g6{grid-template-columns:repeat(6,1fr)}
 .section{display:none}.section.on{display:block}
-.row-item{background:#13132b;border:1px solid #1e1e3a;border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;transition:transform .15s,border-color .2s;position:relative;overflow:hidden}
+.row-item{background:#13132b;border:1px solid #1e1e3a;border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;transition:transform .15s,border-color .2s;position:relative;overflow:hidden}
 .row-item:hover{transform:translateY(-1px)}
 .toast{position:fixed;bottom:22px;right:22px;padding:11px 18px;border-radius:11px;font-weight:600;font-size:13px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.6);display:none}
 .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:1000;align-items:center;justify-content:center}
@@ -94,7 +94,7 @@ h2{font-size:18px;font-weight:700;margin-bottom:16px}
 .txt-green{color:#6DBE8C}
 .txt-red{color:#F28C8C}
 .txt-blue{color:#5B8DB8}
-.kpi-val{font-size:20px;font-weight:700;margin-top:5px}
+.kpi-val{font-size:22px;font-weight:700;margin-top:6px}
 .kpi-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:#6060a0}
 @media(max-width:650px){
   .g2,.g3,.g6{grid-template-columns:1fr}
@@ -122,15 +122,15 @@ h2{font-size:18px;font-weight:700;margin-bottom:16px}
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
       <div id="campo-nome" style="display:none">
         <p style="font-size:12px;color:#6060a0;margin-bottom:4px">Nome</p>
-        <input id="auth-nome" type="text" placeholder="Seu nome" style="background:#13132b;border:1px solid #2d2d4e;border-radius:10px;color:#e8e8f0;font-family:inherit;font-size:14px;padding:12px 14px;width:100%;outline:none"/>
+        <input id="auth-nome" type="text" placeholder="Seu nome" style="background:#13132b;border:1px solid #2d2d4e;border-radius:10px;color:#e8e8f0;font-family:inherit;font-size:16px;padding:13px 14px;width:100%;outline:none"/>
       </div>
       <div>
         <p style="font-size:12px;color:#6060a0;margin-bottom:4px">Email</p>
-        <input id="auth-email" type="email" placeholder="seu@email.com" style="background:#13132b;border:1px solid #2d2d4e;border-radius:10px;color:#e8e8f0;font-family:inherit;font-size:14px;padding:12px 14px;width:100%;outline:none"/>
+        <input id="auth-email" type="email" placeholder="seu@email.com" style="background:#13132b;border:1px solid #2d2d4e;border-radius:10px;color:#e8e8f0;font-family:inherit;font-size:16px;padding:13px 14px;width:100%;outline:none"/>
       </div>
       <div>
         <p style="font-size:12px;color:#6060a0;margin-bottom:4px">Senha</p>
-        <input id="auth-senha" type="password" placeholder="Mínimo 6 caracteres" style="background:#13132b;border:1px solid #2d2d4e;border-radius:10px;color:#e8e8f0;font-family:inherit;font-size:14px;padding:12px 14px;width:100%;outline:none"/>
+        <input id="auth-senha" type="password" placeholder="Mínimo 6 caracteres" style="background:#13132b;border:1px solid #2d2d4e;border-radius:10px;color:#e8e8f0;font-family:inherit;font-size:16px;padding:13px 14px;width:100%;outline:none"/>
       </div>
     </div>
 
@@ -138,31 +138,28 @@ h2{font-size:18px;font-weight:700;margin-bottom:16px}
 
     <button id="btn-auth-email" onclick="authComEmail()" style="width:100%;padding:13px;background:linear-gradient(135deg,#5B8DB8,#4FBDBA);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;font-family:inherit;margin-bottom:12px">Entrar</button>
 
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-      <div style="flex:1;height:1px;background:#1e1e3a"></div>
-      <span style="color:#6060a0;font-size:12px">ou</span>
-      <div style="flex:1;height:1px;background:#1e1e3a"></div>
-    </div>
 
-    <button onclick="authComGoogle()" style="width:100%;padding:13px;background:#13132b;color:#6060a0;border:1px solid #1e1e3a;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;opacity:.5" title="Use email e senha por enquanto">
-      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-      Google (em breve)
-    </button>
-    <p style="color:#6060a0;font-size:11px;text-align:center;margin-top:6px">⚠️ Use email e senha por enquanto</p>
+
+
     <p style="color:#6060a0;font-size:11px;margin-top:18px;text-align:center">Dados salvos com segurança na nuvem</p>
   </div>
 </div>
 
 <!-- Barra do usuário -->
-<div id="user-bar" style="display:none;background:#13132b;border-bottom:1px solid #1e1e3a;padding:8px 20px;justify-content:flex-end;align-items:center;gap:10px">
-  <span id="user-nome" style="font-size:13px;color:#a0a0c0"></span>
-  <button onclick="fazerLogout()" style="background:#1e1e3a;border:1px solid #2d2d4e;border-radius:8px;color:#6060a0;font-size:12px;padding:5px 12px;cursor:pointer;font-family:inherit">Sair</button>
+<div id="user-bar" style="display:none;background:#13132b;border-bottom:1px solid #1e1e3a;padding:10px 20px;justify-content:flex-end;align-items:center;gap:12px">
+  <div id="user-avatar" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#5B8DB8,#4FBDBA);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;flex-shrink:0;cursor:pointer" title="" onclick="toggleUserMenu()"></div>
+  <span id="user-nome" style="font-size:13px;color:#a0a0c0;display:none"></span>
+  <div id="user-menu" style="display:none;position:absolute;top:62px;right:16px;background:#1a1a2e;border:1px solid #2d2d4e;border-radius:12px;padding:8px;z-index:999;min-width:200px;box-shadow:0 8px 24px rgba(0,0,0,.5)">
+    <div id="user-menu-nome" style="padding:10px 12px;font-weight:700;font-size:14px;color:#e8e8f0;border-bottom:1px solid #2d2d4e;margin-bottom:6px"></div>
+    <div id="user-menu-email" style="padding:0 12px 10px;font-size:12px;color:#6060a0;border-bottom:1px solid #2d2d4e;margin-bottom:6px"></div>
+    <button onclick="fazerLogout()" style="width:100%;background:none;border:none;color:#F28C8C;font-size:13px;padding:9px 12px;cursor:pointer;font-family:inherit;text-align:left;border-radius:8px;font-weight:600" onmouseover="this.style.background='#2a1010'" onmouseout="this.style.background='none'">🚪 Sair da conta</button>
+  </div>
 </div>
 
 
 <div id="app-wrapper" style="display:none">
 <!-- HEADER -->
-<div style="background:#13132b;border-bottom:1px solid #1e1e3a;padding:14px 20px">
+<div style="background:#13132b;border-bottom:1px solid #1e1e3a;padding:16px 16px">
   <div style="max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
     <div style="display:flex;align-items:center;gap:12px">
       <span style="font-size:20px;font-weight:800;color:#fff">💰 Finanças Pessoais</span>
@@ -592,6 +589,69 @@ h2{font-size:18px;font-weight:700;margin-bottom:16px}
   </div>
 
   <div class="card">
+  </div>
+
+  <!-- NOTIFICAÇÕES -->
+  <div class="card" style="margin-bottom:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div>
+        <h2 style="font-size:15px;margin-bottom:3px">🔔 Notificações de Vencimento</h2>
+        <p class="txt-muted">Seja avisado antes das suas contas vencerem</p>
+      </div>
+      <span id="notif-status-badge" style="font-size:12px;padding:4px 12px;border-radius:20px;font-weight:700"></span>
+    </div>
+
+    <!-- Notificação no celular -->
+    <div style="background:#0d0d1a;border-radius:11px;padding:14px;margin-bottom:10px;border:1px solid #1e1e3a">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:24px">📱</span>
+          <div>
+            <p style="font-weight:700;font-size:14px">Notificação no celular</p>
+            <p class="txt-muted">Alerta push quando uma conta vencer em breve</p>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-direction:column;align-items:flex-end">
+          <button id="btn-push" onclick="ativarPush()" class="btn" style="padding:8px 16px;font-size:13px;background:#1e1e3a;color:#a0a0c0;border:1px solid #2d2d4e">Ativar</button>
+          <button id="btn-push-off" onclick="desativarPush()" class="btn btn-gray" style="padding:6px 12px;font-size:11px;display:none">Desativar</button>
+        </div>
+      </div>
+      <p id="push-msg" style="font-size:12px;color:#6DBE8C;margin-top:8px;display:none"></p>
+    </div>
+
+    <!-- Notificação por email -->
+    <div style="background:#0d0d1a;border-radius:11px;padding:14px;margin-bottom:10px;border:1px solid #1e1e3a">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <span style="font-size:24px">📧</span>
+        <div>
+          <p style="font-weight:700;font-size:14px">Notificação por email</p>
+          <p class="txt-muted">Receba um email de lembrete antes do vencimento</p>
+        </div>
+      </div>
+      <div style="display:flex;gap:9px;flex-wrap:wrap;align-items:flex-end">
+        <div style="flex:1;min-width:180px">
+          <p class="txt-muted" style="margin-bottom:4px">Email para receber alertas</p>
+          <input id="notif-email" type="email" placeholder="seu@email.com" style="font-size:16px"/>
+        </div>
+        <button onclick="salvarEmailNotif()" class="btn btn-primary" style="padding:10px 18px;white-space:nowrap">💾 Salvar</button>
+      </div>
+      <p id="email-notif-msg" style="font-size:12px;margin-top:8px;display:none"></p>
+    </div>
+
+    <!-- Dias de antecedência -->
+    <div style="background:#0d0d1a;border-radius:11px;padding:14px;border:1px solid #1e1e3a">
+      <p style="font-weight:700;font-size:14px;margin-bottom:10px">⏰ Avisar com quantos dias de antecedência?</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${[1,2,3,5,7].map(d => `<button onclick="setDiasAlerta(${d})" id="dias-btn-${d}" class="btn btn-gray" style="padding:8px 16px;font-size:13px">${d} dia${d>1?'s':''}</button>`).join('')}
+      </div>
+      <p id="dias-alerta-msg" class="txt-muted" style="margin-top:8px;font-size:12px"></p>
+    </div>
+
+    <!-- Testar notificação -->
+    <button onclick="testarNotificacao()" class="btn btn-gray" style="width:100%;margin-top:12px;padding:10px;font-size:13px">🧪 Testar notificação agora</button>
+  </div>
+
+  <div class="card">
     <h2 style="font-size:14px;margin-bottom:12px">🚀 Estratégias para Economizar</h2>
     <div class="grid g2" style="gap:9px">
       <div style="background:#0d0d1a;padding:13px;border-radius:11px;display:flex;gap:9px"><span style="font-size:19px">🛒</span><div><p style="font-weight:600;margin-bottom:3px">Lista de compras</p><p class="txt-muted">Planeje compras com antecedência para evitar gastos impulsivos.</p></div></div>
@@ -725,6 +785,9 @@ async function saveToCloud(uid) {
 function persist() {
   try { localStorage.setItem(STORE, JSON.stringify(state)); } catch(_) {}
   if (fbUserId) saveToCloud(fbUserId);
+  if (localStorage.getItem("push_ativo") === "1") {
+    setTimeout(salvarDadosParaSW, 500);
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -1259,6 +1322,7 @@ function renderPlano() {
   document.getElementById("regra-sub").textContent = "Baseado na renda de "+fmt(ra.renda);
   renderPoupanca();
   renderInvest();
+  renderNotifSettings();
 
   // ── Calcular gastos reais por categoria 50-30-20 ──
   const gm = gastosMes();
@@ -2033,6 +2097,216 @@ function fecharModalAportes() {
 document.getElementById("modal-invest").addEventListener("click", function(e){ if(e.target===this) fecharModalInvest(); });
 document.getElementById("modal-aportes").addEventListener("click", function(e){ if(e.target===this) fecharModalAportes(); });
 
+
+// ══════════════════════════════════════════════
+// NOTIFICAÇÕES
+// ══════════════════════════════════════════════
+
+function getDiasAlerta() {
+  return parseInt(localStorage.getItem("notif_dias") || "3");
+}
+
+function setDiasAlerta(dias) {
+  localStorage.setItem("notif_dias", dias);
+  renderNotifSettings();
+  toast("Alerta configurado para " + dias + " dia(s) antes ✓");
+}
+
+function desativarPush() {
+  localStorage.removeItem("push_ativo");
+  localStorage.removeItem("periodic_sync");
+  const msg = document.getElementById("push-msg");
+  if (msg) msg.style.display = "none";
+  navigator.serviceWorker.ready.then(reg => {
+    if ("periodicSync" in reg) reg.periodicSync.unregister("check-vencimentos").catch(()=>{});
+  });
+  toast("Notificações desativadas");
+  renderNotifSettings();
+}
+
+function renderNotifSettings() {
+  const dias = getDiasAlerta();
+  [1,2,3,5,7].forEach(d => {
+    const btn = document.getElementById("dias-btn-" + d);
+    if (!btn) return;
+    btn.style.background = d === dias ? "#1e1e3a" : "transparent";
+    btn.style.color      = d === dias ? "#e8e8f0" : "#6060a0";
+    btn.style.borderColor= d === dias ? "#2d2d4e" : "transparent";
+  });
+  const msg = document.getElementById("dias-alerta-msg");
+  if (msg) msg.textContent = "Você será avisado " + dias + " dia(s) antes do vencimento.";
+
+  // Email salvo
+  const emailSalvo = localStorage.getItem("notif_email");
+  const inp = document.getElementById("notif-email");
+  if (inp && emailSalvo) inp.value = emailSalvo;
+
+  // Status do push
+  const badge = document.getElementById("notif-status-badge");
+  const pushAtivo = localStorage.getItem("push_ativo") === "1";
+  if (badge) {
+    badge.textContent = pushAtivo ? "✅ Ativado" : "⚪ Desativado";
+    badge.style.background = pushAtivo ? "#6DBE8C22" : "#1e1e3a";
+    badge.style.color      = pushAtivo ? "#6DBE8C"   : "#6060a0";
+  }
+  const btnPush = document.getElementById("btn-push");
+  if (btnPush) {
+    btnPush.textContent      = pushAtivo ? "✓ Ativado" : "Ativar";
+    btnPush.style.background = pushAtivo ? "#6DBE8C22" : "#1e1e3a";
+    btnPush.style.color      = pushAtivo ? "#6DBE8C"   : "#a0a0c0";
+  }
+  const btnOff = document.getElementById("btn-push-off");
+  if (btnOff) btnOff.style.display = pushAtivo ? "block" : "none";
+}
+
+async function ativarPush() {
+  if (!("Notification" in window)) {
+    toast("Seu navegador não suporta notificações", "#F28C8C"); return;
+  }
+  const perm = await Notification.requestPermission();
+  if (perm !== "granted") {
+    toast("Permissão negada. Ative nas configurações do navegador.", "#F28C8C"); return;
+  }
+
+  localStorage.setItem("push_ativo", "1");
+
+  // Tentar registrar Periodic Background Sync (Chrome Android)
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    if ("periodicSync" in reg) {
+      const status = await navigator.permissions.query({ name: "periodic-background-sync" });
+      if (status.state === "granted") {
+        await reg.periodicSync.register("check-vencimentos", { minInterval: 24 * 60 * 60 * 1000 });
+        localStorage.setItem("periodic_sync", "1");
+        const msg = document.getElementById("push-msg");
+        if (msg) {
+          msg.textContent = "✅ Notificações em segundo plano ativadas! Você receberá alertas diários mesmo com o app fechado.";
+          msg.style.display = "block";
+        }
+        toast("Notificações em segundo plano ativadas ✓");
+      } else {
+        // Fallback: notificação ao abrir o app
+        ativarNotifFallback();
+      }
+    } else {
+      ativarNotifFallback();
+    }
+  } catch(err) {
+    ativarNotifFallback();
+  }
+
+  salvarDadosParaSW();
+  renderNotifSettings();
+  verificarVencimentos();
+}
+
+function ativarNotifFallback() {
+  const msg = document.getElementById("push-msg");
+  if (msg) {
+    msg.textContent = "✅ Notificações ativadas! Você receberá alertas ao abrir o app.";
+    msg.style.display = "block";
+  }
+  toast("Notificações ativadas ✓");
+}
+
+// Salvar dados de gastos para o Service Worker verificar em segundo plano
+async function salvarDadosParaSW() {
+  try {
+    const reg   = await navigator.serviceWorker.ready;
+    const cache = await caches.open("financas-notif-data");
+    const gm    = gastosMes();
+    const dados = {
+      gastos:     gm.filter(g => g.data && !isPagoMes(g.id, mesAtivo)),
+      diasAlerta: getDiasAlerta(),
+      mesAtivo,
+      atualizado: new Date().toISOString()
+    };
+    await cache.put("notif-data", new Response(JSON.stringify(dados)));
+  } catch(err) {
+    console.log("Erro ao salvar dados para SW:", err);
+  }
+}
+
+function salvarEmailNotif() {
+  const email = document.getElementById("notif-email").value.trim();
+  if (!email || !email.includes("@")) { toast("Digite um email válido", "#F28C8C"); return; }
+  localStorage.setItem("notif_email", email);
+  const msg = document.getElementById("email-notif-msg");
+  if (msg) { msg.textContent = "✅ Email salvo! Você receberá alertas em " + email; msg.style.color = "#6DBE8C"; msg.style.display = "block"; }
+  toast("Email de notificação salvo ✓");
+}
+
+function enviarEmailAlerta(gastos) {
+  const email = localStorage.getItem("notif_email");
+  if (!email || !gastos.length) return;
+  // Usar mailto como fallback (abre app de email)
+  const lista = gastos.map(g => `• ${g.desc}: ${fmt(g.valor)} - vence em ${new Date(g.data+"T12:00").toLocaleDateString("pt-BR")}`).join("
+");
+  const assunto = encodeURIComponent("⚠️ Finanças Pessoais — Contas próximas do vencimento");
+  const corpo   = encodeURIComponent(`Olá!
+
+Você tem contas próximas do vencimento:
+
+${lista}
+
+Acesse seu app de Finanças Pessoais para marcar como pago.
+
+Abraços,
+Finanças Pessoais App`);
+  const link    = document.createElement("a");
+  link.href     = `mailto:${email}?subject=${assunto}&body=${corpo}`;
+  link.click();
+}
+
+function verificarVencimentos() {
+  if (Notification.permission !== "granted") return;
+  const dias = getDiasAlerta();
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const gm   = gastosMes();
+  const alertas = gm.filter(g => {
+    if (isPagoMes(g.id, mesAtivo)) return false;
+    if (!g.data) return false;
+    const venc = new Date(g.data + "T12:00"); venc.setHours(0,0,0,0);
+    const diff = Math.floor((venc - hoje) / 86400000);
+    return diff >= 0 && diff <= dias;
+  });
+  if (alertas.length > 0) {
+    alertas.forEach(g => {
+      const venc  = new Date(g.data+"T12:00");
+      const diff  = Math.floor((venc - hoje) / 86400000);
+      const quando= diff === 0 ? "HOJE" : "em " + diff + " dia(s)";
+      new Notification("⚠️ " + g.desc + " vence " + quando, {
+        body: fmt(g.valor) + " — toque para ver no app",
+        icon: "./icon-192.png",
+        badge:"./icon-192.png",
+        tag:  "venc-" + g.id,
+      });
+    });
+  }
+}
+
+function testarNotificacao() {
+  if (Notification.permission === "granted") {
+    new Notification("🔔 Finanças Pessoais", {
+      body: "Notificações funcionando! Você será avisado sobre vencimentos.",
+      icon: "./icon-192.png",
+    });
+    toast("Notificação de teste enviada ✓");
+  } else {
+    ativarPush();
+  }
+}
+
+// Verificar vencimentos a cada 1h
+setInterval(() => {
+  if (localStorage.getItem("push_ativo") === "1") verificarVencimentos();
+}, 3600000);
+
+// Verificar ao abrir o app
+setTimeout(() => {
+  if (localStorage.getItem("push_ativo") === "1") verificarVencimentos();
+}, 3000);
+
 // ══════════════════════════════════════════════
 // ANTECIPAÇÃO DE PARCELAS
 // ══════════════════════════════════════════════
@@ -2284,13 +2558,60 @@ async function fazerLogout() {
   mostrarLogin();
 }
 
+function getIniciais(nome) {
+  if (!nome) return "?";
+  const partes = nome.trim().split(/\s+/);
+  if (partes.length >= 2) return (partes[0][0] + partes[partes.length-1][0]).toUpperCase();
+  return partes[0].slice(0,2).toUpperCase();
+}
+
+function getCorAvatar(nome) {
+  const cores = [
+    ["#5B8DB8","#4FBDBA"], ["#A87BC9","#5B8DB8"], ["#6DBE8C","#4FBDBA"],
+    ["#E8B84B","#E07B54"], ["#F28C8C","#A87BC9"], ["#4FBDBA","#6DBE8C"]
+  ];
+  let hash = 0;
+  for (let c of (nome||"")) hash += c.charCodeAt(0);
+  const [c1, c2] = cores[hash % cores.length];
+  return `linear-gradient(135deg,${c1},${c2})`;
+}
+
+function toggleUserMenu() {
+  const menu = document.getElementById("user-menu");
+  if (!menu) return;
+  menu.style.display = menu.style.display === "none" ? "block" : "none";
+}
+
+// Fechar menu ao clicar fora
+document.addEventListener("click", function(e) {
+  const avatar = document.getElementById("user-avatar");
+  const menu   = document.getElementById("user-menu");
+  if (menu && avatar && !avatar.contains(e.target) && !menu.contains(e.target)) {
+    menu.style.display = "none";
+  }
+});
+
 function mostrarApp(user) {
   document.getElementById("tela-login").style.display  = "none";
   document.getElementById("app-wrapper").style.display = "block";
-  const userBar  = document.getElementById("user-bar");
-  const userNome = document.getElementById("user-nome");
-  if (userBar)  userBar.style.display  = "flex";
-  if (userNome) userNome.textContent   = user.displayName || user.email || "Usuário";
+  const userBar    = document.getElementById("user-bar");
+  const userAvatar = document.getElementById("user-avatar");
+  const userNome   = document.getElementById("user-nome");
+  const menuNome   = document.getElementById("user-menu-nome");
+  const menuEmail  = document.getElementById("user-menu-email");
+
+  const nome  = user.displayName || user.email || "Usuário";
+  const email = user.email || "";
+
+  if (userBar)    { userBar.style.display = "flex"; userBar.style.position = "relative"; }
+  if (userAvatar) {
+    userAvatar.textContent = getIniciais(nome);
+    userAvatar.style.background = getCorAvatar(nome);
+    userAvatar.title = nome;
+  }
+  if (userNome)  userNome.textContent = nome;
+  if (menuNome)  menuNome.textContent = nome;
+  if (menuEmail) menuEmail.textContent = email;
 }
 
 function mostrarLogin() {
@@ -2336,8 +2657,19 @@ let deferredPrompt = null;
 window.addEventListener("beforeinstallprompt", (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  document.getElementById("pwa-banner").style.display = "flex";
+  if (!localStorage.getItem("pwa_dismissed")) {
+    document.getElementById("pwa-banner").style.display = "flex";
+  }
 });
+// Mostrar banner de instalação manual se já instalável
+setTimeout(() => {
+  const banner = document.getElementById("pwa-banner");
+  if (banner && banner.style.display === "none" && !localStorage.getItem("pwa_dismissed")) {
+    if (!window.matchMedia("(display-mode: standalone)").matches) {
+      banner.style.display = "flex";
+    }
+  }
+}, 2000);
 window.addEventListener("appinstalled", () => {
   document.getElementById("pwa-banner").style.display = "none";
 });
@@ -2352,7 +2684,7 @@ function instalarApp() {
 </script>
 
 <!-- Banner PWA -->
-<div id="pwa-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:linear-gradient(135deg,#13132b,#1a1a3a);border-top:1px solid #2d2d4e;padding:14px 20px;z-index:9998;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+<div id="pwa-banner" style="display:flex;position:fixed;bottom:0;left:0;right:0;background:linear-gradient(135deg,#13132b,#1a1a3a);border-top:1px solid #2d2d4e;padding:14px 20px;z-index:9998;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
   <div style="display:flex;align-items:center;gap:12px">
     <span style="font-size:28px">💰</span>
     <div>
@@ -2362,7 +2694,7 @@ function instalarApp() {
   </div>
   <div style="display:flex;gap:8px">
     <button class="btn btn-green" onclick="instalarApp()" style="padding:9px 20px;font-size:13px">📲 Instalar</button>
-    <button class="btn btn-gray" onclick="document.getElementById('pwa-banner').style.display='none'" style="padding:9px 14px;font-size:13px">✕</button>
+    <button class="btn btn-gray" onclick="document.getElementById('pwa-banner').style.display='none';localStorage.setItem('pwa_dismissed','1')" style="padding:9px 14px;font-size:13px">✕</button>
   </div>
 </div>
 
