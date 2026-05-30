@@ -2242,19 +2242,9 @@ function enviarEmailAlerta(gastos) {
   const email = localStorage.getItem("notif_email");
   if (!email || !gastos.length) return;
   // Usar mailto como fallback (abre app de email)
-  const lista = gastos.map(g => `• ${g.desc}: ${fmt(g.valor)} - vence em ${new Date(g.data+"T12:00").toLocaleDateString("pt-BR")}`).join("
-");
-  const assunto = encodeURIComponent("⚠️ Finanças Pessoais — Contas próximas do vencimento");
-  const corpo   = encodeURIComponent(`Olá!
-
-Você tem contas próximas do vencimento:
-
-${lista}
-
-Acesse seu app de Finanças Pessoais para marcar como pago.
-
-Abraços,
-Finanças Pessoais App`);
+  const lista = gastos.map(g => "• " + g.desc + ": " + fmt(g.valor) + " - vence em " + new Date(g.data+"T12:00").toLocaleDateString("pt-BR")).join("\n");
+  const assunto = encodeURIComponent("Financas Pessoais - Contas proximas do vencimento");
+  const corpo   = encodeURIComponent("Ola!\n\nVoce tem contas proximas do vencimento:\n\n" + lista + "\n\nAcesse seu app de Financas Pessoais para marcar como pago.");
   const link    = document.createElement("a");
   link.href     = `mailto:${email}?subject=${assunto}&body=${corpo}`;
   link.click();
