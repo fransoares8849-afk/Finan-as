@@ -3511,36 +3511,67 @@ async function processarFoto(input) {
       });
 
       // Extrair valor total do texto
-      const linhas = text.split("\n").map(l => l.trim()).filter(l => l);
+      const linhas = text.split("\n").map(l => l.trim()).filter(l => l.length > 0);
       let valor = null, estabelecimento = null;
 
-      // Procurar TOTAL, VALOR TOTAL, SUBTOTAL etc
-      const regexTotal = /(?:total|valor\s*total|subtotal|valor\s*recebido|pagou)[^\d]*(\d+[\.,]\d{2})/i;
-      for (const linha of linhas) {
-        const m = linha.match(regexTotal);
+      // PRIORIDADE 1: padrões exatos de total (excluindo tributos)
+      const padroesPrioritarios = [
+        /valor\s*a\s*pagar\s*r?\$?\s*:?\s*(\d{1,6}[\.,]\d{2})/i,
+        /total\s*a\s*pagar\s*r?\$?\s*:?\s*(\d{1,6}[\.,]\d{2})/i,
+        /valor\s*pago\s*r?\$?\s*:?\s*(\d{1,6}[\.,]\d{2})/i,
+        /^total\s*r?\$?\s*:?\s*(\d{1,6}[\.,]\d{2})/im,
+        /total\s*:?\s*r?\$?\s*(\d{1,6}[\.,]\d{2})/i,
+        /valor\s*recebido\s*r?\$?\s*:?\s*(\d{1,6}[\.,]\d{2})/i,
+      ];
+
+      for (const regex of padroesPrioritarios) {
+        const m = text.match(regex);
         if (m) {
-          valor = parseFloat(m[1].replace(",", "."));
+          const v = parseFloat(m[1].replace(",", "."));
+          // Excluir valores muito pequenos (provavelmente não é o total)
+          if (v > 1) { valor = v; break; }
+        }
+      }
+
+      // PRIORIDADE 2: buscar linha com "total" e extrair valor da mesma linha
+      if (!valor) {
+        for (const linha of linhas) {
+          if (/total|pagar|recebido/i.test(linha) && !/tributo|desconto|parcial/i.test(linha)) {
+            const nums = linha.match(/(\d{1,6}[\.,]\d{2})/g);
+            if (nums) {
+              // Pegar o último número da linha (geralmente é o total)
+              const v = parseFloat(nums[nums.length-1].replace(",", "."));
+              if (v > 1) { valor = v; break; }
+            }
+          }
+        }
+      }
+
+      // PRIORIDADE 3: pegar valor que aparece repetido (total costuma aparecer 2-3x)
+      if (!valor) {
+        const contagem = {};
+        const regexV = /(\d{1,6}[\.,]\d{2})/g;
+        let mv;
+        while ((mv = regexV.exec(text)) !== null) {
+          const v = mv[1].replace(",",".");
+          contagem[v] = (contagem[v]||0) + 1;
+        }
+        // Valor que aparece mais de uma vez e é maior que 5
+        const repetidos = Object.entries(contagem)
+          .filter(([v,c]) => c >= 2 && parseFloat(v) > 5)
+          .sort((a,b) => parseFloat(b[0]) - parseFloat(a[0]));
+        if (repetidos.length) valor = parseFloat(repetidos[0][0]);
+      }
+
+      // Estabelecimento: pegar linhas iniciais limpas
+      estabelecimento = "Compra";
+      for (let i = 0; i < Math.min(5, linhas.length); i++) {
+        const l = linhas[i].replace(/[^a-zA-ZÀ-ú0-9 .&]/g, "").trim();
+        if (l.length >= 4 && !/cnpj|cpf|fone|tel|www|http|\d{5}/i.test(l)) {
+          estabelecimento = l.slice(0, 40);
           break;
         }
       }
-
-      // Se não achou total, pegar o maior valor na nota
-      if (!valor) {
-        const valores = [];
-        const regexValor = /(\d{1,4}[\.,]\d{2})/g;
-        let mv;
-        while ((mv = regexValor.exec(text)) !== null) {
-          const v = parseFloat(mv[1].replace(",", "."));
-          if (v > 0 && v < 100000) valores.push(v);
-        }
-        if (valores.length) valor = Math.max(...valores);
-      }
-
-      // Estabelecimento: geralmente está na primeira linha
-      estabelecimento = linhas[0] || linhas[1] || "Compra";
-      // Limpar caracteres estranhos
-      estabelecimento = estabelecimento.replace(/[^a-zA-ZÀ-ú0-9 ]/g, "").trim().slice(0, 40);
-      if (!estabelecimento || estabelecimento.length < 3) estabelecimento = "Compra";
 
       // Categoria automática baseada no texto
       const textoLower = text.toLowerCase();
