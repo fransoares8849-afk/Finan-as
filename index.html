@@ -136,12 +136,14 @@ h2{font-size:18px;font-weight:700;margin-bottom:16px}
 
     <p id="auth-erro" style="color:#F28C8C;font-size:13px;margin-bottom:10px;text-align:center;display:none"></p>
 
-    <button id="btn-auth-email" onclick="authComEmail()" style="width:100%;padding:13px;background:linear-gradient(135deg,#5B8DB8,#4FBDBA);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;font-family:inherit;margin-bottom:12px">Entrar</button>
+    <button id="btn-auth-email" onclick="authComEmail()" style="width:100%;padding:13px;background:linear-gradient(135deg,#5B8DB8,#4FBDBA);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;font-family:inherit;margin-bottom:8px">Entrar</button>
+    <p id="link-forgot" style="text-align:right;margin-bottom:10px"><span onclick="esqueceuSenha()" style="color:#5B8DB8;font-size:12px;cursor:pointer">Esqueceu a senha?</span></p>
 
 
 
 
     <p style="color:#6060a0;font-size:11px;margin-top:18px;text-align:center">Dados salvos com segurança na nuvem</p>
+    <button id="btn-instalar-login" onclick="instalarApp()" style="display:none;width:100%;margin-top:14px;padding:12px;background:#1e1e3a;color:#4FBDBA;border:1px solid #4FBDBA44;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;font-family:inherit">📲 Instalar como App</button>
   </div>
 </div>
 
@@ -2488,6 +2490,23 @@ document.getElementById("modal-antecipa").addEventListener("click", function(e) 
 // ══════════════════════════════════════════════
 let abaAuth = "login";
 
+async function esqueceuSenha() {
+  const email = document.getElementById("auth-email").value.trim();
+  if (!email) { mostrarErroAuth("Digite seu email acima primeiro."); return; }
+  try {
+    const r = await fetch("https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=AIzaSyCAMHiEkEUFIdHi0c3gE9MT5kf6Wmb-TCo", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({requestType:"PASSWORD_RESET", email})
+    });
+    const d = await r.json();
+    if (d.error) { mostrarErroAuth("Email não encontrado."); return; }
+    mostrarErroAuth("✅ Email de redefinição enviado para " + email);
+    document.getElementById("auth-erro").style.color = "#6DBE8C";
+    document.getElementById("auth-erro").style.background = "#0d1a10";
+    document.getElementById("auth-erro").style.borderColor = "#6DBE8C44";
+  } catch(e) { mostrarErroAuth("Erro ao enviar email."); }
+}
+
 function setAbaAuth(aba) {
   abaAuth = aba;
   const isLogin = aba === "login";
@@ -2498,12 +2517,20 @@ function setAbaAuth(aba) {
   document.getElementById("campo-nome").style.display          = !isLogin ? "block" : "none";
   document.getElementById("btn-auth-email").textContent        = isLogin ? "Entrar" : "Criar conta";
   document.getElementById("auth-erro").style.display           = "none";
+  const forgot = document.getElementById("link-forgot");
+  if (forgot) forgot.style.display = isLogin ? "block" : "none";
 }
 
 function mostrarErroAuth(msg) {
   const el = document.getElementById("auth-erro");
-  el.textContent = msg;
+  if (!el) { alert(msg); return; }
+  el.textContent = "⚠️ " + msg;
   el.style.display = "block";
+  el.style.background = "#2a1010";
+  el.style.padding    = "10px 14px";
+  el.style.borderRadius = "9px";
+  el.style.border    = "1px solid #F28C8C44";
+  el.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 async function authComEmail() {
@@ -2511,8 +2538,12 @@ async function authComEmail() {
   const senha = document.getElementById("auth-senha").value;
   const nome  = document.getElementById("auth-nome") ? document.getElementById("auth-nome").value.trim() : "";
   if (!email || !senha) { mostrarErroAuth("Preencha email e senha."); return; }
-  document.getElementById("btn-auth-email").textContent = "Aguarde...";
-  document.getElementById("btn-auth-email").disabled = true;
+
+  const btn = document.getElementById("btn-auth-email");
+  const erro = document.getElementById("auth-erro");
+  if (erro) { erro.style.display = "none"; }
+  if (btn)  { btn.textContent = "⏳ Entrando..."; btn.disabled = true; btn.style.opacity = ".7"; }
+
   try {
     if (abaAuth === "cadastro") {
       await fbSignUp(email, senha, nome);
@@ -2524,10 +2555,9 @@ async function authComEmail() {
     await loadFromCloud(fbUserId);
     render();
   } catch(e) {
-    mostrarErroAuth(e.message);
+    mostrarErroAuth(e.message || "Erro desconhecido. Tente novamente.");
   } finally {
-    const btn = document.getElementById("btn-auth-email");
-    if (btn) { btn.disabled = false; btn.textContent = abaAuth==="cadastro"?"Criar conta":"Entrar"; }
+    if (btn) { btn.disabled = false; btn.style.opacity = "1"; btn.textContent = abaAuth==="cadastro" ? "Criar conta" : "Entrar"; }
   }
 }
 
@@ -2657,6 +2687,10 @@ let deferredPrompt = null;
 window.addEventListener("beforeinstallprompt", (e) => {
   e.preventDefault();
   deferredPrompt = e;
+  // Mostrar botão na tela de login
+  const btnLogin = document.getElementById("btn-instalar-login");
+  if (btnLogin) btnLogin.style.display = "block";
+  // Mostrar banner no app
   if (!localStorage.getItem("pwa_dismissed")) {
     document.getElementById("pwa-banner").style.display = "flex";
   }
@@ -2684,7 +2718,7 @@ function instalarApp() {
 </script>
 
 <!-- Banner PWA -->
-<div id="pwa-banner" style="display:flex;position:fixed;bottom:0;left:0;right:0;background:linear-gradient(135deg,#13132b,#1a1a3a);border-top:1px solid #2d2d4e;padding:14px 20px;z-index:9998;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+<div id="pwa-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:linear-gradient(135deg,#13132b,#1a1a3a);border-top:1px solid #2d2d4e;padding:14px 20px;z-index:9998;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
   <div style="display:flex;align-items:center;gap:12px">
     <span style="font-size:28px">💰</span>
     <div>
