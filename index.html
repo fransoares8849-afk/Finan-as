@@ -1193,6 +1193,7 @@ async function loadFromCloud(uid) {
     const localGastos = (state.gastos || []).length;
     const localRendas = (state.rendas || []).length;
     const temDadosLocais = localGastos > 0 || localRendas > 0;
+    const localTs = state._savedAt || 0;
 
     // Buscar da nuvem
     const data = await fbLoadData(uid);
@@ -1201,11 +1202,20 @@ async function loadFromCloud(uid) {
       const nuvemGastos = (data.gastos || []).length;
       const nuvemRendas = (data.rendas || []).length;
       const temDadosNuvem = nuvemGastos > 0 || nuvemRendas > 0;
+      const nuvemTs = data._savedAt || 0;
 
       if (temDadosNuvem) {
-        // Nuvem tem dados reais — usar nuvem
-        state = sanitizeState(data);
-        localStorage.setItem(STORE, JSON.stringify(state));
+        // ── Comparar timestamps para evitar race condition ──────────────────
+        // Se local é mais recente que nuvem (usuário adicionou dados e
+        // recarregou antes do save na nuvem terminar), manter local e re-subir.
+        if (localTs > nuvemTs && temDadosLocais) {
+          // Local mais novo — subir local para nuvem
+          await saveToCloud(uid);
+        } else {
+          // Nuvem mais nova ou igual — usar nuvem
+          state = sanitizeState(data);
+          localStorage.setItem(STORE, JSON.stringify(state));
+        }
       } else if (temDadosLocais) {
         // Nuvem vazia mas local tem dados — subir local para nuvem
         await saveToCloud(uid);
@@ -1236,6 +1246,7 @@ async function saveToCloud(uid) {
 }
 function persist() {
   // Salvar LOCAL primeiro (instantâneo — garante dados ao recarregar)
+  state._savedAt = Date.now(); // timestamp para resolver race condition
   try { localStorage.setItem(STORE, JSON.stringify(state)); } catch(_) {}
   // Salvar na nuvem em segundo plano
   if (fbUserId) {
@@ -4150,10 +4161,11 @@ async function fbSignUp(email, senha, nome) {
   fbUserId   = d.localId;
   fbUserEmail= email;
   fbUserName = nome || email;
-  localStorage.setItem("fb_token", fbToken);
-  localStorage.setItem("fb_uid",   fbUserId);
-  localStorage.setItem("fb_email", fbUserEmail);
-  localStorage.setItem("fb_name",  fbUserName);
+  localStorage.setItem("fb_token",         fbToken);
+  localStorage.setItem("fb_uid",           fbUserId);
+  localStorage.setItem("fb_email",         fbUserEmail);
+  localStorage.setItem("fb_name",          fbUserName);
+  if (d.refreshToken) localStorage.setItem("fb_refresh_token", d.refreshToken);
   return d;
 }
 
@@ -4169,34 +4181,76 @@ async function fbSignIn(email, senha) {
   fbUserId   = d.localId;
   fbUserEmail= email;
   fbUserName = d.displayName || email;
-  localStorage.setItem("fb_token", fbToken);
-  localStorage.setItem("fb_uid",   fbUserId);
-  localStorage.setItem("fb_email", fbUserEmail);
-  localStorage.setItem("fb_name",  fbUserName);
+  localStorage.setItem("fb_token",         fbToken);
+  localStorage.setItem("fb_uid",           fbUserId);
+  localStorage.setItem("fb_email",         fbUserEmail);
+  localStorage.setItem("fb_name",          fbUserName);
+  if (d.refreshToken) localStorage.setItem("fb_refresh_token", d.refreshToken);
   return d;
+}
+
+// Renovar token expirado usando refresh token
+async function fbRefreshToken() {
+  const refreshToken = localStorage.getItem("fb_refresh_token");
+  if (!refreshToken) return false;
+  try {
+    const r = await fetch("https://securetoken.googleapis.com/v1/token?key=" + FB_API_KEY, {
+      method: "POST",
+      headers: {"Content-Type": "application/x-www-form-urlencoded"},
+      body: "grant_type=refresh_token&refresh_token=" + encodeURIComponent(refreshToken)
+    });
+    const d = await r.json();
+    if (d.id_token) {
+      fbToken = d.id_token;
+      localStorage.setItem("fb_token", fbToken);
+      if (d.refresh_token) localStorage.setItem("fb_refresh_token", d.refresh_token);
+      return true;
+    }
+  } catch(_) {}
+  return false;
 }
 
 // Firestore: salvar dados
 async function fbSaveData(uid, data) {
   if (!fbToken) fbToken = localStorage.getItem("fb_token");
   if (!fbToken) return;
-  // Converter state para formato Firestore
   const fields = { dados: { stringValue: JSON.stringify(data) } };
-  await fetch(FB_DB_URL + "/usuarios/" + uid + "?updateMask.fieldPaths=dados", {
+  let r = await fetch(FB_DB_URL + "/usuarios/" + uid + "?updateMask.fieldPaths=dados", {
     method:"PATCH",
     headers:{"Content-Type":"application/json","Authorization":"Bearer " + fbToken},
     body: JSON.stringify({fields})
   });
+  // Token expirado — tentar renovar e repetir
+  if (r.status === 401) {
+    const ok = await fbRefreshToken();
+    if (ok) {
+      r = await fetch(FB_DB_URL + "/usuarios/" + uid + "?updateMask.fieldPaths=dados", {
+        method:"PATCH",
+        headers:{"Content-Type":"application/json","Authorization":"Bearer " + fbToken},
+        body: JSON.stringify({fields})
+      });
+    }
+  }
 }
 
 // Firestore: carregar dados
 async function fbLoadData(uid) {
-  // Garantir que fbToken está carregado
   if (!fbToken) fbToken = localStorage.getItem("fb_token");
   if (!fbToken) return null;
-  const r = await fetch(FB_DB_URL + "/usuarios/" + uid, {
+  let r = await fetch(FB_DB_URL + "/usuarios/" + uid, {
     headers:{"Authorization":"Bearer " + fbToken}
   });
+  // Token expirado — tentar renovar e repetir
+  if (r.status === 401) {
+    const ok = await fbRefreshToken();
+    if (ok) {
+      r = await fetch(FB_DB_URL + "/usuarios/" + uid, {
+        headers:{"Authorization":"Bearer " + fbToken}
+      });
+    } else {
+      return null; // sem refresh token — usar dados locais
+    }
+  }
   if (r.status === 404) return null;
   const d = await r.json();
   if (d.fields && d.fields.dados) {
