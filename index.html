@@ -103,52 +103,66 @@ h2{font-size:18px;font-weight:700;margin-bottom:16px}
   #header-tabs{flex-wrap:wrap}
 }
 
+.modal-bottom-sheet {
+  background: #13132b;
+  border-top: 1px solid #2d2d4e;
+  box-shadow: 0 -8px 30px rgba(0,0,0,.5);
+}
+.btn-fechar-modal {
+  background: #1e1e3a;
+  border: 1px solid #2d2d4e;
+  color: #a0a0c0;
+}
+.btn-cancelar-modal { color: #6060a0; }
+body.tema-claro .modal-bottom-sheet {
+  background: #ffffff !important;
+  border-top: 1px solid #e2e8f0 !important;
+  box-shadow: 0 -4px 24px rgba(0,0,0,.1) !important;
+  color: #1a202c !important;
+}
+body.tema-claro .btn-fechar-modal {
+  background: #edf2f7 !important;
+  border-color: #cbd5e0 !important;
+  color: #4a5568 !important;
+}
+body.tema-claro .btn-cancelar-modal { color: #718096 !important; }
+
 /* TEMA CLARO */
 body.tema-claro {
   background: #f0f4f8;
   color: #1a202c;
 }
-
-/* Cards e superfícies */
 body.tema-claro .card,
 body.tema-claro .card-sm {
-  background: #ffffff;
-  border-color: #e2e8f0;
-  box-shadow: 0 2px 8px rgba(0,0,0,.07);
-}
-body.tema-claro .modal-box {
-  background: #ffffff;
-  border-color: #e2e8f0;
-  box-shadow: 0 8px 32px rgba(0,0,0,.12);
-}
-body.tema-claro .row-item {
-  background: #ffffff;
-  border-color: #e2e8f0;
-  box-shadow: 0 1px 4px rgba(0,0,0,.05);
-}
-
-/* Inputs e selects */
-body.tema-claro input,
-body.tema-claro select {
-  background: #f7faff;
-  border-color: #cbd5e0;
-  color: #1a202c;
-}
-body.tema-claro input::placeholder { color: #a0aec0; }
-body.tema-claro input:focus,
-body.tema-claro select:focus { border-color: #5b8db8; }
-body.tema-claro select option { background: #ffffff; color: #1a202c; }
-
-/* Barra do usuário e header */
-body.tema-claro #user-bar {
   background: #ffffff !important;
   border-color: #e2e8f0 !important;
   box-shadow: 0 2px 8px rgba(0,0,0,.07);
 }
-body.tema-claro #header-tabs {
-  background: #e8edf5;
-  border-color: #e2e8f0;
+body.tema-claro .modal-box {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
 }
+body.tema-claro .row-item {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+}
+body.tema-claro input,
+body.tema-claro select {
+  background: #f7faff !important;
+  border-color: #cbd5e0 !important;
+  color: #1a202c !important;
+}
+body.tema-claro input::placeholder { color: #a0aec0; }
+body.tema-claro input:focus,
+body.tema-claro select:focus { border-color: #5b8db8 !important; }
+body.tema-claro select option { background: #ffffff; color: #1a202c; }
+body.tema-claro #user-bar {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,.07) !important;
+}
+body.tema-claro #header-tabs { background: #e8edf5; }
 body.tema-claro .tab { color: #4a5568; background: transparent; }
 body.tema-claro .tab.on {
   background: #ffffff;
@@ -156,58 +170,51 @@ body.tema-claro .tab.on {
   box-shadow: 0 2px 6px rgba(0,0,0,.1);
   border-color: #e2e8f0;
 }
-
-/* Texto */
 body.tema-claro .txt-muted { color: #718096; }
-body.tema-claro .kpi-lbl { color: #718096; }
-body.tema-claro .chart-lbl { color: #718096; }
-
-/* Separadores e barras */
-body.tema-claro .sep { border-top-color: #e2e8f0; }
-body.tema-claro .pbar { background: #e2e8f0; }
-
-/* Botões */
+body.tema-claro .kpi-lbl  { color: #718096; }
+body.tema-claro .chart-lbl{ color: #718096; }
+body.tema-claro .sep { border-top-color: #e2e8f0 !important; }
+body.tema-claro .pbar { background: #e2e8f0 !important; }
 body.tema-claro .btn-gray {
-  background: #edf2f7;
-  color: #4a5568;
-  border-color: #e2e8f0;
+  background: #edf2f7 !important;
+  color: #4a5568 !important;
+  border-color: #e2e8f0 !important;
 }
 body.tema-claro .btn-danger {
-  background: rgba(242,140,140,.1);
-  color: #c53030;
-  border-color: rgba(242,140,140,.3);
+  background: rgba(242,140,140,.12) !important;
+  color: #c53030 !important;
 }
-
-/* Login */
-body.tema-claro #tela-login { background: #f0f4f8; }
-body.tema-claro #tela-login input {
-  background: #ffffff;
-  border-color: #cbd5e0;
-  color: #1a202c;
-}
-
-/* Modais bottom-sheet */
+/* Modais bottom-sheet — override inline styles com !important */
 body.tema-claro #modal-gasto-rapido,
 body.tema-claro #modal-renda-rapida,
 body.tema-claro #modal-foto,
 body.tema-claro #modal-upgrade {
-  background: #ffffff;
-  border-top-color: #e2e8f0;
-  box-shadow: 0 -4px 20px rgba(0,0,0,.1);
+  background: #ffffff !important;
+  border-top-color: #e2e8f0 !important;
+  box-shadow: 0 -4px 20px rgba(0,0,0,.1) !important;
 }
-
-/* FABs */
-body.tema-claro #fab-container button {
-  box-shadow: 0 4px 14px rgba(0,0,0,.18);
+body.tema-claro #modal-gasto-rapido *,
+body.tema-claro #modal-renda-rapida *,
+body.tema-claro #modal-foto *,
+body.tema-claro #modal-upgrade * {
+  border-color: #e2e8f0;
 }
-
-/* Section background */
+/* Botão fechar nos modais rápidos */
+body.tema-claro #modal-gasto-rapido button[style*="background:#1e1e3a"],
+body.tema-claro #modal-renda-rapida button[style*="background:#1e1e3a"] {
+  background: #e2e8f0 !important;
+  color: #4a5568 !important;
+  border-color: #cbd5e0 !important;
+}
+body.tema-claro #tela-login { background: #f0f4f8; }
+body.tema-claro #tela-login input {
+  background: #ffffff !important;
+  border-color: #cbd5e0 !important;
+  color: #1a202c !important;
+}
+body.tema-claro #score-circle { border-color: #e2e8f0 !important; }
 body.tema-claro .section { background: #f0f4f8; }
-
-/* Score ring */
-body.tema-claro .score-ring { border-color: #e2e8f0; }
-
-/* Inline styles overrides — backgrounds escuros */
+/* Superfícies escuras genéricas via inline style */
 body.tema-claro [style*="background:#0d0d1a"],
 body.tema-claro [style*="background:#13132b"],
 body.tema-claro [style*="background:#1a1a3a"],
@@ -218,30 +225,15 @@ body.tema-claro [style*="background: #1a1a3a"],
 body.tema-claro [style*="background: #1e1e3a"] {
   background: #f7faff !important;
   border-color: #e2e8f0 !important;
-  color: #1a202c !important;
 }
 body.tema-claro [style*="background:#2d2d4e"],
-body.tema-claro [style*="background: #2d2d4e"] {
-  background: #e2e8f0 !important;
-}
-
-/* Inline text colors */
+body.tema-claro [style*="background: #2d2d4e"] { background: #e2e8f0 !important; }
 body.tema-claro [style*="color:#e8e8f0"],
 body.tema-claro [style*="color:#a0a0c0"],
 body.tema-claro [style*="color: #e8e8f0"],
-body.tema-claro [style*="color: #a0a0c0"] {
-  color: #2d3748 !important;
-}
+body.tema-claro [style*="color: #a0a0c0"] { color: #2d3748 !important; }
 body.tema-claro [style*="color:#6060a0"],
 body.tema-claro [style*="color: #6060a0"] { color: #718096 !important; }
-
-/* Conquistas / badges inativos */
-body.tema-claro [style*="opacity:.4"],
-body.tema-claro [style*="opacity: .4"] { opacity: .55 !important; }
-
-/* Score circle border */
-body.tema-claro #score-circle { border-color: #e2e8f0 !important; }
-
 /* Scrollbar */
 body.tema-claro ::-webkit-scrollbar-track { background: #f0f4f8; }
 body.tema-claro ::-webkit-scrollbar-thumb { background: #cbd5e0; }
@@ -1776,10 +1768,10 @@ function setModoRep(modo) {
   ["nenhum","recorrente","parcelado"].forEach(m => {
     const btn = document.getElementById("modo-btn-"+m);
     if (!btn) return;
-    const isClaro = document.body.classList.contains("tema-claro");
-    btn.style.background = m===modo ? (isClaro?"#dde6f2":"#1e1e3a") : "transparent";
-    btn.style.color      = m===modo ? (isClaro?"#1a202c":"#e8e8f0") : (isClaro?"#718096":"#6060a0");
-    btn.style.borderColor= m===modo ? (isClaro?"#b8c9de":"#2d2d4e") : "transparent";
+    const isC1 = document.body.classList.contains("tema-claro");
+    btn.style.background = m===modo ? (isC1?"#dde6f2":"#1e1e3a") : "transparent";
+    btn.style.color      = m===modo ? (isC1?"#1a202c":"#e8e8f0") : (isC1?"#718096":"#6060a0");
+    btn.style.borderColor= m===modo ? (isC1?"#b8c9de":"#2d2d4e") : "transparent";
   });
   if (modo==="recorrente") {
     document.getElementById("g-rec-ini").value = nowM();
@@ -2677,10 +2669,10 @@ function renderNotifSettings() {
   [1,2,3,5,7].forEach(d => {
     const btn = document.getElementById("dias-btn-" + d);
     if (!btn) return;
-    const isClaro = document.body.classList.contains("tema-claro");
-    btn.style.background = d === dias ? (isClaro?"#dde6f2":"#1e1e3a") : "transparent";
-    btn.style.color      = d === dias ? (isClaro?"#1a202c":"#e8e8f0") : (isClaro?"#718096":"#6060a0");
-    btn.style.borderColor= d === dias ? (isClaro?"#b8c9de":"#2d2d4e") : "transparent";
+    const isC2 = document.body.classList.contains("tema-claro");
+    btn.style.background = d===dias ? (isC2?"#dde6f2":"#1e1e3a") : "transparent";
+    btn.style.color      = d===dias ? (isC2?"#1a202c":"#e8e8f0") : (isC2?"#718096":"#6060a0");
+    btn.style.borderColor= d===dias ? (isC2?"#b8c9de":"#2d2d4e") : "transparent";
   });
   const msg = document.getElementById("dias-alerta-msg");
   if (msg) msg.textContent = "Você será avisado " + dias + " dia(s) antes do vencimento.";
@@ -3031,9 +3023,8 @@ function marcarAntecipada(gastoId, mes, btn) {
   btn.style.borderColor = "#6DBE8C44";
   btn.onclick = function(){ desmarcarAntecipada(gastoId, mes, btn); };
   btn.textContent = "Desfazer";
-  const isClaro = document.body.classList.contains("tema-claro");
-  btn.style.background = isClaro ? "#e2e8f0" : "#1e1e3a";
-  btn.style.color = isClaro ? "#4a5568" : "#6060a0";
+  btn.style.background = "#1e1e3a";
+  btn.style.color = "#6060a0";
   btn.style.border = "none";
   // Atualiza info no modal
   atualizarInfoModal(gastoId);
@@ -3313,9 +3304,9 @@ function toggleTema() {
   localStorage.setItem("tema", temaClaroAtivo ? "claro" : "escuro");
   const btn = document.getElementById("btn-tema");
   btn.textContent = temaClaroAtivo ? "☀️" : "🌙";
-  btn.style.background   = temaClaroAtivo ? "#e2e8f0" : "#1e1e3a";
-  btn.style.borderColor  = temaClaroAtivo ? "#cbd5e0" : "#2d2d4e";
-  btn.style.color        = temaClaroAtivo ? "#4a5568" : "#a0a0c0";
+  btn.style.background  = temaClaroAtivo ? "#e2e8f0" : "#1e1e3a";
+  btn.style.borderColor = temaClaroAtivo ? "#cbd5e0" : "#2d2d4e";
+  btn.style.color       = temaClaroAtivo ? "#4a5568" : "#a0a0c0";
 }
 
 function carregarTema() {
@@ -4323,10 +4314,10 @@ if (fbToken && fbUserId) {
 </div>
 
 <!-- Modal gasto rápido -->
-<div id="modal-gasto-rapido" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#13132b;border-radius:20px 20px 0 0;border-top:1px solid #2d2d4e;padding:20px;z-index:900;box-shadow:0 -8px 30px rgba(0,0,0,.5)">
+<div id="modal-gasto-rapido" class="modal-bottom-sheet" style="display:none;position:fixed;bottom:0;left:0;right:0;border-radius:20px 20px 0 0;padding:20px;z-index:900">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
     <h3 style="font-size:15px;font-weight:700">💸 Gasto Rápido</h3>
-    <button onclick="fecharModaisRapidos()" style="background:#1e1e3a;border:1px solid #2d2d4e;border-radius:50%;width:32px;height:32px;color:#a0a0c0;font-size:18px;cursor:pointer;line-height:1">×</button>
+    <button onclick="fecharModaisRapidos()" class="btn-fechar-modal" style="border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;line-height:1">×</button>
   </div>
   <div style="display:flex;flex-direction:column;gap:10px">
     <input id="qg-desc" placeholder="Descrição (ex: Almoço)" style="font-size:16px"/>
@@ -4335,21 +4326,21 @@ if (fbToken && fbUserId) {
       <select id="qg-cat" style="font-size:16px"></select>
     </div>
     <button onclick="salvarGastoRapido()" style="padding:13px;background:linear-gradient(135deg,#F28C8C,#E07B54);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;font-family:inherit">Adicionar Gasto</button>
-    <button onclick="fecharModaisRapidos()" style="padding:10px;background:transparent;color:#6060a0;border:none;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
+    <button onclick="fecharModaisRapidos()" class="btn-cancelar-modal" style="padding:10px;background:transparent;border:none;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
   </div>
 </div>
 
 <!-- Modal renda rápida -->
-<div id="modal-renda-rapida" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#13132b;border-radius:20px 20px 0 0;border-top:1px solid #2d2d4e;padding:20px;z-index:900;box-shadow:0 -8px 30px rgba(0,0,0,.5)">
+<div id="modal-renda-rapida" class="modal-bottom-sheet" style="display:none;position:fixed;bottom:0;left:0;right:0;border-radius:20px 20px 0 0;padding:20px;z-index:900">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
     <h3 style="font-size:15px;font-weight:700">💰 Renda Rápida</h3>
-    <button onclick="fecharModaisRapidos()" style="background:#1e1e3a;border:1px solid #2d2d4e;border-radius:50%;width:32px;height:32px;color:#a0a0c0;font-size:18px;cursor:pointer;line-height:1">×</button>
+    <button onclick="fecharModaisRapidos()" class="btn-fechar-modal" style="border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;line-height:1">×</button>
   </div>
   <div style="display:flex;flex-direction:column;gap:10px">
     <input id="qr-desc" placeholder="Descrição (ex: Salário)" style="font-size:16px"/>
     <input id="qr-valor" type="number" placeholder="Valor" style="font-size:16px"/>
     <button onclick="salvarRendaRapida()" style="padding:13px;background:linear-gradient(135deg,#6DBE8C,#4FBDBA);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;font-family:inherit">Adicionar Renda</button>
-    <button onclick="fecharModaisRapidos()" style="padding:10px;background:transparent;color:#6060a0;border:none;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
+    <button onclick="fecharModaisRapidos()" class="btn-cancelar-modal" style="padding:10px;background:transparent;border:none;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
   </div>
 </div>
 <div id="fab-overlay" onclick="fecharModaisRapidos()" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:850"></div>
