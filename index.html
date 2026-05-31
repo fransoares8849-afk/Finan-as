@@ -105,79 +105,146 @@ h2{font-size:18px;font-weight:700;margin-bottom:16px}
 
 /* TEMA CLARO */
 body.tema-claro {
-  background: #f5f6fa;
-  color: #1a1a2e;
+  background: #f0f4f8;
+  color: #1a202c;
 }
-body.tema-claro .card {
+
+/* Cards e superfícies */
+body.tema-claro .card,
+body.tema-claro .card-sm {
   background: #ffffff;
   border-color: #e2e8f0;
-  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  box-shadow: 0 2px 8px rgba(0,0,0,.07);
 }
-body.tema-claro input,
-body.tema-claro select {
-  background: #f8faff;
-  border-color: #cbd5e0;
-  color: #1a1a2e;
-}
-body.tema-claro input::placeholder { color: #a0aec0; }
-body.tema-claro #user-bar {
-  background: #ffffff !important;
-  border-color: #e2e8f0 !important;
-  box-shadow: 0 1px 4px rgba(0,0,0,.06);
-}
-body.tema-claro #header-tabs {
-  background: #f0f2f8;
-}
-body.tema-claro .tab {
-  color: #4a5568;
-  background: transparent;
-}
-body.tema-claro .tab.on {
+body.tema-claro .modal-box {
   background: #ffffff;
-  color: #1a1a2e;
-  box-shadow: 0 1px 4px rgba(0,0,0,.1);
+  border-color: #e2e8f0;
+  box-shadow: 0 8px 32px rgba(0,0,0,.12);
 }
-body.tema-claro .txt-muted { color: #718096; }
 body.tema-claro .row-item {
   background: #ffffff;
   border-color: #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
 }
-body.tema-claro #tela-login { background: #f5f6fa; }
+
+/* Inputs e selects */
+body.tema-claro input,
+body.tema-claro select {
+  background: #f7faff;
+  border-color: #cbd5e0;
+  color: #1a202c;
+}
+body.tema-claro input::placeholder { color: #a0aec0; }
+body.tema-claro input:focus,
+body.tema-claro select:focus { border-color: #5b8db8; }
+body.tema-claro select option { background: #ffffff; color: #1a202c; }
+
+/* Barra do usuário e header */
+body.tema-claro #user-bar {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,.07);
+}
+body.tema-claro #header-tabs {
+  background: #e8edf5;
+  border-color: #e2e8f0;
+}
+body.tema-claro .tab { color: #4a5568; background: transparent; }
+body.tema-claro .tab.on {
+  background: #ffffff;
+  color: #1a202c;
+  box-shadow: 0 2px 6px rgba(0,0,0,.1);
+  border-color: #e2e8f0;
+}
+
+/* Texto */
+body.tema-claro .txt-muted { color: #718096; }
+body.tema-claro .kpi-lbl { color: #718096; }
+body.tema-claro .chart-lbl { color: #718096; }
+
+/* Separadores e barras */
+body.tema-claro .sep { border-top-color: #e2e8f0; }
+body.tema-claro .pbar { background: #e2e8f0; }
+
+/* Botões */
+body.tema-claro .btn-gray {
+  background: #edf2f7;
+  color: #4a5568;
+  border-color: #e2e8f0;
+}
+body.tema-claro .btn-danger {
+  background: rgba(242,140,140,.1);
+  color: #c53030;
+  border-color: rgba(242,140,140,.3);
+}
+
+/* Login */
+body.tema-claro #tela-login { background: #f0f4f8; }
 body.tema-claro #tela-login input {
   background: #ffffff;
   border-color: #cbd5e0;
-  color: #1a1a2e;
+  color: #1a202c;
 }
+
+/* Modais bottom-sheet */
 body.tema-claro #modal-gasto-rapido,
 body.tema-claro #modal-renda-rapida,
 body.tema-claro #modal-foto,
 body.tema-claro #modal-upgrade {
   background: #ffffff;
   border-top-color: #e2e8f0;
+  box-shadow: 0 -4px 20px rgba(0,0,0,.1);
 }
-body.tema-claro .btn-gray {
-  background: #edf2f7;
-  color: #4a5568;
-  border-color: #e2e8f0;
-}
+
+/* FABs */
 body.tema-claro #fab-container button {
-  filter: drop-shadow(0 2px 8px rgba(0,0,0,.15));
+  box-shadow: 0 4px 14px rgba(0,0,0,.18);
 }
-body.tema-claro .section { background: #f5f6fa; }
+
+/* Section background */
+body.tema-claro .section { background: #f0f4f8; }
+
+/* Score ring */
+body.tema-claro .score-ring { border-color: #e2e8f0; }
+
+/* Inline styles overrides — backgrounds escuros */
 body.tema-claro [style*="background:#0d0d1a"],
 body.tema-claro [style*="background:#13132b"],
 body.tema-claro [style*="background:#1a1a3a"],
-body.tema-claro [style*="background:#1e1e3a"] {
-  background: #f0f4ff !important;
+body.tema-claro [style*="background:#1e1e3a"],
+body.tema-claro [style*="background: #0d0d1a"],
+body.tema-claro [style*="background: #13132b"],
+body.tema-claro [style*="background: #1a1a3a"],
+body.tema-claro [style*="background: #1e1e3a"] {
+  background: #f7faff !important;
   border-color: #e2e8f0 !important;
+  color: #1a202c !important;
 }
+body.tema-claro [style*="background:#2d2d4e"],
+body.tema-claro [style*="background: #2d2d4e"] {
+  background: #e2e8f0 !important;
+}
+
+/* Inline text colors */
 body.tema-claro [style*="color:#e8e8f0"],
-body.tema-claro [style*="color:#a0a0c0"] {
+body.tema-claro [style*="color:#a0a0c0"],
+body.tema-claro [style*="color: #e8e8f0"],
+body.tema-claro [style*="color: #a0a0c0"] {
   color: #2d3748 !important;
 }
-body.tema-claro [style*="color:#6060a0"] { color: #718096 !important; }
-body.tema-claro [style*="background:#2d2d4e"] { background: #e2e8f0 !important; }
+body.tema-claro [style*="color:#6060a0"],
+body.tema-claro [style*="color: #6060a0"] { color: #718096 !important; }
+
+/* Conquistas / badges inativos */
+body.tema-claro [style*="opacity:.4"],
+body.tema-claro [style*="opacity: .4"] { opacity: .55 !important; }
+
+/* Score circle border */
+body.tema-claro #score-circle { border-color: #e2e8f0 !important; }
+
+/* Scrollbar */
+body.tema-claro ::-webkit-scrollbar-track { background: #f0f4f8; }
+body.tema-claro ::-webkit-scrollbar-thumb { background: #cbd5e0; }
 
 </style>
 </head>
@@ -1709,9 +1776,10 @@ function setModoRep(modo) {
   ["nenhum","recorrente","parcelado"].forEach(m => {
     const btn = document.getElementById("modo-btn-"+m);
     if (!btn) return;
-    btn.style.background = m===modo ? "#1e1e3a" : "transparent";
-    btn.style.color      = m===modo ? "#e8e8f0" : "#6060a0";
-    btn.style.borderColor= m===modo ? "#2d2d4e" : "transparent";
+    const isClaro = document.body.classList.contains("tema-claro");
+    btn.style.background = m===modo ? (isClaro?"#dde6f2":"#1e1e3a") : "transparent";
+    btn.style.color      = m===modo ? (isClaro?"#1a202c":"#e8e8f0") : (isClaro?"#718096":"#6060a0");
+    btn.style.borderColor= m===modo ? (isClaro?"#b8c9de":"#2d2d4e") : "transparent";
   });
   if (modo==="recorrente") {
     document.getElementById("g-rec-ini").value = nowM();
@@ -2609,9 +2677,10 @@ function renderNotifSettings() {
   [1,2,3,5,7].forEach(d => {
     const btn = document.getElementById("dias-btn-" + d);
     if (!btn) return;
-    btn.style.background = d === dias ? "#1e1e3a" : "transparent";
-    btn.style.color      = d === dias ? "#e8e8f0" : "#6060a0";
-    btn.style.borderColor= d === dias ? "#2d2d4e" : "transparent";
+    const isClaro = document.body.classList.contains("tema-claro");
+    btn.style.background = d === dias ? (isClaro?"#dde6f2":"#1e1e3a") : "transparent";
+    btn.style.color      = d === dias ? (isClaro?"#1a202c":"#e8e8f0") : (isClaro?"#718096":"#6060a0");
+    btn.style.borderColor= d === dias ? (isClaro?"#b8c9de":"#2d2d4e") : "transparent";
   });
   const msg = document.getElementById("dias-alerta-msg");
   if (msg) msg.textContent = "Você será avisado " + dias + " dia(s) antes do vencimento.";
@@ -2962,8 +3031,9 @@ function marcarAntecipada(gastoId, mes, btn) {
   btn.style.borderColor = "#6DBE8C44";
   btn.onclick = function(){ desmarcarAntecipada(gastoId, mes, btn); };
   btn.textContent = "Desfazer";
-  btn.style.background = "#1e1e3a";
-  btn.style.color = "#6060a0";
+  const isClaro = document.body.classList.contains("tema-claro");
+  btn.style.background = isClaro ? "#e2e8f0" : "#1e1e3a";
+  btn.style.color = isClaro ? "#4a5568" : "#6060a0";
   btn.style.border = "none";
   // Atualiza info no modal
   atualizarInfoModal(gastoId);
@@ -3241,7 +3311,11 @@ function initAuth() { /* handled by REST API */ }
 function toggleTema() {
   const temaClaroAtivo = document.body.classList.toggle("tema-claro");
   localStorage.setItem("tema", temaClaroAtivo ? "claro" : "escuro");
-  document.getElementById("btn-tema").textContent = temaClaroAtivo ? "☀️" : "🌙";
+  const btn = document.getElementById("btn-tema");
+  btn.textContent = temaClaroAtivo ? "☀️" : "🌙";
+  btn.style.background   = temaClaroAtivo ? "#e2e8f0" : "#1e1e3a";
+  btn.style.borderColor  = temaClaroAtivo ? "#cbd5e0" : "#2d2d4e";
+  btn.style.color        = temaClaroAtivo ? "#4a5568" : "#a0a0c0";
 }
 
 function carregarTema() {
@@ -3249,7 +3323,12 @@ function carregarTema() {
   if (tema === "claro") {
     document.body.classList.add("tema-claro");
     const btn = document.getElementById("btn-tema");
-    if (btn) btn.textContent = "☀️";
+    if (btn) {
+      btn.textContent   = "☀️";
+      btn.style.background  = "#e2e8f0";
+      btn.style.borderColor = "#cbd5e0";
+      btn.style.color       = "#4a5568";
+    }
   }
 }
 
