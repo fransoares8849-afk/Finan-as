@@ -1126,7 +1126,7 @@ function verificarLimite(tipo) {
 }
 
 let state = {gastos:[], rendas:[], meta:20, saldoInicial:0, poupancas:[], pagamentos:{}, recebimentos:{}, antecipados:{}, investimentos:[], aportes:[]};
-let mesAtivo = nowM();
+let mesAtivo = localStorage.getItem("mes_ativo") || nowM();
 let filtCat = "Todas";
 let editGId = null;
 let editRId = null;
@@ -1469,7 +1469,7 @@ function renderMesSelect() {
       opt.textContent = MESES[d.getMonth()]+" "+d.getFullYear();
       sel.appendChild(opt);
     }
-    sel.onchange = function() { mesAtivo = this.value; render(); };
+    sel.onchange = function() { mesAtivo = this.value; localStorage.setItem("mes_ativo", mesAtivo); render(); };
   }
   sel.value = mesAtivo;
 }
@@ -2133,6 +2133,7 @@ function onMetaChange(v) {
 
 function irParaMes(m) {
   mesAtivo=m;
+  localStorage.setItem("mes_ativo", mesAtivo);
   document.getElementById("sel-mes").value=m;
   // vai para dashboard
   document.querySelectorAll(".section").forEach(s=>s.classList.remove("on"));
