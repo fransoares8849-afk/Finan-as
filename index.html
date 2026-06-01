@@ -1128,6 +1128,11 @@ function verificarLimite(tipo) {
 
 let state = {gastos:[], rendas:[], meta:20, saldoInicial:0, poupancas:[], pagamentos:{}, recebimentos:{}, antecipados:{}, investimentos:[], aportes:[]};
 let mesAtivo = localStorage.getItem("mes_ativo") || nowM();
+
+// ── Controle de sincronização ─────────────────────────────────────────────────
+let _syncPendente = false;   // há save local ainda não confirmado na nuvem?
+let _syncEmAndamento = false; // loadFromCloud está rodando?
+let _saveTimer = null;        // debounce do saveToCloud
 let filtCat = "Todas";
 let editGId = null;
 let editRId = null;
@@ -1190,6 +1195,11 @@ function mergeById(local, cloud) {
 }
 
 async function loadFromCloud(uid) {
+  // Não sobrescrever se há edição local ainda não confirmada na nuvem
+  if (_syncPendente) {
+    console.info("Sync ignorado — há dados locais pendentes de upload");
+    return;
+  }
   try {
     const storedUid = localStorage.getItem("last_uid");
 
@@ -1261,13 +1271,22 @@ async function saveToCloud(uid) {
 }
 function persist() {
   // Salvar LOCAL primeiro (instantâneo — garante dados ao recarregar)
-  state._savedAt = Date.now(); // timestamp para resolver race condition
+  state._savedAt = Date.now();
   try { localStorage.setItem(STORE, JSON.stringify(state)); } catch(_) {}
-  // Salvar na nuvem em segundo plano
+  // Marcar que há dado local não confirmado na nuvem
+  _syncPendente = true;
+  // Debounce: espera 800ms sem novas edições antes de subir para nuvem
+  if (_saveTimer) clearTimeout(_saveTimer);
   if (fbUserId) {
-    saveToCloud(fbUserId).catch(() => {
-      // Falhou na nuvem mas já salvou local — ok
-    });
+    _saveTimer = setTimeout(async () => {
+      try {
+        await fbSaveData(fbUserId, state);
+        _syncPendente = false;
+        localStorage.setItem(STORE, JSON.stringify(state));
+      } catch(e) {
+        // falhou na nuvem — ok, local está salvo
+      }
+    }, 800);
   }
   if (localStorage.getItem("push_ativo") === "1") {
     setTimeout(salvarDadosParaSW, 500);
@@ -1474,15 +1493,18 @@ function render() {
 function renderMesSelect() {
   const sel = document.getElementById("sel-mes");
   if (!sel) return;
-  // Sempre garantir que mesAtivo está no seletor
+  // Garantir que mesAtivo existe no seletor — reconstruir se necessário
   let found = false;
   for (let i=0; i<sel.options.length; i++) {
     if (sel.options[i].value === mesAtivo) { found = true; break; }
   }
   if (!found || sel.options.length === 0) {
     sel.innerHTML = "";
-    for (let i=0; i<36; i++) {
-      const d = new Date(2025, i, 1);
+    // Gerar de Jan/2024 até 3 anos no futuro a partir de hoje
+    const hoje = new Date();
+    const inicio = new Date(2024, 0, 1);
+    const fim = new Date(hoje.getFullYear() + 3, 11, 1);
+    for (let d = new Date(inicio); d <= fim; d.setMonth(d.getMonth()+1)) {
       const val = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
       const opt = document.createElement("option");
       opt.value = val;
@@ -4340,11 +4362,19 @@ if (fbToken && fbUserId) {
   mostrarFab();
   render();
   // 2. Sincronizar com nuvem em segundo plano (atualiza sem apagar dados)
-  setTimeout(() => {
-    loadFromCloud(fbUserId).then(() => render()).catch(() => {
+  // Sync em segundo plano — só roda se não há edições pendentes
+  setTimeout(async () => {
+    if (_syncPendente || _syncEmAndamento) return; // aguardar save local
+    try {
+      _syncEmAndamento = true;
+      await loadFromCloud(fbUserId);
+      _syncEmAndamento = false;
+      render();
+    } catch(e) {
+      _syncEmAndamento = false;
       console.warn("Sync nuvem falhou — usando dados locais");
-    });
-  }, 1500); // pequeno delay para não travar a tela inicial
+    }
+  }, 2500);
 } else {
   // Sem sessão — mostrar login
   mostrarLogin();
