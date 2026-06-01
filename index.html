@@ -244,6 +244,23 @@ body.tema-claro [style*="background: #0a0a18"] {
   background: #edf2f7 !important;
   border-color: #cbd5e0 !important;
 }
+/* IA e Wrapped no modo claro */
+body.tema-claro .chat-bubble-ia  { background: #edf2f7 !important; color: #1a202c !important; }
+body.tema-claro #chat-ia-msgs > div > div:last-child { background: #edf2f7 !important; color: #1a202c !important; }
+body.tema-claro [style*="background:#1e1e3a"] { background: #f0f4f8 !important; }
+body.tema-claro [style*="background:#0d1a0d"],
+body.tema-claro [style*="background:#1a2a1a"],
+body.tema-claro [style*="background:#1a1a0a"],
+body.tema-claro [style*="background:#1a1010"],
+body.tema-claro [style*="background:#1a1020"],
+body.tema-claro [style*="background:#0f1a0f"] {
+  background: #f7faff !important; color: #1a202c !important;
+}
+body.tema-claro [style*="background:#2d1a3a"],
+body.tema-claro [style*="background:linear-gradient(135deg,#1e1e3a"] {
+  background: #e8edf5 !important;
+}
+
 /* Scrollbar */
 body.tema-claro ::-webkit-scrollbar-track { background: #f0f4f8; }
 body.tema-claro ::-webkit-scrollbar-thumb { background: #cbd5e0; }
@@ -305,6 +322,7 @@ body.tema-claro ::-webkit-scrollbar-thumb { background: #cbd5e0; }
     </div>
   </div>
   <div style="display:flex;gap:8px;align-items:center">
+    <button onclick="abrirCompartilhar()" id="btn-compartilhar" style="background:#1e1e3a;border:1px solid #4FBDBA44;border-radius:8px;color:#4FBDBA;font-size:11px;padding:6px 10px;cursor:pointer;font-family:inherit;display:none" title="Conta compartilhada">👫</button>
     <button onclick="mostrarUpgrade('badge')" id="btn-ver-planos" style="background:linear-gradient(135deg,#E8B84B,#E07B54);border:none;border-radius:8px;color:#fff;font-size:11px;padding:6px 12px;cursor:pointer;font-family:inherit;font-weight:700;display:none">⭐ Premium</button>
     <button onclick="mostrarUpgrade('geral')" id="btn-upgrade-header" style="background:#1e1e3a;border:1px solid #E8B84B44;border-radius:8px;color:#E8B84B;font-size:11px;padding:6px 12px;cursor:pointer;font-family:inherit;font-weight:600">🚀 Upgrade</button>
     <button onclick="toggleTema()" id="btn-tema" style="background:#1e1e3a;border:1px solid #2d2d4e;border-radius:8px;color:#a0a0c0;font-size:14px;padding:6px 10px;cursor:pointer;font-family:inherit">🌙</button>
@@ -1275,9 +1293,13 @@ async function loadFromCloud(uid) {
           poupancas:    mergeById(state.poupancas,     data.poupancas),
           investimentos:mergeById(state.investimentos, data.investimentos),
           aportes:      mergeById(state.aportes,       data.aportes),
+          metas:        mergeById(state.metas,         data.metas),
+          templates:    mergeById(state.templates,     data.templates),
+          cartoes:      mergeById(state.cartoes,       data.cartoes),
           pagamentos:   Object.assign({}, data.pagamentos||{}, state.pagamentos||{}),
           recebimentos: Object.assign({}, data.recebimentos||{}, state.recebimentos||{}),
           antecipados:  Object.assign({}, data.antecipados||{},  state.antecipados||{}),
+          desafios:     Object.assign({}, data.desafios||{},     state.desafios||{}),
           _savedAt:     Math.max(localTs, nuvemTs) || Date.now(),
         });
 
@@ -1506,8 +1528,9 @@ function showAba(id) {
   document.querySelectorAll("#header-tabs .tab").forEach(b=>b.classList.remove("on"));
   event.target.classList.add("on");
   render();
-  if (id === "score") renderScore();
+  if (id === "score")   renderScore();
   if (id === "wrapped") renderWrapped();
+  if (id === "extras")  renderExtras();
 }
 function showSubAba(id) {
   document.getElementById("sub-gastos").style.display = id==="gastos"?"block":"none";
@@ -3760,18 +3783,29 @@ function calcPrevisaoFechamento() {
   const ra = resumoAtivo();
   if (diaAtual <= 0 || ra.renda === 0) return null;
 
-  // Gastos já pagos + variáveis lançados
   const gm = gastosMes();
   const gastoFixo = gm.filter(g=>g.tipo==="fixo").reduce((s,g)=>s+g.valor,0);
   const gastoVar  = gm.filter(g=>g.tipo==="variavel").reduce((s,g)=>s+g.valor,0);
 
-  // Projetar variável pelo ritmo diário
-  const ritmo = diaAtual > 0 ? gastoVar / diaAtual : 0;
-  const projecaoVar = ritmo * diasNoMes;
-  const gastoProjetado = gastoFixo + projecaoVar;
-  const saldoProjetado = ra.renda - gastoProjetado;
+  // Só projetar se estivermos no mês atual E ainda restar dias significativos
+  const diasRestantes = diasNoMes - diaAtual;
+  let gastoProjetado;
+  if (mesAtivo !== nowM() || diaAtual >= diasNoMes - 1) {
+    // Mês passado ou último dia: usar valor real
+    gastoProjetado = gastoFixo + gastoVar;
+  } else if (diaAtual < 3) {
+    // Muito cedo no mês: não projeta variável (dados insuficientes)
+    gastoProjetado = gastoFixo + gastoVar;
+  } else {
+    // Projetar pelo ritmo diário apenas a parte restante
+    const ritmo = gastoVar / diaAtual;
+    const projecaoRestante = ritmo * diasRestantes;
+    gastoProjetado = gastoFixo + gastoVar + projecaoRestante;
+  }
 
-  return {gastoFixo, gastoVar, gastoProjetado, saldoProjetado, ritmo, diasNoMes, diaAtual};
+  const ritmo = diaAtual >= 3 ? gastoVar / diaAtual : 0;
+  const saldoProjetado = ra.renda - gastoProjetado;
+  return {gastoFixo, gastoVar, gastoProjetado, saldoProjetado, ritmo, diasNoMes, diaAtual, diasRestantes};
 }
 
 // ══════════════════════════════════════════════
@@ -3936,6 +3970,7 @@ function delTemplate(id) {
 
 // ── Simulador de Patrimônio ───────────────────
 function calcSimulador() {
+  if (!document.getElementById("sim-aporte")) return;
   const aporte   = parseFloat(document.getElementById("sim-aporte")?.value)||0;
   const taxaAnual= parseFloat(document.getElementById("sim-taxa")?.value)||12;
   const anos     = parseInt(document.getElementById("sim-anos")?.value)||10;
@@ -4019,6 +4054,7 @@ function usadoCartao(cartao) {
 
 // ── Divisão de Gastos ─────────────────────────
 function calcDivisao() {
+  if (!document.getElementById("div-total")) return;
   const total   = parseFloat(document.getElementById("div-total")?.value)||0;
   const pessoas = parseInt(document.getElementById("div-pessoas")?.value)||2;
   const el = document.getElementById("div-resultado");
@@ -4034,6 +4070,8 @@ function calcDivisao() {
 
 // ── Render geral da aba Extras ────────────────
 function renderExtras() {
+  const secExtras = document.getElementById("sec-extras");
+  if (!secExtras || !secExtras.classList.contains("on")) return;
   renderBenchmark();
   renderDesafios();
   // Metas
@@ -4294,9 +4332,9 @@ function analiseLocal() {
   }
   // Previsão
   const prev = calcPrevisaoFechamento();
-  if (prev && mesAtivo===nowM()) {
-    if (prev.saldoProjetado < 0) pontos.push({tipo:"danger", msg:`🔴 Previsão: você vai fechar o mês ${fmt(Math.abs(prev.saldoProjetado))} no negativo se mantiver o ritmo atual.`});
-    else pontos.push({tipo:"ok", msg:`🟢 Previsão: você vai fechar o mês com ${fmt(prev.saldoProjetado)} positivo.`});
+  if (prev && mesAtivo===nowM() && prev.diaAtual >= 3) {
+    if (prev.saldoProjetado < 0) pontos.push({tipo:"danger", msg:`🔴 Previsão: se mantiver o ritmo de ${fmt(prev.ritmo)}/dia em variáveis, você fecha o mês ${fmt(Math.abs(prev.saldoProjetado))} no negativo.`});
+    else pontos.push({tipo:"ok", msg:`🟢 Previsão: você deve fechar o mês com ${fmt(prev.saldoProjetado)} positivo.`});
   }
   // Gastos a pagar
   const apagar = gm.filter(g=>!isPagoMes(g.id,mesAtivo)).reduce((s,g)=>s+g.valor,0);
@@ -4362,31 +4400,97 @@ Seja direto, use emojis moderadamente, máximo 150 palavras por resposta.`;
 }
 
 function respostaLocal(pergunta, ctx) {
-  const p = pergunta.toLowerCase();
+  const p = pergunta.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
   const ra = resumoAtivo();
   const gm = gastosMes();
   const prev = calcPrevisaoFechamento();
-  if (p.includes("fechar") || p.includes("previsão") || p.includes("previsao")) {
-    if (prev) return prev.saldoProjetado>=0 ? `📈 Boa notícia! Você deve fechar o mês com **${fmt(prev.saldoProjetado)}** positivo, baseado no ritmo atual de gastos.` : `⚠️ No ritmo atual, você vai fechar o mês com **${fmt(Math.abs(prev.saldoProjetado))} negativo**. Tente reduzir gastos variáveis.`;
-    return "Adicione mais lançamentos para eu calcular a previsão.";
+  const porCat = {};
+  gm.forEach(g=>{ porCat[g.cat]=(porCat[g.cat]||0)+g.valor; });
+  const pct = ra.renda>0?(ra.gasto/ra.renda*100).toFixed(0):0;
+
+  // Situação geral / como estão os gastos
+  if (p.match(/como (estao|estou|esta|fico|ficou|ficando)|meus gastos|situac|gastos (do mes|este mes|esse mes)/)) {
+    const catMaior = Object.entries(porCat).sort((a,b)=>b[1]-a[1])[0];
+    return `📊 **${mesNome(mesAtivo)}**\n` +
+      `• Renda: ${fmt(ra.renda)}\n` +
+      `• Gastos: ${fmt(ra.gasto)} (${pct}% da renda)\n` +
+      `• Saldo: ${fmt(ra.saldoMes)}\n` +
+      (catMaior ? `• Maior gasto: ${catMaior[0]} (${fmt(catMaior[1])})\n` : "") +
+      (ra.saldoMes >= 0 ? `✅ Você está no positivo!` : `⚠️ Gastos acima da renda.`);
   }
-  if (p.includes("economizar") || p.includes("cortar") || p.includes("reduzir")) {
-    const porCat = {};
-    gm.forEach(g=>{ porCat[g.cat]=(porCat[g.cat]||0)+g.valor; });
-    const [catMax,valMax] = Object.entries(porCat).sort((a,b)=>b[1]-a[1])[0]||["nenhuma",0];
-    return `💡 Seu maior gasto é **${catMax}** (${fmt(valMax)}). Aqui vão 3 sugestões:\n1. Revise gastos variáveis em ${catMax}\n2. Negocie contas fixas (internet, planos)\n3. Use a regra 50-30-20 como guia`;
+
+  // Previsão de fechamento
+  if (p.match(/fechar|previsao|vai sobrar|vou terminar|fim do mes|fechamento/)) {
+    if (!prev) return "Adicione lançamentos variáveis para eu calcular a previsão.";
+    const icon = prev.saldoProjetado >= 0 ? "📈" : "📉";
+    return `${icon} **Previsão para ${mesNome(mesAtivo)}:**\n` +
+      `• Gastos fixos: ${fmt(prev.gastoFixo)}\n` +
+      `• Gastos variáveis até agora: ${fmt(prev.gastoVar)}\n` +
+      `• Total projetado: ${fmt(prev.gastoProjetado)}\n` +
+      `• Saldo estimado: **${fmt(prev.saldoProjetado)}**\n` +
+      (prev.saldoProjetado >= 0 ? "✅ Deve fechar positivo!" : "⚠️ Risco de fechar no negativo.");
   }
-  if (p.includes("como estou") || p.includes("situação") || p.includes("situacao")) {
-    const pct = ra.renda>0?(ra.gasto/ra.renda*100).toFixed(0):0;
-    return `📊 Em ${mesNome(mesAtivo)}:\n- Renda: ${fmt(ra.renda)}\n- Gastos: ${fmt(ra.gasto)} (${pct}% da renda)\n- Saldo: ${fmt(ra.saldoMes)}\n${ra.saldoMes>=0?"✅ Você está no positivo!":"⚠️ Gastos maiores que a renda."}`;
+
+  // Economizar / cortar
+  if (p.match(/economizar|cortar|reduzir|gastar menos|poupar mais|onde (posso|da pra|dá)/)) {
+    const [catMax, valMax] = Object.entries(porCat).sort((a,b)=>b[1]-a[1])[0]||["nenhuma",0];
+    const vars = gm.filter(g=>g.tipo==="variavel").reduce((s,g)=>s+g.valor,0);
+    return `💡 **Dicas para economizar:**\n` +
+      `• Maior gasto: **${catMax}** (${fmt(valMax)})\n` +
+      `• Gastos variáveis: ${fmt(vars)} — mais fácil de cortar\n` +
+      `1. Revise assinaturas e serviços recorrentes\n` +
+      `2. Negocie internet, plano de celular\n` +
+      `3. Use a regra 50-30-20 como guia`;
   }
-  if (p.includes("meta") || p.includes("objetivo") || p.includes("poupar")) {
+
+  // Meta / poupança
+  if (p.match(/meta|objetivo|poupar|poupanca|investir|guardar/)) {
     const metaMensal = ra.renda*(state.meta||20)/100;
-    return `🎯 Sua meta é poupar ${state.meta||20}% da renda = **${fmt(metaMensal)}/mês**.\nAtualmente você tem ${fmt(Math.max(ra.saldoMes,0))} disponível.\n${ra.saldoMes>=metaMensal?"✅ Você está atingindo a meta!":"💪 Ainda falta "+fmt(metaMensal-ra.saldoMes)+" para bater a meta."}`;
+    const metas = state.metas||[];
+    let resp = `🎯 **Meta de poupança:** ${state.meta||20}% = ${fmt(metaMensal)}/mês\n` +
+      `• Saldo disponível: ${fmt(Math.max(ra.saldoMes,0))}\n` +
+      (ra.saldoMes >= metaMensal ? "✅ Você está atingindo a meta!" : `💪 Faltam ${fmt(metaMensal-ra.saldoMes)} para bater a meta.`);
+    if (metas.length) resp += `\n\n🎯 Metas cadastradas:\n` + metas.map(m=>`• ${m.icone} ${m.desc}: ${fmt(m.aportado||0)}/${fmt(m.valor)}`).join("\n");
+    return resp;
   }
-  return `Para uma análise detalhada, adicione sua API Key Claude no ⚙️ Config acima. Por enquanto, clique em ✨ Analisar para ver um diagnóstico do mês.`;
+
+  // Maior gasto / categoria
+  if (p.match(/maior gasto|categoria|onde gasto mais|mais gasto/)) {
+    if (!Object.keys(porCat).length) return "Nenhum gasto lançado neste mês ainda.";
+    const sorted = Object.entries(porCat).sort((a,b)=>b[1]-a[1]);
+    return `📦 **Gastos por categoria em ${mesNome(mesAtivo)}:**\n` +
+      sorted.map(([c,v])=>`• ${c}: ${fmt(v)} (${ra.renda>0?((v/ra.renda)*100).toFixed(0):0}%)`).join("\n");
+  }
+
+  // Quitar / dívida / parcela
+  if (p.match(/quitar|divida|parcela|pagar|prazo|meses para/)) {
+    const fixos = gm.filter(g=>g.tipo==="fixo").reduce((s,g)=>s+g.valor,0);
+    const livre = Math.max(ra.saldoMes, 0);
+    if (!livre) return "⚠️ Sem saldo disponível este mês para quitação extra.";
+    const numMatch = p.match(/\d[\d.,]*/);
+    if (numMatch) {
+      const divida = parseFloat(numMatch[0].replace(",","."));
+      const mesesN = Math.ceil(divida/livre);
+      return `💳 Para quitar **${fmt(divida)}** com seu saldo livre de **${fmt(livre)}/mês**:\n→ Você consegue em aproximadamente **${mesesN} mês${mesesN>1?"es":""}**.`;
+    }
+    return `💳 Seu saldo livre este mês é **${fmt(livre)}**. Me diga o valor da dívida e calculo o prazo!`;
+  }
+
+  // Saldo / patrimônio
+  if (p.match(/saldo|patrimonio|acumulado|quanto tenho|valor total/)) {
+    return `🏦 **Resumo patrimonial:**\n• Saldo do mês: ${fmt(ra.saldoMes)}\n• Saldo acumulado: ${fmt(ra.acum)}\n• Poupado no mês: ${fmt(Math.max(ra.saldoMes,0))}`;
+  }
+
+  // Fallback com dados reais
+  if (ra.renda > 0 || gm.length > 0) {
+    return `📊 Em ${mesNome(mesAtivo)} você tem ${fmt(ra.renda)} de renda e ${fmt(ra.gasto)} de gastos (saldo ${fmt(ra.saldoMes)}).\n\nPosso responder sobre: situação do mês, previsão de fechamento, onde economizar, metas, parcelas ou categorias. Qual dessas?`;
+  }
+  return `Ainda não há lançamentos em ${mesNome(mesAtivo)}. Adicione rendas e gastos para que eu possa te ajudar! 💡`;
 }
 
+function mdParaHtml(t) {
+  return t.replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>").replace(/\*([^*]+)\*/g,"<em>$1</em>").replace(/\n/g,"<br>");
+}
 function adicionarMensagemChat(tipo, texto, temp=false) {
   const el = document.getElementById("chat-ia-msgs");
   const isIA = tipo==="ia";
@@ -4395,7 +4499,7 @@ function adicionarMensagemChat(tipo, texto, temp=false) {
   if (temp) div.id = "chat-msg-temp";
   div.innerHTML = `
     <div style="width:28px;height:28px;border-radius:50%;background:${isIA?"#5B8DB8":"#E8B84B"};display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0">${isIA?"🤖":"👤"}</div>
-    <div style="max-width:80%;background:${isIA?"#1e1e3a":"#1a2a1a"};border-radius:${isIA?"4px 12px 12px 12px":"12px 4px 12px 12px"};padding:10px 14px;font-size:13px;line-height:1.6;white-space:pre-wrap">${texto}</div>`;
+    <div style="max-width:80%;background:${isIA?"#1e1e3a":"#1a2a1a"};border-radius:${isIA?"4px 12px 12px 12px":"12px 4px 12px 12px"};padding:10px 14px;font-size:13px;line-height:1.6">${mdParaHtml(texto)}</div>`;
   el.appendChild(div);
   el.scrollTop = el.scrollHeight;
 }
@@ -4411,8 +4515,10 @@ function renderWrapped() {
   // Popular anos disponíveis
   const anos = [...new Set([...state.gastos,...state.rendas].map(x=>x.data?.slice(0,4)).filter(Boolean))].sort().reverse();
   if (!anos.length) { document.getElementById("wrapped-content").innerHTML='<p style="color:#6060a0;text-align:center;padding:40px">Adicione lançamentos para ver o resumo anual.</p>'; return; }
+  // Sempre repopular se necessário
   if (!anoEl.options.length || !anos.includes(anoEl.value)) {
     anoEl.innerHTML = anos.map(a=>`<option value="${a}">${a}</option>`).join("");
+    anoEl.value = anos[0];
   }
   const ano = anoEl.value || anos[0];
   // Calcular stats do ano
@@ -4635,6 +4741,488 @@ function pararDesafio(id) {
   if (state.desafios) delete state.desafios[id];
   persist(); renderDesafios();
   toast("Desafio encerrado","#E8B84B");
+}
+
+// ══════════════════════════════════════════════
+// CONTAS COMPARTILHADAS
+// ══════════════════════════════════════════════
+let grupoAtivo = null; // código do grupo atual
+let grupoSyncInterval = null;
+
+function abrirCompartilhar() {
+  document.getElementById("modal-compartilhar").style.display = "flex";
+  atualizarStatusCompartilhar();
+}
+function fecharCompartilhar() {
+  document.getElementById("modal-compartilhar").style.display = "none";
+}
+function compTab(tab) {
+  document.getElementById("comp-panel-criar").style.display  = tab==="criar"  ? "block" : "none";
+  document.getElementById("comp-panel-entrar").style.display = tab==="entrar" ? "block" : "none";
+  document.getElementById("comp-tab-criar").className  = "btn " + (tab==="criar"  ? "btn-primary" : "btn-gray");
+  document.getElementById("comp-tab-entrar").className = "btn " + (tab==="entrar" ? "btn-primary" : "btn-gray");
+}
+
+function gerarCodigoGrupo() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  return Array.from({length:6}, ()=>chars[Math.floor(Math.random()*chars.length)]).join("");
+}
+
+async function criarGrupo() {
+  if (!fbUserId || !fbToken) { toast("Faça login para criar um grupo","#F28C8C"); return; }
+  const codigo = gerarCodigoGrupo();
+  const grupoData = {
+    codigo, owner: fbUserId, ownerEmail: fbUserEmail,
+    members: [{uid:fbUserId, email:fbUserEmail, nome:fbUserName||fbUserEmail, joined:Date.now()}],
+    criadoEm: Date.now(), dados: JSON.stringify(state)
+  };
+  try {
+    await fbSetGrupo(codigo, grupoData);
+    localStorage.setItem("grupo_codigo", codigo);
+    grupoAtivo = codigo;
+    document.getElementById("comp-codigo-gerado").style.display = "block";
+    document.getElementById("comp-codigo-txt").textContent = codigo;
+    atualizarStatusCompartilhar();
+    iniciarSyncGrupo();
+    toast("Grupo criado! Compartilhe o código 👫","#4FBDBA");
+  } catch(e) {
+    toast("Erro ao criar grupo: "+e.message,"#F28C8C");
+  }
+}
+
+async function entrarGrupo() {
+  const codigo = (document.getElementById("comp-codigo-input").value||"").trim().toUpperCase();
+  if (codigo.length !== 6) { toast("Código deve ter 6 caracteres","#F28C8C"); return; }
+  if (!fbUserId || !fbToken) { toast("Faça login primeiro","#F28C8C"); return; }
+  try {
+    const grupo = await fbGetGrupo(codigo);
+    if (!grupo) { toast("Código inválido ou expirado","#F28C8C"); return; }
+    // Adicionar como membro se ainda não está
+    const jaEMembro = (grupo.members||[]).some(m=>m.uid===fbUserId);
+    if (!jaEMembro) {
+      grupo.members = [...(grupo.members||[]), {uid:fbUserId, email:fbUserEmail, nome:fbUserName||fbUserEmail, joined:Date.now()}];
+      await fbSetGrupo(codigo, grupo);
+    }
+    // Carregar dados do grupo
+    if (grupo.dados) {
+      try {
+        const dadosGrupo = JSON.parse(grupo.dados);
+        state = sanitizeState(dadosGrupo);
+        localStorage.setItem(STORE, JSON.stringify(state));
+        render();
+      } catch(_){}
+    }
+    localStorage.setItem("grupo_codigo", codigo);
+    grupoAtivo = codigo;
+    atualizarStatusCompartilhar();
+    iniciarSyncGrupo();
+    toast("Entrou no grupo de "+grupo.ownerEmail+" ✅","#6DBE8C");
+  } catch(e) {
+    toast("Erro: "+e.message,"#F28C8C");
+  }
+}
+
+async function atualizarStatusCompartilhar() {
+  const statusCard = document.getElementById("comp-status-card");
+  const statusTxt  = document.getElementById("comp-status-txt");
+  const membrosEl  = document.getElementById("comp-membros");
+  const sairWrap   = document.getElementById("comp-sair-wrap");
+  const codigo = grupoAtivo || localStorage.getItem("grupo_codigo");
+  if (!codigo) {
+    statusTxt.innerHTML = '<span style="color:#6060a0">Você está usando uma conta individual</span>';
+    if (membrosEl) membrosEl.innerHTML = "";
+    if (sairWrap) sairWrap.style.display = "none";
+    return;
+  }
+  try {
+    const grupo = await fbGetGrupo(codigo);
+    if (!grupo) {
+      localStorage.removeItem("grupo_codigo"); grupoAtivo = null;
+      statusTxt.innerHTML = '<span style="color:#F28C8C">Grupo não encontrado</span>';
+      return;
+    }
+    const membros = grupo.members||[];
+    statusTxt.innerHTML = `<span style="color:#4FBDBA">👫 Grupo ativo: <strong>${codigo}</strong></span><br><span style="font-size:11px;color:#a0a0c0">${membros.length} membro(s)</span>`;
+    if (membrosEl) membrosEl.innerHTML = `
+      <p style="font-size:12px;color:#a0a0c0;margin-bottom:8px">Membros do grupo:</p>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        ${membros.map(m=>`<div style="display:flex;align-items:center;gap:10px;background:#1e1e3a;border-radius:8px;padding:8px 12px">
+          <div style="width:30px;height:30px;border-radius:50%;background:${m.uid===fbUserId?"#4FBDBA":"#E8B84B"};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff">${(m.nome||m.email).slice(0,1).toUpperCase()}</div>
+          <div><p style="font-size:13px;font-weight:600">${m.nome||m.email} ${m.uid===fbUserId?"(você)":""}</p><p style="font-size:11px;color:#6060a0">${m.email}</p></div>
+        </div>`).join("")}
+      </div>`;
+    if (sairWrap) sairWrap.style.display = "block";
+    // Mostrar botão compartilhar na user-bar
+    const btnComp = document.getElementById("btn-compartilhar");
+    if (btnComp) { btnComp.style.display="block"; btnComp.textContent="👫 "+membros.length; }
+  } catch(e) {}
+}
+
+async function sairDoGrupo() {
+  if (!confirm("Sair do grupo compartilhado? Seus dados locais serão mantidos.")) return;
+  localStorage.removeItem("grupo_codigo");
+  grupoAtivo = null;
+  if (grupoSyncInterval) { clearInterval(grupoSyncInterval); grupoSyncInterval = null; }
+  const btnComp = document.getElementById("btn-compartilhar");
+  if (btnComp) btnComp.style.display = "none";
+  atualizarStatusCompartilhar();
+  toast("Saiu do grupo","#E8B84B");
+}
+
+function copiarCodigo() {
+  const c = document.getElementById("comp-codigo-txt")?.textContent;
+  if (c) { navigator.clipboard?.writeText(c).then(()=>toast("Código copiado!","#4FBDBA")); }
+}
+
+function iniciarSyncGrupo() {
+  if (grupoSyncInterval) clearInterval(grupoSyncInterval);
+  // Sync a cada 15 segundos
+  grupoSyncInterval = setInterval(async()=>{
+    const codigo = grupoAtivo || localStorage.getItem("grupo_codigo");
+    if (!codigo || !fbUserId) return;
+    try {
+      // Salvar estado atual no grupo
+      const grupo = await fbGetGrupo(codigo);
+      if (!grupo) return;
+      const agora = Date.now();
+      // Só sobrescrever se este user editou mais recente
+      const dadosAtuais = grupo.dados ? JSON.parse(grupo.dados) : null;
+      const tsGrupo = dadosAtuais?._savedAt || 0;
+      if ((state._savedAt||0) >= tsGrupo) {
+        grupo.dados = JSON.stringify(state);
+        grupo.lastSync = {uid:fbUserId, at:agora};
+        await fbSetGrupo(codigo, grupo);
+      } else {
+        // Outro membro editou — mesclar
+        const merged = sanitizeState({
+          ...dadosAtuais,
+          gastos: mergeById(state.gastos, dadosAtuais.gastos),
+          rendas: mergeById(state.rendas, dadosAtuais.rendas),
+          pagamentos: Object.assign({}, dadosAtuais.pagamentos||{}, state.pagamentos||{}),
+          antecipados: Object.assign({}, dadosAtuais.antecipados||{}, state.antecipados||{}),
+          _savedAt: agora
+        });
+        state = merged;
+        localStorage.setItem(STORE, JSON.stringify(state));
+        render();
+        toast("🔄 Dados atualizados por outro membro","#4FBDBA");
+      }
+    } catch(e) {}
+  }, 15000);
+}
+
+// Firebase REST — grupo
+async function fbSetGrupo(codigo, data) {
+  if (!fbToken) fbToken = localStorage.getItem("fb_token");
+  const fields = { dados: { stringValue: JSON.stringify(data) } };
+  let r = await fetch(FB_DB_URL + "/grupos/" + codigo + "?updateMask.fieldPaths=dados", {
+    method:"PATCH", headers:{"Content-Type":"application/json","Authorization":"Bearer "+fbToken},
+    body: JSON.stringify({fields})
+  });
+  if (r.status===401) { await fbRefreshToken(); r = await fetch(FB_DB_URL + "/grupos/" + codigo + "?updateMask.fieldPaths=dados", {method:"PATCH",headers:{"Content-Type":"application/json","Authorization":"Bearer "+fbToken},body:JSON.stringify({fields})}); }
+}
+async function fbGetGrupo(codigo) {
+  if (!fbToken) fbToken = localStorage.getItem("fb_token");
+  let r = await fetch(FB_DB_URL + "/grupos/" + codigo, {headers:{"Authorization":"Bearer "+fbToken}});
+  if (r.status===401) { await fbRefreshToken(); r = await fetch(FB_DB_URL + "/grupos/" + codigo, {headers:{"Authorization":"Bearer "+fbToken}}); }
+  if (r.status===404) return null;
+  const d = await r.json();
+  if (d.fields?.dados) return JSON.parse(d.fields.dados.stringValue);
+  return null;
+}
+
+// ══════════════════════════════════════════════
+// NOTIFICAÇÕES PUSH REAIS (Web Push API)
+// ══════════════════════════════════════════════
+const VAPID_PUBLIC = "BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjZkiDgMGsKIy2IkPNXQRYCgxOgfY";
+
+async function ativarNotificacoesPush() {
+  const btn = document.getElementById("btn-push-ativar");
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+    toast("Notificações push não suportadas neste navegador","#F28C8C"); return;
+  }
+  try {
+    const perm = await Notification.requestPermission();
+    if (perm !== "granted") { toast("Permissão de notificação negada","#F28C8C"); return; }
+    const reg = await navigator.serviceWorker.ready;
+    // Tentar subscrever (pode falhar se VAPID key não bate com SW)
+    try {
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC)
+      });
+      const subJson = JSON.stringify(sub);
+      localStorage.setItem("push_subscription", subJson);
+      localStorage.setItem("push_ativo", "1");
+      if (btn) { btn.textContent = "✅ Push ativo"; btn.style.background="#1a2a1a"; btn.style.color="#6DBE8C"; }
+      toast("Notificações push ativadas! 🔔","#6DBE8C");
+      // Salvar subscription no Firebase para notificações remotas
+      if (fbUserId) await salvarPushSubscription(subJson);
+    } catch(e) {
+      // Fallback: usar notificações locais (sem push server)
+      localStorage.setItem("push_ativo", "1");
+      if (btn) { btn.textContent = "✅ Notificações ativas"; btn.style.background="#1a2a1a"; btn.style.color="#6DBE8C"; }
+      toast("Notificações locais ativadas! 🔔","#6DBE8C");
+    }
+  } catch(e) {
+    toast("Erro: "+e.message,"#F28C8C");
+  }
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - base64String.length%4)%4);
+  const base64 = (base64String+padding).replace(/-/g,"+").replace(/_/g,"/");
+  const raw = window.atob(base64);
+  return new Uint8Array([...raw].map(c=>c.charCodeAt(0)));
+}
+
+async function salvarPushSubscription(subJson) {
+  try {
+    const fields = { pushSub: { stringValue: subJson } };
+    await fetch(FB_DB_URL + "/push_subs/" + fbUserId + "?updateMask.fieldPaths=pushSub", {
+      method:"PATCH", headers:{"Content-Type":"application/json","Authorization":"Bearer "+fbToken},
+      body: JSON.stringify({fields})
+    });
+  } catch(_) {}
+}
+
+// Verificar vencimentos e disparar push local
+function verificarPushVencimentos() {
+  if (localStorage.getItem("push_ativo") !== "1") return;
+  if (Notification.permission !== "granted") return;
+  const hoje = new Date();
+  const hojeStr = hoje.getFullYear()+"-"+String(hoje.getMonth()+1).padStart(2,"0")+"-"+String(hoje.getDate()).padStart(2,"0");
+  const amanha = new Date(hoje); amanha.setDate(amanha.getDate()+1);
+  const amanhaStr = amanha.getFullYear()+"-"+String(amanha.getMonth()+1).padStart(2,"0")+"-"+String(amanha.getDate()).padStart(2,"0");
+  const gm = gastosMes();
+  const vencendoHoje   = gm.filter(g=>g.data===hojeStr   && !isPagoMes(g.id,mesAtivo));
+  const vencendoAmanha = gm.filter(g=>g.data===amanhaStr && !isPagoMes(g.id,mesAtivo));
+  if (vencendoHoje.length) {
+    new Notification("🔔 Finanças Pessoais", {
+      body: `${vencendoHoje.length} conta(s) vencem HOJE: ${vencendoHoje.map(g=>g.desc).join(", ")}`,
+      icon: "/favicon.ico", tag: "venc-hoje"
+    });
+  }
+  if (vencendoAmanha.length) {
+    new Notification("⏰ Finanças Pessoais", {
+      body: `${vencendoAmanha.length} conta(s) vencem amanhã: ${vencendoAmanha.map(g=>g.desc).join(", ")}`,
+      icon: "/favicon.ico", tag: "venc-amanha"
+    });
+  }
+}
+
+// ══════════════════════════════════════════════
+// WHATSAPP BOT (CallMeBot + comandos)
+// ══════════════════════════════════════════════
+function abrirWhatsApp() {
+  document.getElementById("modal-whatsapp").style.display = "flex";
+  const num = localStorage.getItem("wa_numero");
+  const key = localStorage.getItem("wa_apikey");
+  if (num) document.getElementById("wa-numero").value = num;
+  if (key) document.getElementById("wa-apikey").value = key;
+}
+
+async function salvarWhatsApp() {
+  const num = document.getElementById("wa-numero").value.trim().replace(/\D/g,"");
+  const key = document.getElementById("wa-apikey").value.trim();
+  if (!num || !key) { toast("Preencha número e API Key","#F28C8C"); return; }
+  localStorage.setItem("wa_numero", num);
+  localStorage.setItem("wa_apikey", key);
+  // Enviar mensagem de teste
+  const ok = await enviarWhatsApp("✅ *Finanças Pessoais* conectado!\n\nComandos disponíveis:\n• *gastei 50 almoço* → registra gasto\n• *saldo* → ver resumo\n• *resumo* → relatório completo");
+  if (ok) {
+    toast("✅ WhatsApp configurado! Verifique sua mensagem.","#25D366");
+    document.getElementById("modal-whatsapp").style.display = "none";
+  }
+}
+
+async function enviarWhatsApp(mensagem) {
+  const num = localStorage.getItem("wa_numero");
+  const key = localStorage.getItem("wa_apikey");
+  if (!num || !key) return false;
+  try {
+    const url = `https://api.callmebot.com/whatsapp.php?phone=${num}&text=${encodeURIComponent(mensagem)}&apikey=${key}`;
+    await fetch(url, {mode:"no-cors"});
+    return true;
+  } catch(e) {
+    console.warn("WhatsApp erro:", e);
+    return false;
+  }
+}
+
+// Processar comando recebido via WhatsApp (chamado por webhook externo via URL param)
+function processarComandoWhatsApp(texto) {
+  const t = texto.toLowerCase().trim();
+  const ra = resumoAtivo();
+  if (t === "saldo" || t === "resumo rápido") {
+    const msg = `💰 *${mesNome(mesAtivo)}*\nRenda: R$ ${ra.renda.toFixed(2)}\nGastos: R$ ${ra.gasto.toFixed(2)}\nSaldo: R$ ${ra.saldoMes.toFixed(2)}`;
+    enviarWhatsApp(msg);
+    return;
+  }
+  if (t === "resumo") {
+    const gm = gastosMes();
+    const porCat = {};
+    gm.forEach(g=>{ porCat[g.cat]=(porCat[g.cat]||0)+g.valor; });
+    const cats = Object.entries(porCat).sort((a,b)=>b[1]-a[1]).map(([c,v])=>`• ${c}: R$ ${v.toFixed(2)}`).join("\n");
+    enviarWhatsApp(`📊 *Resumo ${mesNome(mesAtivo)}*\n\n${cats}\n\n💰 Total: R$ ${ra.gasto.toFixed(2)}`);
+    return;
+  }
+  // Padrão: "gastei X descrição" ou "X descrição"
+  const match = t.match(/(gastei|paguei|comprei|)?\s*([\d]+[,.]?[\d]*)\s+(.+)/);
+  if (match) {
+    const valor = parseFloat(match[2].replace(",","."));
+    const descRaw = match[3].trim();
+    const catMap = {"almoç|jant|lanch|mercado|supermerc|ifood|restaur":"Alimentação","uber|taxi|gasolina|combustiv|onibus":"Transporte","aluguel|condomin|luz|agua|internet":"Moradia","farmacia|medico|saude|remedio":"Saúde","cinema|netflix|spotify|academia":"Lazer"};
+    let cat = "Outros";
+    for (const [k,v] of Object.entries(catMap)) { if(new RegExp(k,"i").test(descRaw)){cat=v;break;} }
+    state.gastos.push({id:mkId(),desc:descRaw,valor,cat,tipo:"variavel",data:document.getElementById("g-data")?.value||todayS(),notas:"Via WhatsApp"});
+    persist();
+    render();
+    enviarWhatsApp(`✅ Registrado!\n📦 *${descRaw}* — R$ ${valor.toFixed(2)}\n📁 Categoria: ${cat}`);
+    return;
+  }
+  enviarWhatsApp("❓ Não entendi. Tente: *gastei 50 almoço* ou *saldo*");
+}
+
+// ══════════════════════════════════════════════
+// OPEN BANKING — Importadores específicos por banco
+// ══════════════════════════════════════════════
+const PARSERS_BANCO = {
+  nubank: {
+    nome: "Nubank",
+    detectar: (header) => header.includes("date") && header.includes("title") && header.includes("amount"),
+    parsear: (linhas) => {
+      return linhas.slice(1).map(l=>{
+        const cols = l.split(",");
+        if (cols.length < 3) return null;
+        const data = cols[0]?.trim(); // YYYY-MM-DD
+        const desc = cols[1]?.trim().replace(/"/g,"");
+        const valor = Math.abs(parseFloat(cols[2]?.trim())||0);
+        if (!valor) return null;
+        return {desc, valor, data, tipo:"variavel"};
+      }).filter(Boolean);
+    }
+  },
+  inter: {
+    nome: "Banco Inter",
+    detectar: (header) => header.includes("Data Lançamento") || header.includes("Histórico"),
+    parsear: (linhas) => {
+      return linhas.slice(1).map(l=>{
+        const cols = l.split(";");
+        if (cols.length < 3) return null;
+        const dataRaw = cols[0]?.trim(); // DD/MM/YYYY
+        const desc = cols[1]?.trim().replace(/"/g,"");
+        const valorStr = (cols[2]||"0").trim().replace(/\./g,"").replace(",",".").replace(/"/g,"");
+        const valor = Math.abs(parseFloat(valorStr)||0);
+        if (!valor || !dataRaw) return null;
+        const [d,m,a] = dataRaw.split("/");
+        const data = a+"-"+m+"-"+d;
+        return {desc, valor, data, tipo:"variavel"};
+      }).filter(Boolean);
+    }
+  },
+  bradesco: {
+    nome: "Bradesco",
+    detectar: (header) => header.includes("Lançamentos") || (header.includes("Data") && header.includes("Valor")),
+    parsear: (linhas) => {
+      return linhas.slice(2).map(l=>{
+        const cols = l.split(";");
+        if (cols.length < 4) return null;
+        const dataRaw = cols[0]?.trim();
+        const desc = cols[2]?.trim().replace(/"/g,"");
+        const valorStr = (cols[3]||"0").replace(/\./g,"").replace(",",".").replace(/"/g,"");
+        const valor = Math.abs(parseFloat(valorStr)||0);
+        if (!valor || !dataRaw) return null;
+        const [d,m,a] = dataRaw.split("/");
+        const data = (a?.length===2?"20"+a:a)+"-"+m+"-"+d;
+        return {desc, valor, data, tipo:"variavel"};
+      }).filter(Boolean);
+    }
+  }
+};
+
+function detectarBanco(texto) {
+  const header = texto.split("\n")[0].toLowerCase();
+  for (const [id, parser] of Object.entries(PARSERS_BANCO)) {
+    if (parser.detectar(header)) return {id, ...parser};
+  }
+  return null;
+}
+
+function processarExtratoComParser(texto, banco) {
+  try {
+    const linhas = texto.split("\n").filter(l=>l.trim());
+    const itens = banco.parsear(linhas);
+    return itens.map(item => {
+      // Detectar categoria
+      const catMap = {"mercado|supermercado|extra|carrefour|pao de acucar|ifood|rappi|aliment|restaur|lanche|padaria":"Alimentação","uber|99pop|taxi|combustiv|gasolina|pedagio|estacion|metro|onibus":"Transporte","aluguel|condomin|iptu|energia|agua|luz|gas|internet|tim|claro|vivo|oi ":"Moradia","farmacia|drogaria|ultrafarma|medico|hospital|plano|saude|lab":"Saúde","netflix|spotify|amazon|steam|cinema|academia|clube|lazer":"Lazer","escola|colegio|faculdade|curso|livro":"Educação","c&a|renner|zara|hm|riachuelo|roupa|sapato":"Vestuário"};
+      let cat = "Outros";
+      for (const [k,v] of Object.entries(catMap)) { if(new RegExp(k,"i").test(item.desc)){cat=v;break;} }
+      return {...item, cat, selecionado:true, idx:Math.random()};
+    });
+  } catch(e) { return []; }
+}
+
+// Override da função processarExtrato para detectar banco automaticamente
+const _processarExtrato_orig = window.processarExtrato;
+function processarExtrato() {
+  const texto = document.getElementById("importar-texto").value.trim();
+  if (!texto) { toast("Cole o extrato no campo acima","#F28C8C"); return; }
+  const banco = detectarBanco(texto);
+  if (banco) {
+    toast(`Formato ${banco.nome} detectado! 🏦`,"#4FBDBA");
+    _importarLinhas = processarExtratoComParser(texto, banco);
+  } else {
+    // Usar parser genérico (já existente)
+    const linhas = texto.split("\n").map(l=>l.trim()).filter(l=>l.length>3);
+    _importarLinhas = [];
+    linhas.forEach((linha,i)=>{
+      const valorMatch = linha.match(/R?\$?\s*([\d\.]+,\d{2})/);
+      if (!valorMatch) return;
+      const valor = parseFloat(valorMatch[1].replace(/\./g,"").replace(",","."));
+      if (!valor||valor<=0) return;
+      let desc = linha.replace(valorMatch[0],"").replace(/[*\/\\|]/g," ").trim().replace(/\s{2,}/g," ").slice(0,60);
+      const dataMatch = linha.match(/(\d{2})[\/\-](\d{2})(?:[\/\-](\d{2,4}))?/);
+      let data = mesAtivo+"-15";
+      if (dataMatch) { const dia=dataMatch[1],mes=dataMatch[2],ano=dataMatch[3]?(dataMatch[3].length===2?"20"+dataMatch[3]:dataMatch[3]):mesAtivo.slice(0,4); data=ano+"-"+mes.padStart(2,"0")+"-"+dia.padStart(2,"0"); }
+      const catMap = {"mercado|supermercado|aliment|restaurante|ifood|lanch|cafe|padaria":"Alimentação","aluguel|condominio|iptu|energia|agua|luz|gas|internet|tim|claro|vivo":"Moradia","uber|99|taxi|onibus|metro|combustivel|gasolina|estacion|pedagio":"Transporte","farmacia|drogaria|medico|hospital|plano|saude|laboratorio":"Saúde","cinema|netflix|spotify|amazon|steam|academia|clube":"Lazer","escola|colegio|faculdade|curso|livro|uft|unifor":"Educação","c&a|renner|zara|hm|riachuelo|roupa|sapato":"Vestuário"};
+      let cat = "Outros";
+      for (const [k,c] of Object.entries(catMap)) { if(new RegExp(k,"i").test(linha)){cat=c;break;} }
+      _importarLinhas.push({desc,valor,cat,data,selecionado:true,idx:i});
+    });
+  }
+  const preview = document.getElementById("importar-preview");
+  if (!_importarLinhas.length) { preview.innerHTML="<p style='color:#F28C8C;padding:12px'>Nenhum lançamento encontrado.</p>"; return; }
+  preview.innerHTML = `
+    <p style="font-size:12px;color:#a0a0c0;margin-bottom:8px">${_importarLinhas.length} lançamento(s)${banco?" — "+banco.nome:""}. Desmarque os que não quer importar:</p>
+    <div style="display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto">
+    ${_importarLinhas.map((l,i)=>`
+      <label style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:#1e1e3a;border-radius:8px;cursor:pointer">
+        <input type="checkbox" ${l.selecionado?"checked":""} onchange="_importarLinhas[${i}].selecionado=this.checked" style="width:16px;height:16px">
+        <div style="flex:1">
+          <p style="font-size:13px;font-weight:600">${l.desc}</p>
+          <p style="font-size:11px;color:#a0a0c0">${l.cat} · R$ ${l.valor.toFixed(2).replace(".",",")} · ${new Date(l.data+"T12:00").toLocaleDateString("pt-BR")}</p>
+        </div>
+      </label>`).join("")}
+    </div>
+    <button class="btn btn-primary" onclick="confirmarImportar()" style="margin-top:12px;width:100%">✅ Importar selecionados</button>`;
+}
+
+// ══════════════════════════════════════════════
+// INIT: verificar grupo e push ao carregar
+// ══════════════════════════════════════════════
+function initRecursosExtras() {
+  // Retomar grupo compartilhado
+  const codigo = localStorage.getItem("grupo_codigo");
+  if (codigo) { grupoAtivo = codigo; iniciarSyncGrupo(); atualizarStatusCompartilhar(); }
+  // Verificar vencimentos ao abrir
+  setTimeout(verificarPushVencimentos, 3000);
+  // Verificar vencimentos diariamente
+  setInterval(verificarPushVencimentos, 3600000);
+  // Processar comando WhatsApp via URL param
+  const params = new URLSearchParams(location.search);
+  const waCmd = params.get("wa_cmd");
+  if (waCmd) { setTimeout(()=>processarComandoWhatsApp(decodeURIComponent(waCmd)), 2000); }
 }
 
 // ══════════════════════════════════════════════
@@ -5293,6 +5881,7 @@ function atualizarDataPadraoGasto() {
 // ══════════════════════════════════════════════
 load();
 inicializarGestos();
+initRecursosExtras();
 document.getElementById("g-data").value = todayS();
 document.getElementById("r-data").value = todayS();
 
@@ -5760,6 +6349,11 @@ if (fbToken && fbUserId) {
       </div>
       <p id="ia-api-status" style="font-size:11px;margin-top:6px;color:#6060a0"></p>
     </div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button onclick="abrirWhatsApp()" style="flex:1;padding:9px;background:linear-gradient(135deg,#25D366,#128C7E);border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer">🟢 WhatsApp Bot</button>
+      <button id="btn-push-ativar" onclick="ativarNotificacoesPush()" style="flex:1;padding:9px;background:#1e1e3a;border:1px solid #E8B84B44;border-radius:10px;color:#E8B84B;font-size:13px;cursor:pointer">🔔 Ativar Push</button>
+      <button onclick="abrirCompartilhar()" style="flex:1;padding:9px;background:#1e1e3a;border:1px solid #4FBDBA44;border-radius:10px;color:#4FBDBA;font-size:13px;cursor:pointer">👫 Compartilhar</button>
+    </div>
   </div>
 
   <!-- Análise rápida do mês -->
@@ -5877,6 +6471,86 @@ if (fbToken && fbUserId) {
       <div><p class="txt-muted" style="margin-bottom:4px">Número de pessoas</p><input id="div-pessoas" type="number" placeholder="Ex: 3" min="2" max="20" value="2" oninput="calcDivisao()"/></div>
     </div>
     <div id="div-resultado"></div>
+  </div>
+</div>
+
+
+<!-- ═══ MODAL CONTAS COMPARTILHADAS ═══ -->
+<div id="modal-compartilhar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:3000;align-items:center;justify-content:center">
+  <div style="background:#13132b;border:1px solid #4FBDBA44;border-radius:20px;padding:24px;max-width:360px;width:94%;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <h3 style="font-size:16px;font-weight:700">👫 Conta Compartilhada</h3>
+      <button onclick="fecharCompartilhar()" class="btn-fechar-modal" style="border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;line-height:1;border:1px solid">×</button>
+    </div>
+    <!-- Status atual -->
+    <div id="comp-status-card" style="background:#1e1e3a;border-radius:12px;padding:14px;margin-bottom:16px;text-align:center">
+      <p id="comp-status-txt" style="color:#a0a0c0;font-size:13px">Carregando...</p>
+    </div>
+    <!-- Tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button id="comp-tab-criar" onclick="compTab('criar')" class="btn btn-primary" style="flex:1;font-size:12px">✨ Criar grupo</button>
+      <button id="comp-tab-entrar" onclick="compTab('entrar')" class="btn btn-gray" style="flex:1;font-size:12px">🔗 Entrar com código</button>
+    </div>
+    <!-- Criar grupo -->
+    <div id="comp-panel-criar">
+      <p style="font-size:13px;color:#a0a0c0;margin-bottom:12px">Crie um grupo e compartilhe o código com seu parceiro(a).</p>
+      <button class="btn btn-primary" onclick="criarGrupo()" style="width:100%;margin-bottom:10px">🚀 Criar novo grupo</button>
+      <div id="comp-codigo-gerado" style="display:none">
+        <p style="font-size:12px;color:#a0a0c0;margin-bottom:6px">Código do grupo (compartilhe):</p>
+        <div style="background:#0d0d1a;border:2px dashed #4FBDBA;border-radius:10px;padding:14px;text-align:center">
+          <p id="comp-codigo-txt" style="font-size:28px;font-weight:800;letter-spacing:6px;color:#4FBDBA"></p>
+          <button onclick="copiarCodigo()" class="btn btn-gray" style="font-size:11px;margin-top:8px;padding:4px 12px">📋 Copiar</button>
+        </div>
+      </div>
+    </div>
+    <!-- Entrar com código -->
+    <div id="comp-panel-entrar" style="display:none">
+      <p style="font-size:13px;color:#a0a0c0;margin-bottom:12px">Digite o código recebido do seu parceiro(a).</p>
+      <input id="comp-codigo-input" placeholder="Ex: ABC123" maxlength="6" style="text-align:center;font-size:22px;letter-spacing:6px;text-transform:uppercase;font-weight:700;margin-bottom:10px"/>
+      <button class="btn btn-primary" onclick="entrarGrupo()" style="width:100%">🔗 Entrar no grupo</button>
+    </div>
+    <!-- Membros -->
+    <div id="comp-membros" style="margin-top:16px"></div>
+    <!-- Sair do grupo -->
+    <div id="comp-sair-wrap" style="display:none;margin-top:12px">
+      <button onclick="sairDoGrupo()" class="btn btn-gray" style="width:100%;color:#F28C8C;border-color:#F28C8C44;font-size:12px">🚪 Sair do grupo</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL WHATSAPP BOT ═══ -->
+<div id="modal-whatsapp" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:3000;align-items:center;justify-content:center">
+  <div style="background:#13132b;border:1px solid #25D36644;border-radius:20px;padding:24px;max-width:360px;width:94%;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <h3 style="font-size:16px;font-weight:700">🟢 WhatsApp Bot</h3>
+      <button onclick="document.getElementById('modal-whatsapp').style.display='none'" class="btn-fechar-modal" style="border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;line-height:1;border:1px solid">×</button>
+    </div>
+    <p style="font-size:13px;color:#a0a0c0;margin-bottom:14px">Envie gastos pelo WhatsApp! Digite no seu WhatsApp e o bot registra automaticamente.</p>
+    <!-- CallMeBot setup -->
+    <div style="background:#0d1a0d;border:1px solid #25D36633;border-radius:12px;padding:14px;margin-bottom:14px">
+      <p style="font-size:13px;font-weight:700;color:#25D366;margin-bottom:8px">📱 Configuração (CallMeBot — grátis)</p>
+      <ol style="font-size:12px;color:#a0a0c0;padding-left:16px;line-height:2">
+        <li>Adicione <strong style="color:#25D366">+34 644 59 71 26</strong> aos seus contatos</li>
+        <li>Envie: <strong style="color:#e8e8f0">I allow callmebot to send me messages</strong></li>
+        <li>Você receberá sua API Key por WhatsApp</li>
+        <li>Cole a API Key abaixo</li>
+      </ol>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+      <div><p class="txt-muted" style="margin-bottom:4px">Seu número (com DDI)</p><input id="wa-numero" placeholder="Ex: 5521999999999" type="tel"/></div>
+      <div><p class="txt-muted" style="margin-bottom:4px">API Key CallMeBot</p><input id="wa-apikey" placeholder="Ex: 1234567"/></div>
+    </div>
+    <button class="btn btn-primary" onclick="salvarWhatsApp()" style="width:100%;margin-bottom:10px;background:linear-gradient(135deg,#25D366,#128C7E)">💾 Salvar e testar</button>
+    <div style="background:#1e1e3a;border-radius:12px;padding:12px">
+      <p style="font-size:12px;font-weight:700;margin-bottom:8px">📋 Comandos disponíveis</p>
+      <div style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:#a0a0c0">
+        <p><strong style="color:#25D366">gastei 50 almoço</strong> → registra R$50 em Alimentação</p>
+        <p><strong style="color:#25D366">uber 35</strong> → registra R$35 em Transporte</p>
+        <p><strong style="color:#25D366">saldo</strong> → mostra resumo do mês</p>
+        <p><strong style="color:#25D366">resumo</strong> → envia relatório completo</p>
+      </div>
+    </div>
+    <p style="font-size:11px;color:#4060a0;margin-top:10px;text-align:center">Para receber comandos via WhatsApp, configure um webhook n8n/Zapier no ⚙️ Config da IA</p>
   </div>
 </div>
 
