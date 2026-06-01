@@ -2046,14 +2046,17 @@ function salvarGasto() {
     const fim = document.getElementById("g-rec-fim").value;
     if (!ini || !fim) { toast("Informe o mês de início e término","#F28C8C"); return; }
     if (fim < ini)    { toast("Término deve ser após o início","#F28C8C"); return; }
-    obj.data       = ini + "-01";
+    // Usar o dia do vencimento escolhido (ou 01 se não informado)
+    const diaVenc = data ? data.slice(8,10) : "01";
+    obj.data       = ini + "-" + diaVenc;
     obj.recorrente = true;
     obj.mesFimRec  = fim;
   } else if (modoRep === "parcelado") {
     const mesIni  = document.getElementById("g-mes-ini").value;
     const parcelas = parseInt(document.getElementById("g-parcelas").value)||0;
     if (!mesIni || parcelas < 1) { toast("Informe o mês de início e nº de parcelas","#F28C8C"); return; }
-    obj.data          = mesIni + "-01";
+    const diaVenc2 = data ? data.slice(8,10) : "01";
+    obj.data          = mesIni + "-" + diaVenc2;
     obj.parcelado     = true;
     obj.totalParcelas = parcelas;
   } else {
