@@ -1607,6 +1607,8 @@ function renderDashboard() {
 }
 
 function renderLancamentos() {
+  // Atualizar data padrão do vencimento para o mês ativo
+  atualizarDataPadraoGasto();
   // Selects de categoria
   const gCat = document.getElementById("g-cat");
   if (!gCat.options.length) CAT_GASTOS.forEach(c=>{ const o=document.createElement("option"); o.value=c.nome; o.textContent=c.icone+" "+c.nome; gCat.appendChild(o); });
@@ -2045,8 +2047,22 @@ function salvarGasto() {
     obj.parcelado     = true;
     obj.totalParcelas = parcelas;
   } else {
-    if (!data) { toast("Informe a data","#F28C8C"); return; }
-    obj.data = data;
+    if (!data) { toast("Informe a data de vencimento","#F28C8C"); return; }
+    // Avisar se o vencimento é de outro mês (gasto ficaria invisível)
+    if (data.slice(0,7) !== mesAtivo) {
+      const nomeMesData = mesNome(data.slice(0,7));
+      const nomeMesAtivo = mesNome(mesAtivo);
+      // Ajustar automaticamente para o mês ativo mantendo o dia
+      const dia = data.slice(8,10);
+      const [ano, mes] = mesAtivo.split("-").map(Number);
+      const ultimoDia = new Date(ano, mes, 0).getDate();
+      const diaFinal = Math.min(parseInt(dia), ultimoDia);
+      const dataAjustada = mesAtivo+"-"+String(diaFinal).padStart(2,"0");
+      obj.data = dataAjustada;
+      toast("Vencimento ajustado para "+mesNome(mesAtivo),"#E8B84B");
+    } else {
+      obj.data = data;
+    }
   }
 
   if (editGId) {
@@ -4037,6 +4053,17 @@ function atualizarBadgePremium() {
   if (avatar && prem) {
     avatar.style.background = "linear-gradient(135deg,#E8B84B,#E07B54)";
   }
+}
+
+// Atualiza data padrão do formulário de gasto para o último dia do mês ativo
+function atualizarDataPadraoGasto() {
+  const el = document.getElementById("g-data");
+  if (!el) return;
+  // Último dia do mês ativo
+  const [ano, mes] = mesAtivo.split("-").map(Number);
+  const ultimoDia = new Date(ano, mes, 0); // dia 0 do próximo mês = último do atual
+  const val = ultimoDia.getFullYear()+"-"+String(ultimoDia.getMonth()+1).padStart(2,"0")+"-"+String(ultimoDia.getDate()).padStart(2,"0");
+  el.value = val;
 }
 
 // INIT
