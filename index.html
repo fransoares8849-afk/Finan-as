@@ -346,8 +346,10 @@ body.tema-claro ::-webkit-scrollbar-thumb { background: #cbd5e0; }
       <button class="tab" onclick="showAba('plano')">🎯 Plano</button>
       <button class="tab" onclick="showAba('score')">⭐ Score</button>
       <button class="tab" onclick="showAba('ia')">🤖 IA</button>
-      <button class="tab" onclick="showAba('wrapped')">🎵 Wrapped</button>
+      <button class="tab" onclick="showAba('wrapped')">📅 Ano</button>
+      <button class="tab" onclick="showAba('calendario')">🗓️ Calendário</button>
       <button class="tab" onclick="showAba('extras')">💡 Extras</button>
+      <button class="btn btn-gray" onclick="abrirConfig()" style="padding:7px 12px;font-size:12px;background:#1a1a2a;color:#a0a0c0;border-color:#2d2d4e">⚙️</button>
       <button class="btn btn-gray" onclick="gerarPDF()" style="padding:7px 12px;font-size:12px;background:#1a1a2a;color:#E8B84B;border-color:#E8B84B44">📄 PDF</button>
       <button class="btn btn-gray" onclick="exportCSV()" style="padding:7px 12px;font-size:12px">⬇️ CSV</button>
       <button class="btn btn-gray" onclick="exportJSON()" style="padding:7px 12px;font-size:12px;background:#1a2a1a;color:#6DBE8C;border-color:#6DBE8C44">💾 Backup</button>
@@ -1063,6 +1065,14 @@ body.tema-claro ::-webkit-scrollbar-thumb { background: #cbd5e0; }
     </div>
   </div>
 
+  <!-- Score Histórico -->
+  <div class="card" style="margin-bottom:14px">
+    <h2 style="font-size:14px;margin-bottom:4px">📈 Evolução do Score</h2>
+    <p class="txt-muted" style="font-size:12px;margin-bottom:12px">Seu score financeiro ao longo dos meses</p>
+    <div id="score-historico-chart" style="display:flex;align-items:flex-end;gap:4px;height:80px;margin-bottom:8px"></div>
+    <div id="score-historico-labels" style="display:flex;gap:4px;margin-top:4px"></div>
+  </div>
+
   <!-- Conquistas -->
   <div class="card" style="margin-bottom:14px">
     <h2 style="font-size:15px;margin-bottom:12px">🏆 Conquistas</h2>
@@ -1528,9 +1538,10 @@ function showAba(id) {
   document.querySelectorAll("#header-tabs .tab").forEach(b=>b.classList.remove("on"));
   event.target.classList.add("on");
   render();
-  if (id === "score")   renderScore();
-  if (id === "wrapped") renderWrapped();
-  if (id === "extras")  renderExtras();
+  if (id === "score")     { renderScore(); renderScoreHistorico(); }
+  if (id === "wrapped")   renderWrapped();
+  if (id === "extras")    renderExtras();
+  if (id === "calendario") renderCalendario();
 }
 function showSubAba(id) {
   document.getElementById("sub-gastos").style.display = id==="gastos"?"block":"none";
@@ -1554,9 +1565,11 @@ function render() {
   renderPlano();
   renderExtras();
   const secScore = document.getElementById("sec-score");
-  if (secScore && secScore.classList.contains("on")) renderScore();
+  if (secScore && secScore.classList.contains("on")) { renderScore(); renderScoreHistorico(); }
   const secWrapped = document.getElementById("sec-wrapped");
   if (secWrapped && secWrapped.classList.contains("on")) renderWrapped();
+  const secCal = document.getElementById("sec-calendario");
+  if (secCal && secCal.classList.contains("on")) renderCalendario();
   mostrarFab();
 }
 
@@ -1865,14 +1878,18 @@ function renderPoupanca() {
   const mesesG = Object.keys(porMes).sort().slice(-8);
   const maxV = Math.max(...mesesG.map(m=>porMes[m]),1);
   document.getElementById("poup-chart-wrap").style.display = "block";
-  document.getElementById("poup-chart").innerHTML = mesesG.map(m=>`
-    <div class="chart-bar-col">
+  const chartEl = document.getElementById("poup-chart");
+  chartEl.style.height = Math.min(mesesG.length * 40 + 60, 140) + "px";
+  chartEl.innerHTML = mesesG.map(m=>{
+    const pct = Math.max((porMes[m]/maxV)*80, 4);
+    return `<div class="chart-bar-col">
       <div style="flex:1;display:flex;align-items:flex-end;width:100%">
-        <div class="chart-bar" style="background:linear-gradient(180deg,#6DBE8C,#4FBDBA);height:${(porMes[m]/maxV)*110}px;width:100%"></div>
+        <div class="chart-bar" style="background:linear-gradient(180deg,#6DBE8C,#4FBDBA);height:${pct}px;width:100%"></div>
       </div>
       <span class="chart-lbl">${mesLabel(m)}</span>
-      <span class="chart-lbl" style="color:#6DBE8C">${(porMes[m]/1000).toFixed(1)}k</span>
-    </div>`).join("");
+      <span class="chart-lbl" style="color:#6DBE8C">${fmt(porMes[m])}</span>
+    </div>`;
+  }).join("");
 }
 
 function salvarPoupanca() {
@@ -2493,7 +2510,7 @@ function renderAlertas() {
         <div><p style="font-size:11px;color:#6060a0">Total projetado</p><p style="font-weight:700;color:#F28C8C">${fmt(prev.gastoProjetado)}</p></div>
         <div><p style="font-size:11px;color:#6060a0">Saldo estimado</p><p style="font-weight:700;color:${cor}">${fmt(prev.saldoProjetado)}</p></div>
       </div>
-      <p style="font-size:11px;color:#6060a0;padding:6px 16px 10px">Baseado no ritmo de ${fmt(prev.ritmo)}/dia · dia ${prev.diaAtual} de ${prev.diasNoMes}</p>
+      <p style="font-size:11px;color:#6060a0;padding:6px 16px 10px">${prev.diaAtual<3?"Início do mês — projeção baseada nos gastos fixos":"Ritmo de "+fmt(prev.ritmo)+"/dia em variáveis · dia "+prev.diaAtual+" de "+prev.diasNoMes}</p>
     </div>`;
   }
 
@@ -4332,7 +4349,7 @@ function analiseLocal() {
   }
   // Previsão
   const prev = calcPrevisaoFechamento();
-  if (prev && mesAtivo===nowM() && prev.diaAtual >= 3) {
+  if (prev && mesAtivo===nowM()) {
     if (prev.saldoProjetado < 0) pontos.push({tipo:"danger", msg:`🔴 Previsão: se mantiver o ritmo de ${fmt(prev.ritmo)}/dia em variáveis, você fecha o mês ${fmt(Math.abs(prev.saldoProjetado))} no negativo.`});
     else pontos.push({tipo:"ok", msg:`🟢 Previsão: você deve fechar o mês com ${fmt(prev.saldoProjetado)} positivo.`});
   }
@@ -4534,7 +4551,9 @@ function renderWrapped() {
   const totalGasto = stats.reduce((s,m)=>s+m.gasto,0);
   const totalPoupado = totalRenda - totalGasto;
   const melhorMes = stats.reduce((a,b)=>b.renda-b.gasto>a.renda-a.gasto?b:a);
-  const piorMes   = stats.reduce((a,b)=>b.gasto-b.renda>a.gasto-a.renda?b:a);
+  // Mês mais pesado = maior gasto absoluto (excluindo meses sem gasto)
+  const statsComGasto = stats.filter(s=>s.gasto>0);
+  const piorMes   = statsComGasto.length ? statsComGasto.reduce((a,b)=>b.gasto>a.gasto?b:a) : stats[stats.length-1];
   // Categoria mais gasta no ano
   const porCatAno = {};
   state.gastos.filter(g=>g.data?.startsWith(ano)).forEach(g=>{ porCatAno[g.cat]=(porCatAno[g.cat]||0)+g.valor; });
@@ -4559,17 +4578,17 @@ function renderWrapped() {
     </div>
     <!-- Destaques -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-      <div style="background:#1a2a1a;border:1px solid #6DBE8C33;border-radius:12px;padding:14px;text-align:center">
+      <div style="border:1px solid #6DBE8C33;border-radius:12px;padding:14px;text-align:center">
         <p style="font-size:22px">🏆</p>
         <p style="font-size:11px;color:#6060a0;margin:4px 0">Melhor mês</p>
         <p style="font-size:14px;font-weight:700;color:#6DBE8C">${melhorMes.label}</p>
         <p style="font-size:11px;color:#6DBE8C">+${fmt(melhorMes.renda-melhorMes.gasto)}</p>
       </div>
-      <div style="background:#1a1010;border:1px solid #F28C8C33;border-radius:12px;padding:14px;text-align:center">
+      <div style="border:1px solid #F28C8C33;border-radius:12px;padding:14px;text-align:center">
         <p style="font-size:22px">📉</p>
         <p style="font-size:11px;color:#6060a0;margin:4px 0">Mês mais pesado</p>
         <p style="font-size:14px;font-weight:700;color:#F28C8C">${piorMes.label}</p>
-        <p style="font-size:11px;color:#F28C8C">${fmt(piorMes.gasto)} gastos</p>
+        <p style="font-size:11px;color:#F28C8C">${fmt(piorMes.gasto)} em gastos</p>
       </div>
       <div style="background:#1a1a0a;border:1px solid #E8B84B33;border-radius:12px;padding:14px;text-align:center">
         <p style="font-size:22px">📦</p>
@@ -4599,10 +4618,10 @@ function renderWrapped() {
     <div class="card">
       <h3 style="font-size:13px;margin-bottom:12px;font-weight:700">🏅 Conquistas de ${ano}</h3>
       <div style="display:flex;flex-direction:column;gap:8px">
-        ${pctPoupado>=20?'<div style="background:#1a2a1a;border:1px solid #6DBE8C44;border-radius:10px;padding:10px 14px"><span style="color:#6DBE8C">✅ Poupador Disciplinado</span> <span style="font-size:12px;color:#a0a0c0">— Poupou mais de 20% da renda</span></div>':""}
-        ${totalLanc>=50?'<div style="background:#1a1a2a;border:1px solid #5B8DB844;border-radius:10px;padding:10px 14px"><span style="color:#5B8DB8">📋 Registrador Fiel</span> <span style="font-size:12px;color:#a0a0c0">— Mais de 50 lançamentos no ano</span></div>':""}
-        ${stats.filter(s=>s.renda>s.gasto).length>=10?'<div style="background:#1a2a1a;border:1px solid #4FBDBA44;border-radius:10px;padding:10px 14px"><span style="color:#4FBDBA">🔥 Streak Master</span> <span style="font-size:12px;color:#a0a0c0">— 10+ meses no positivo</span></div>':""}
-        ${totalRenda>=totalGasto?'<div style="background:#1a1a0a;border:1px solid #E8B84B44;border-radius:10px;padding:10px 14px"><span style="color:#E8B84B">💪 Ano Positivo</span> <span style="font-size:12px;color:#a0a0c0">— Renda maior que gastos no ano</span></div>':""}
+        ${pctPoupado>=20?'<div style="border:1px solid #6DBE8C44;border-radius:10px;padding:10px 14px"><span style="color:#6DBE8C">✅ Poupador Disciplinado</span> <span style="font-size:12px;color:#a0a0c0">— Poupou mais de 20% da renda</span></div>':""}
+        ${totalLanc>=50?'<div style="border:1px solid #5B8DB844;border-radius:10px;padding:10px 14px"><span style="color:#5B8DB8">📋 Registrador Fiel</span> <span style="font-size:12px;color:#a0a0c0">— Mais de 50 lançamentos no ano</span></div>':""}
+        ${stats.filter(s=>s.renda>s.gasto).length>=10?'<div style="border:1px solid #4FBDBA44;border-radius:10px;padding:10px 14px"><span style="color:#4FBDBA">🔥 Streak Master</span> <span style="font-size:12px;color:#a0a0c0">— 10+ meses no positivo</span></div>':""}
+        ${totalRenda>=totalGasto?'<div style="border:1px solid #E8B84B44;border-radius:10px;padding:10px 14px"><span style="color:#E8B84B">💪 Ano Positivo</span> <span style="font-size:12px;color:#a0a0c0">— Renda maior que gastos no ano</span></div>':""}
         ${!pctPoupado&&!totalLanc?'<div style="background:#1a1a1a;border-radius:10px;padding:10px 14px;color:#6060a0;font-size:13px">Adicione mais lançamentos para desbloquear conquistas!</div>':""}
       </div>
     </div>`;
@@ -5012,27 +5031,101 @@ function verificarPushVencimentos() {
 }
 
 // ══════════════════════════════════════════════
-// WHATSAPP BOT (CallMeBot + comandos)
+// BOT NOTIFICAÇÕES (Telegram + WhatsApp fallback)
 // ══════════════════════════════════════════════
 function abrirWhatsApp() {
   document.getElementById("modal-whatsapp").style.display = "flex";
-  const num = localStorage.getItem("wa_numero");
-  const key = localStorage.getItem("wa_apikey");
-  if (num) document.getElementById("wa-numero").value = num;
-  if (key) document.getElementById("wa-apikey").value = key;
+  // Carregar valores salvos
+  const tgToken  = localStorage.getItem("tg_token");
+  const tgChatId = localStorage.getItem("tg_chatid");
+  const waNum    = localStorage.getItem("wa_numero");
+  const waKey    = localStorage.getItem("wa_apikey");
+  if (tgToken)  { const el=document.getElementById("tg-token");  if(el) el.value=tgToken; }
+  if (tgChatId) { const el=document.getElementById("tg-chatid"); if(el) el.value=tgChatId; }
+  if (waNum)    { const el=document.getElementById("wa-numero"); if(el) el.value=waNum; }
+  if (waKey)    { const el=document.getElementById("wa-apikey"); if(el) el.value=waKey; }
+  // Activar aba conforme configuração existente
+  botTab(tgToken ? "telegram" : "telegram");
 }
 
+function botTab(aba) {
+  document.getElementById("bot-panel-telegram").style.display  = aba==="telegram"  ? "block" : "none";
+  document.getElementById("bot-panel-whatsapp").style.display  = aba==="whatsapp"  ? "block" : "none";
+  const tgBtn = document.getElementById("bot-tab-tg");
+  const waBtn = document.getElementById("bot-tab-wa");
+  if (tgBtn) {
+    tgBtn.style.background = aba==="telegram" ? "linear-gradient(135deg,#2496ED,#1a7bbf)" : "transparent";
+    tgBtn.style.color      = aba==="telegram" ? "#fff" : "#a0a0c0";
+    tgBtn.style.border     = aba==="telegram" ? "none" : "1px solid #2d2d4e";
+  }
+  if (waBtn) {
+    waBtn.style.background = aba==="whatsapp" ? "linear-gradient(135deg,#25D366,#128C7E)" : "transparent";
+    waBtn.style.color      = aba==="whatsapp" ? "#fff" : "#a0a0c0";
+    waBtn.style.border     = aba==="whatsapp" ? "none" : "1px solid #2d2d4e";
+  }
+}
+
+// ── Telegram ────────────────────────────────
+async function salvarTelegram() {
+  const token  = (document.getElementById("tg-token")?.value||"").trim();
+  const chatId = (document.getElementById("tg-chatid")?.value||"").trim();
+  const status = document.getElementById("tg-status");
+  if (!token || !chatId) { toast("Preencha Token e Chat ID","#F28C8C"); return; }
+  if (status) status.textContent = "⏳ Testando conexão...";
+  localStorage.setItem("tg_token",  token);
+  localStorage.setItem("tg_chatid", chatId);
+  const ra = resumoAtivo();
+  const msg = `✅ *Finanças Pessoais conectado!*
+
+📊 *${mesNome(mesAtivo)}*
+Renda: R$ ${ra.renda.toFixed(2)}
+Gastos: R$ ${ra.gasto.toFixed(2)}
+Saldo: R$ ${ra.saldoMes.toFixed(2)}
+
+_Comandos: gastei 50 almoço • saldo • resumo • metas_`;
+  const ok = await enviarTelegram(msg);
+  if (ok) {
+    if (status) { status.textContent = "✅ Telegram conectado com sucesso!"; status.style.color="#6DBE8C"; }
+    toast("✅ Telegram configurado! Verifique o bot.","#2496ED");
+    setTimeout(()=>{ document.getElementById("modal-whatsapp").style.display="none"; }, 1500);
+  } else {
+    if (status) { status.textContent = "❌ Erro. Verifique o Token e Chat ID."; status.style.color="#F28C8C"; }
+    toast("Erro na conexão. Verifique os dados.","#F28C8C");
+  }
+}
+
+async function enviarTelegram(mensagem) {
+  const token  = localStorage.getItem("tg_token");
+  const chatId = localStorage.getItem("tg_chatid");
+  if (!token || !chatId) return false;
+  try {
+    const url = `https://api.telegram.org/bot${token}/sendMessage`;
+    const r = await fetch(url, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({chat_id: chatId, text: mensagem, parse_mode:"Markdown"})
+    });
+    const d = await r.json();
+    return d.ok === true;
+  } catch(e) {
+    console.warn("Telegram erro:", e);
+    return false;
+  }
+}
+
+// ── WhatsApp (CallMeBot fallback) ───────────
 async function salvarWhatsApp() {
-  const num = document.getElementById("wa-numero").value.trim().replace(/\D/g,"");
-  const key = document.getElementById("wa-apikey").value.trim();
+  const num = (document.getElementById("wa-numero")?.value||"").trim().replace(/\D/g,"");
+  const key = (document.getElementById("wa-apikey")?.value||"").trim();
   if (!num || !key) { toast("Preencha número e API Key","#F28C8C"); return; }
   localStorage.setItem("wa_numero", num);
   localStorage.setItem("wa_apikey", key);
-  // Enviar mensagem de teste
-  const ok = await enviarWhatsApp("✅ *Finanças Pessoais* conectado!\n\nComandos disponíveis:\n• *gastei 50 almoço* → registra gasto\n• *saldo* → ver resumo\n• *resumo* → relatório completo");
+  const ok = await enviarWhatsApp("✅ *Finanças Pessoais* conectado! Envie *saldo* para testar.");
   if (ok) {
-    toast("✅ WhatsApp configurado! Verifique sua mensagem.","#25D366");
+    toast("✅ WhatsApp configurado!","#25D366");
     document.getElementById("modal-whatsapp").style.display = "none";
+  } else {
+    toast("Erro. O número do CallMeBot pode estar instável. Use o Telegram.","#F28C8C");
   }
 }
 
@@ -5044,19 +5137,25 @@ async function enviarWhatsApp(mensagem) {
     const url = `https://api.callmebot.com/whatsapp.php?phone=${num}&text=${encodeURIComponent(mensagem)}&apikey=${key}`;
     await fetch(url, {mode:"no-cors"});
     return true;
-  } catch(e) {
-    console.warn("WhatsApp erro:", e);
-    return false;
-  }
+  } catch(e) { return false; }
+}
+
+// Enviar notificação por canal configurado (Telegram preferido)
+async function enviarNotificacao(mensagem) {
+  const tgToken = localStorage.getItem("tg_token");
+  if (tgToken) return await enviarTelegram(mensagem);
+  const waNum = localStorage.getItem("wa_numero");
+  if (waNum)   return await enviarWhatsApp(mensagem);
+  return false;
 }
 
 // Processar comando recebido via WhatsApp (chamado por webhook externo via URL param)
 function processarComandoWhatsApp(texto) {
-  const t = texto.toLowerCase().trim();
+  const t = texto.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
   const ra = resumoAtivo();
-  if (t === "saldo" || t === "resumo rápido") {
+  if (t === "saldo" || t === "saldo do mes") {
     const msg = `💰 *${mesNome(mesAtivo)}*\nRenda: R$ ${ra.renda.toFixed(2)}\nGastos: R$ ${ra.gasto.toFixed(2)}\nSaldo: R$ ${ra.saldoMes.toFixed(2)}`;
-    enviarWhatsApp(msg);
+    enviarNotificacao(msg);
     return;
   }
   if (t === "resumo") {
@@ -5064,7 +5163,14 @@ function processarComandoWhatsApp(texto) {
     const porCat = {};
     gm.forEach(g=>{ porCat[g.cat]=(porCat[g.cat]||0)+g.valor; });
     const cats = Object.entries(porCat).sort((a,b)=>b[1]-a[1]).map(([c,v])=>`• ${c}: R$ ${v.toFixed(2)}`).join("\n");
-    enviarWhatsApp(`📊 *Resumo ${mesNome(mesAtivo)}*\n\n${cats}\n\n💰 Total: R$ ${ra.gasto.toFixed(2)}`);
+    enviarNotificacao(`📊 *Resumo ${mesNome(mesAtivo)}*\n\n${cats}\n\n💰 Total: R$ ${ra.gasto.toFixed(2)}`);
+    return;
+  }
+  if (t === "metas") {
+    const metas = state.metas||[];
+    if (!metas.length) { enviarNotificacao("Nenhuma meta cadastrada ainda."); return; }
+    const msg = metas.map(m=>`${m.icone} *${m.desc}*: ${fmt(m.aportado||0)}/${fmt(m.valor)} (${((m.aportado||0)/m.valor*100).toFixed(0)}%)`).join("\n");
+    enviarNotificacao(`🎯 *Suas Metas*\n\n${msg}`);
     return;
   }
   // Padrão: "gastei X descrição" ou "X descrição"
@@ -5217,12 +5323,414 @@ function initRecursosExtras() {
   if (codigo) { grupoAtivo = codigo; iniciarSyncGrupo(); atualizarStatusCompartilhar(); }
   // Verificar vencimentos ao abrir
   setTimeout(verificarPushVencimentos, 3000);
+  setTimeout(verificarLembretesInteligentes, 4000);
   // Verificar vencimentos diariamente
   setInterval(verificarPushVencimentos, 3600000);
   // Processar comando WhatsApp via URL param
   const params = new URLSearchParams(location.search);
   const waCmd = params.get("wa_cmd");
   if (waCmd) { setTimeout(()=>processarComandoWhatsApp(decodeURIComponent(waCmd)), 2000); }
+  // Onboarding para novos usuários (após login)
+  setTimeout(()=>{ if(fbUserId) iniciarOnboarding(); }, 1500);
+}
+
+// ══════════════════════════════════════════════
+// COTAÇÕES AO VIVO
+// ══════════════════════════════════════════════
+async function atualizarCotacoes() {
+  const btn = document.getElementById("btn-cotacoes");
+  if (btn) { btn.textContent = "⏳"; btn.disabled = true; }
+  try {
+    // USD e EUR via AwesomeAPI (CORS livre)
+    const [cambioR, selicR] = await Promise.allSettled([
+      fetch("https://economia.awesomeapi.com.br/json/last/USD-BRL,EUR-BRL").then(r=>r.json()),
+      fetch("https://brasilapi.com.br/api/taxa/v1").then(r=>r.json())
+    ]);
+    if (cambioR.status==="fulfilled") {
+      const d = cambioR.value;
+      const usd = parseFloat(d.USDBRL?.bid||0).toFixed(2);
+      const eur = parseFloat(d.EURBRL?.bid||0).toFixed(2);
+      const elUsd = document.getElementById("cot-usd");
+      const elEur = document.getElementById("cot-eur");
+      if (elUsd) elUsd.textContent = "R$"+usd;
+      if (elEur) elEur.textContent = "R$"+eur;
+    }
+    if (selicR.status==="fulfilled") {
+      const taxas = selicR.value;
+      const selic = taxas.find(t=>t.nome==="Selic");
+      const cdi   = taxas.find(t=>t.nome==="CDI");
+      const ipca  = taxas.find(t=>t.nome==="IPCA");
+      const elSelic = document.getElementById("cot-selic");
+      const elCdi   = document.getElementById("cot-cdi");
+      const elIpca  = document.getElementById("cot-ipca");
+      if (elSelic && selic) elSelic.textContent = selic.valor+"%a.a.";
+      if (elCdi   && cdi)   elCdi.textContent   = cdi.valor+"%a.a.";
+      if (elIpca  && ipca)  elIpca.textContent  = ipca.valor+"%a.a.";
+    }
+    // BTC via CoinGecko
+    try {
+      const btcR = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=brl");
+      const btcD = await btcR.json();
+      const elBtc = document.getElementById("cot-btc");
+      if (elBtc && btcD.bitcoin) {
+        const val = btcD.bitcoin.brl;
+        elBtc.textContent = val>1000 ? "R$"+(val/1000).toFixed(0)+"k" : "R$"+val.toFixed(0);
+      }
+    } catch(_) {}
+    const horaEl = document.getElementById("cotacoes-hora");
+    if (horaEl) horaEl.textContent = "Atualizado: "+new Date().toLocaleTimeString("pt-BR");
+    localStorage.setItem("cotacoes_ts", Date.now());
+  } catch(e) {
+    console.warn("Cotações erro:", e);
+  } finally {
+    if (btn) { btn.textContent = "🔄 Atualizar"; btn.disabled = false; }
+  }
+}
+
+// ══════════════════════════════════════════════
+// MAPA DE CALOR
+// ══════════════════════════════════════════════
+function renderMapaCalor() {
+  const el = document.getElementById("mapa-calor");
+  if (!el) return;
+  const [ano, mes] = mesAtivo.split("-").map(Number);
+  const diasNoMes = new Date(ano, mes, 0).getDate();
+  const primeiroDia = new Date(ano, mes-1, 1).getDay(); // 0=dom
+
+  // Calcular gastos por dia
+  const porDia = {};
+  gastosMes().forEach(g => {
+    const dia = parseInt(g.data.slice(8,10));
+    if (!isNaN(dia)) porDia[dia] = (porDia[dia]||0) + g.valor;
+  });
+  const maxDia = Math.max(...Object.values(porDia), 1);
+
+  const DIAS_SEMANA = ["D","S","T","Q","Q","S","S"];
+  let html = `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px">
+    ${DIAS_SEMANA.map(d=>`<div style="text-align:center;font-size:10px;color:#6060a0;padding:2px">${d}</div>`).join("")}
+  </div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">`;
+
+  // Células vazias antes do primeiro dia
+  for (let i=0; i<primeiroDia; i++) html += `<div></div>`;
+
+  for (let d=1; d<=diasNoMes; d++) {
+    const val = porDia[d]||0;
+    const pct = val/maxDia;
+    const bg = pct===0 ? "#1e1e3a" : pct<.25 ? "#1a3a2a" : pct<.5 ? "#2a5a3a" : pct<.75 ? "#3a8a4a" : "#6DBE8C";
+    const hoje = new Date(); const isHoje = ano===hoje.getFullYear()&&mes===hoje.getMonth()+1&&d===hoje.getDate();
+    html += `<div title="Dia ${d}: ${val>0?fmt(val):"sem gastos"}" style="aspect-ratio:1;border-radius:4px;background:${bg};cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;color:${pct>.5?"#fff":"#4060a0"};border:${isHoje?"2px solid #E8B84B":"none"}" onclick="mostrarDiaCalendario(${d})">${d}</div>`;
+  }
+  html += "</div>";
+  el.innerHTML = html;
+}
+
+function mostrarDiaCalendario(dia) {
+  const [ano, mes] = mesAtivo.split("-").map(Number);
+  const diaStr = ano+"-"+String(mes).padStart(2,"0")+"-"+String(dia).padStart(2,"0");
+  const gastosdia = gastosMes().filter(g=>g.data===diaStr);
+  if (!gastosdia.length) { toast(`Dia ${dia}: sem gastos registrados`,"#6060a0"); return; }
+  const total = gastosdia.reduce((s,g)=>s+g.valor,0);
+  toast(`Dia ${dia}: ${gastosdia.length} gasto(s) — ${fmt(total)}`,"#E8B84B");
+}
+
+// ══════════════════════════════════════════════
+// SIMULADOR DE FINANCIAMENTO
+// ══════════════════════════════════════════════
+function calcFinanciamento() {
+  const val    = parseFloat(document.getElementById("fin-valor")?.value)||0;
+  const taxa   = parseFloat(document.getElementById("fin-taxa")?.value)||0;
+  const prazo  = parseInt(document.getElementById("fin-prazo")?.value)||0;
+  const entrada= parseFloat(document.getElementById("fin-entrada")?.value)||0;
+  const el = document.getElementById("fin-resultado");
+  if (!el) return;
+  if (!val || !taxa || !prazo) { el.innerHTML=""; return; }
+  const principal = val - entrada;
+  if (principal <= 0) { el.innerHTML=`<p style="color:#6DBE8C;text-align:center">✅ Entrada cobre o valor total!</p>`; return; }
+  const t = taxa/100;
+  // Sistema Price (parcelas iguais)
+  const parcela = principal * (t*Math.pow(1+t,prazo)) / (Math.pow(1+t,prazo)-1);
+  const totalPago = parcela * prazo + entrada;
+  const juros = totalPago - val;
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div style="background:#1e1e3a;border-radius:10px;padding:12px;text-align:center">
+        <p style="font-size:11px;color:#6060a0">Parcela mensal</p>
+        <p style="font-size:20px;font-weight:800;color:#E8B84B">${fmt(parcela)}</p>
+      </div>
+      <div style="background:#1e1e3a;border-radius:10px;padding:12px;text-align:center">
+        <p style="font-size:11px;color:#6060a0">Total de juros</p>
+        <p style="font-size:20px;font-weight:800;color:#F28C8C">${fmt(juros)}</p>
+      </div>
+      <div style="background:#1e1e3a;border-radius:10px;padding:12px;text-align:center">
+        <p style="font-size:11px;color:#6060a0">Total pago</p>
+        <p style="font-size:16px;font-weight:700;color:#e8e8f0">${fmt(totalPago)}</p>
+      </div>
+      <div style="background:#1e1e3a;border-radius:10px;padding:12px;text-align:center">
+        <p style="font-size:11px;color:#6060a0">Custo real</p>
+        <p style="font-size:16px;font-weight:700;color:#a0a0c0">${((juros/val)*100).toFixed(0)}% do valor</p>
+      </div>
+    </div>
+    <p style="font-size:11px;color:#4060a0;margin-top:8px;text-align:center">Sistema Price · ${prazo} parcelas de ${fmt(parcela)}</p>`;
+}
+
+// ══════════════════════════════════════════════
+// RESERVA DE EMERGÊNCIA
+// ══════════════════════════════════════════════
+function renderReservaEmergencia() {
+  const el = document.getElementById("reserva-content");
+  if (!el) return;
+  const ra = resumoAtivo();
+  const totalGastoMed = (() => {
+    const r = calcResumo().filter(x=>!x.projecao && x.gasto>0);
+    return r.length ? r.reduce((s,x)=>s+x.gasto,0)/r.length : ra.gasto;
+  })();
+  const meta6meses = totalGastoMed * 6;
+  const totalPoupado = state.poupancas?.reduce((s,p)=>s+p.valor,0)||0;
+  const pct = meta6meses>0 ? Math.min((totalPoupado/meta6meses)*100,100) : 0;
+  const falta = Math.max(meta6meses-totalPoupado,0);
+  const mesesParaMeta = ra.saldoMes>0 && falta>0 ? Math.ceil(falta/ra.saldoMes) : null;
+  const cor = pct>=100?"#6DBE8C":pct>=50?"#E8B84B":"#F28C8C";
+  el.innerHTML = `
+    <div style="text-align:center;margin-bottom:14px">
+      <p style="font-size:32px;font-weight:800;color:${cor}">${pct.toFixed(0)}%</p>
+      <p style="font-size:13px;color:#a0a0c0">da reserva completa</p>
+    </div>
+    <div style="height:12px;background:#1e1e3a;border-radius:6px;margin-bottom:12px">
+      <div style="height:12px;border-radius:6px;background:${cor};width:${pct.toFixed(0)}%;transition:width .6s"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div style="background:#1e1e3a;border-radius:10px;padding:12px">
+        <p style="font-size:11px;color:#6060a0">Guardado</p>
+        <p style="font-size:16px;font-weight:700;color:#6DBE8C">${fmt(totalPoupado)}</p>
+      </div>
+      <div style="background:#1e1e3a;border-radius:10px;padding:12px">
+        <p style="font-size:11px;color:#6060a0">Meta (6 meses)</p>
+        <p style="font-size:16px;font-weight:700;color:#E8B84B">${fmt(meta6meses)}</p>
+      </div>
+    </div>
+    ${falta>0 ? `<p style="font-size:12px;color:#a0a0c0;text-align:center">Faltam <strong style="color:${cor}">${fmt(falta)}</strong>${mesesParaMeta?` · ~${mesesParaMeta} meses no ritmo atual`:""}</p>` : `<p style="font-size:14px;color:#6DBE8C;text-align:center;font-weight:700">🛡️ Reserva completa! Parabéns!</p>`}
+    <p style="font-size:11px;color:#4060a0;margin-top:8px;text-align:center">Baseado na média de gastos mensais de ${fmt(totalGastoMed)}</p>`;
+}
+
+// ══════════════════════════════════════════════
+// SCORE HISTÓRICO
+// ══════════════════════════════════════════════
+function calcScoreMes(mes) {
+  const r = calcResumo().find(x=>x.mes===mes);
+  if (!r || r.renda===0) return null;
+  let s = 50;
+  const pct = r.gasto/r.renda;
+  if (pct<.5) s+=25; else if (pct<.7) s+=15; else if (pct<.9) s+=5; else if (pct>1) s-=20;
+  if (r.saldoMes>0) s+=10; else s-=10;
+  const poupou = r.renda*0.2;
+  if (r.saldoMes>=poupou) s+=15; else if (r.saldoMes>=poupou*0.5) s+=7;
+  return Math.max(0,Math.min(100,Math.round(s)));
+}
+
+function renderScoreHistorico() {
+  const chart = document.getElementById("score-historico-chart");
+  const labels = document.getElementById("score-historico-labels");
+  if (!chart || !labels) return;
+  const meses = allMeses().slice(-8);
+  const scores = meses.map(m=>({mes:m,score:calcScoreMes(m)})).filter(x=>x.score!==null);
+  if (scores.length < 2) { chart.innerHTML='<p style="color:#6060a0;font-size:12px;padding:8px">Precisa de mais meses para mostrar evolução.</p>'; return; }
+  const max = Math.max(...scores.map(s=>s.score),1);
+  chart.innerHTML = scores.map(s=>{
+    const h = Math.max((s.score/max)*72,3);
+    const cor = s.score>=80?"#6DBE8C":s.score>=60?"#E8B84B":"#F28C8C";
+    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
+      <span style="font-size:9px;color:${cor};font-weight:700">${s.score}</span>
+      <div style="width:100%;height:${h}px;background:${cor};border-radius:4px 4px 0 0;min-height:3px"></div>
+    </div>`;
+  }).join("");
+  labels.innerHTML = `<div style="display:flex;gap:4px;width:100%">${scores.map(s=>`<div style="flex:1;text-align:center;font-size:9px;color:#6060a0">${mesLabel(s.mes)}</div>`).join("")}</div>`;
+}
+
+// ══════════════════════════════════════════════
+// CONFIGURAÇÕES: TEMA PERSONALIZADO
+// ══════════════════════════════════════════════
+function abrirConfig() {
+  document.getElementById("modal-config").style.display = "flex";
+  // Marcar cor ativa
+  const corAtual = localStorage.getItem("cor_tema")||"#5B8DB8";
+  document.querySelectorAll(".btn-cor-tema").forEach(btn=>{
+    btn.style.borderColor = btn.dataset.cor===corAtual ? "#fff" : "transparent";
+  });
+  // Checkboxes alertas
+  const alertas = JSON.parse(localStorage.getItem("config_alertas")||"{}");
+  const alertaRenda = document.getElementById("alerta-renda");
+  const alertaVenc  = document.getElementById("alerta-venc");
+  const alertaMeta  = document.getElementById("alerta-meta");
+  const relSem      = document.getElementById("rel-semanal-ativo");
+  if (alertaRenda) alertaRenda.checked = alertas.renda||false;
+  if (alertaVenc)  alertaVenc.checked  = alertas.venc!==false;
+  if (alertaMeta)  alertaMeta.checked  = alertas.meta||false;
+  if (relSem)      relSem.checked      = localStorage.getItem("rel_semanal")==="1";
+}
+function fecharConfig() { document.getElementById("modal-config").style.display="none"; }
+
+function setCorTema(cor) {
+  localStorage.setItem("cor_tema", cor);
+  aplicarCorTema(cor);
+  document.querySelectorAll(".btn-cor-tema").forEach(btn=>{
+    btn.style.borderColor = btn.dataset.cor===cor ? "#fff" : "transparent";
+  });
+}
+
+function aplicarCorTema(cor) {
+  if (!cor) return;
+  const root = document.documentElement;
+  root.style.setProperty("--cor-primary", cor);
+  // Aplicar aos botões primários
+  document.querySelectorAll(".btn-primary").forEach(btn=>{ btn.style.background=cor; });
+  document.querySelectorAll("#user-avatar").forEach(el=>{ if(!isAdmin()) el.style.background=`linear-gradient(135deg,${cor},${ajustarCor(cor,-30)})`; });
+}
+
+function ajustarCor(hex, pct) {
+  try {
+    const n = parseInt(hex.slice(1),16);
+    const r = Math.min(255,Math.max(0,((n>>16)&255)+pct));
+    const g = Math.min(255,Math.max(0,((n>>8)&255)+pct));
+    const b = Math.min(255,Math.max(0,(n&255)+pct));
+    return "#"+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+  } catch(_) { return hex; }
+}
+
+function salvarAlertas() {
+  const alertas = {
+    renda: document.getElementById("alerta-renda")?.checked||false,
+    venc:  document.getElementById("alerta-venc")?.checked!==false,
+    meta:  document.getElementById("alerta-meta")?.checked||false
+  };
+  localStorage.setItem("config_alertas", JSON.stringify(alertas));
+}
+
+// ══════════════════════════════════════════════
+// LEMBRETE INTELIGENTE
+// ══════════════════════════════════════════════
+function verificarLembretesInteligentes() {
+  const alertas = JSON.parse(localStorage.getItem("config_alertas")||"{}");
+  const hoje = new Date();
+  const mesAtivoParcial = nowM();
+  const rendasMesAtual = state.rendas.filter(r=>mesStr(r.data)===mesAtivoParcial);
+  // Lembrete de renda: depois do dia 5 sem registrar renda
+  if (alertas.renda && hoje.getDate()>=5 && rendasMesAtual.length===0) {
+    const lembreteKey = "lembrete_renda_"+mesAtivoParcial;
+    if (!localStorage.getItem(lembreteKey)) {
+      localStorage.setItem(lembreteKey,"1");
+      setTimeout(()=>{
+        const wrap = document.getElementById("alertas-wrap");
+        if (!wrap) return;
+        const alerta = document.createElement("div");
+        alerta.style.cssText = "background:#1a1a2a;border:1px solid #E8B84B44;border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center";
+        alerta.innerHTML = `<p style="font-size:13px;color:#E8B84B">💡 Você ainda não registrou sua renda de ${mesNome(mesAtivoParcial)}. Adicione para manter o controle!</p><button onclick="this.closest('div').remove()" style="background:none;border:none;color:#6060a0;font-size:16px;cursor:pointer;padding:0 4px">×</button>`;
+        wrap.insertBefore(alerta, wrap.firstChild);
+      }, 2000);
+    }
+  }
+  // Lembrete de metas (dia 25)
+  if (alertas.meta && hoje.getDate()===25) {
+    const metas = state.metas||[];
+    const metasAtraso = metas.filter(m=>(m.aportado||0)<m.valor && m.prazo<=mesAtivoParcial);
+    if (metasAtraso.length) {
+      enviarNotificacao(`⏰ *Alerta de Metas*\n${metasAtraso.length} meta(s) vencem em breve:\n${metasAtraso.map(m=>`• ${m.icone} ${m.desc}: ${fmt(m.aportado||0)}/${fmt(m.valor)}`).join("\n")}`);
+    }
+  }
+}
+
+// ══════════════════════════════════════════════
+// RELATÓRIO SEMANAL TELEGRAM
+// ══════════════════════════════════════════════
+function toggleRelatorioSemanal() {
+  const ativo = document.getElementById("rel-semanal-ativo")?.checked;
+  localStorage.setItem("rel_semanal", ativo?"1":"0");
+  if (ativo) {
+    toast("Relatório semanal ativado! Envio toda segunda-feira.","#4FBDBA");
+    // Enviar teste imediato
+    gerarRelatorioSemanal(true);
+  } else {
+    toast("Relatório semanal desativado","#6060a0");
+  }
+}
+
+async function gerarRelatorioSemanal(teste=false) {
+  const ra = resumoAtivo();
+  const gm = gastosMes();
+  const porCat = {};
+  gm.forEach(g=>{ porCat[g.cat]=(porCat[g.cat]||0)+g.valor; });
+  const catTop = Object.entries(porCat).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([c,v])=>`• ${c}: ${fmt(v)}`).join("\n");
+  const prev = calcPrevisaoFechamento();
+  const msg = `📊 *Relatório Semanal — ${mesNome(mesAtivo)}*${teste?" (teste)":""}\n\n`+
+    `💰 Renda: ${fmt(ra.renda)}\n`+
+    `💸 Gastos: ${fmt(ra.gasto)}\n`+
+    `✅ Saldo: ${fmt(ra.saldoMes)}\n\n`+
+    `*Top categorias:*\n${catTop||"Nenhum gasto"}\n\n`+
+    (prev?`*Previsão de fechamento:* ${fmt(prev.saldoProjetado)}\n`:"");
+  await enviarNotificacao(msg);
+}
+
+function agendarRelatorioSemanal() {
+  // Verificar toda hora se é segunda-feira de manhã
+  setInterval(()=>{
+    if (localStorage.getItem("rel_semanal")!=="1") return;
+    const agora = new Date();
+    if (agora.getDay()===1 && agora.getHours()===8) { // Segunda às 8h
+      const key = "rel_enviado_"+agora.toDateString();
+      if (!localStorage.getItem(key)) {
+        localStorage.setItem(key,"1");
+        gerarRelatorioSemanal();
+      }
+    }
+  }, 3600000); // cada hora
+}
+
+// ══════════════════════════════════════════════
+// ONBOARDING
+// ══════════════════════════════════════════════
+const OB_STEPS = [
+  {icone:"💰", titulo:"Bem-vindo!", desc:"Este app te ajuda a controlar suas finanças pessoais de forma simples e inteligente. Vamos fazer um tour rápido!"},
+  {icone:"💳", titulo:"Lance seus gastos", desc:"Vá em Lançamentos e adicione seus gastos e rendas. Você pode cadastrar fixos, recorrentes e parcelados."},
+  {icone:"🎯", titulo:"Defina suas metas", desc:"No Plano, configure quanto você quer poupar por mês. A regra 50-30-20 te ajuda a distribuir sua renda."},
+  {icone:"📊", titulo:"Acompanhe a evolução", desc:"Em Evolução você vê o histórico do seu patrimônio mês a mês e compara categorias."},
+  {icone:"🤖", titulo:"IA Conselheira", desc:"Acesse a aba IA para análises personalizadas e um chat financeiro. Configure o Telegram para notificações!"},
+  {icone:"🚀", titulo:"Pronto para começar!", desc:"Agora é só lançar sua primeira renda e seus gastos. Boa sorte na jornada financeira! 💪"}
+];
+let obStep = 0;
+
+function iniciarOnboarding() {
+  if (localStorage.getItem("onboarding_done")) return;
+  obStep = 0;
+  document.getElementById("onboarding").style.display = "flex";
+  renderOnboardingStep();
+}
+function renderOnboardingStep() {
+  const step = OB_STEPS[obStep];
+  document.getElementById("ob-icon").textContent = step.icone;
+  document.getElementById("ob-titulo").textContent = step.titulo;
+  document.getElementById("ob-desc").textContent = step.desc;
+  document.getElementById("ob-btn-proximo").textContent = obStep===OB_STEPS.length-1 ? "Começar! 🚀" : "Próximo →";
+  document.getElementById("ob-step-dots").innerHTML = OB_STEPS.map((_,i)=>`<div style="width:${i===obStep?24:8}px;height:8px;border-radius:4px;background:${i===obStep?"#5B8DB8":"#2d2d4e"};transition:width .3s"></div>`).join("");
+}
+function proximoOnboarding() {
+  obStep++;
+  if (obStep>=OB_STEPS.length) { pularOnboarding(); return; }
+  renderOnboardingStep();
+}
+function pularOnboarding() {
+  localStorage.setItem("onboarding_done","1");
+  document.getElementById("onboarding").style.display = "none";
+}
+
+// ══════════════════════════════════════════════
+// RENDER CALENDÁRIO (chamado ao abrir aba)
+// ══════════════════════════════════════════════
+function renderCalendario() {
+  renderMapaCalor();
+  renderReservaEmergencia();
+  calcFinanciamento();
+  // Atualizar cotações se passaram mais de 30 min
+  const ts = parseInt(localStorage.getItem("cotacoes_ts")||"0");
+  if (Date.now()-ts > 1800000) atualizarCotacoes();
 }
 
 // ══════════════════════════════════════════════
@@ -5882,6 +6390,11 @@ function atualizarDataPadraoGasto() {
 load();
 inicializarGestos();
 initRecursosExtras();
+// Aplicar cor de tema salva
+const corSalva = localStorage.getItem("cor_tema");
+if (corSalva) setTimeout(()=>aplicarCorTema(corSalva), 500);
+// Agendar relatório semanal
+agendarRelatorioSemanal();
 document.getElementById("g-data").value = todayS();
 document.getElementById("r-data").value = todayS();
 
@@ -6333,6 +6846,88 @@ if (fbToken && fbUserId) {
 <!-- ═══ EXTRAS ═══ -->
 
 <!-- ═══ IA CONSELHEIRO ═══ -->
+
+<!-- ═══ CALENDÁRIO / MAPA DE CALOR ═══ -->
+<div id="sec-calendario" class="section">
+
+  <!-- Cotações ao vivo -->
+  <div class="card" style="margin-bottom:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div>
+        <h2 style="font-size:14px">📡 Cotações ao Vivo</h2>
+        <p class="txt-muted" style="font-size:12px">Dólar, Euro, IPCA, Selic, CDI</p>
+      </div>
+      <button onclick="atualizarCotacoes()" id="btn-cotacoes" class="btn btn-gray" style="font-size:11px;padding:5px 10px">🔄 Atualizar</button>
+    </div>
+    <div id="cotacoes-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+      <div class="cotacao-card" style="background:#1e1e3a;border-radius:10px;padding:10px;text-align:center">
+        <p style="font-size:11px;color:#6060a0">USD</p>
+        <p id="cot-usd" style="font-size:16px;font-weight:700;color:#E8B84B">--</p>
+      </div>
+      <div class="cotacao-card" style="background:#1e1e3a;border-radius:10px;padding:10px;text-align:center">
+        <p style="font-size:11px;color:#6060a0">EUR</p>
+        <p id="cot-eur" style="font-size:16px;font-weight:700;color:#5B8DB8">--</p>
+      </div>
+      <div class="cotacao-card" style="background:#1e1e3a;border-radius:10px;padding:10px;text-align:center">
+        <p style="font-size:11px;color:#6060a0">SELIC</p>
+        <p id="cot-selic" style="font-size:16px;font-weight:700;color:#6DBE8C">--</p>
+      </div>
+      <div class="cotacao-card" style="background:#1e1e3a;border-radius:10px;padding:10px;text-align:center">
+        <p style="font-size:11px;color:#6060a0">CDI</p>
+        <p id="cot-cdi" style="font-size:16px;font-weight:700;color:#4FBDBA">--</p>
+      </div>
+      <div class="cotacao-card" style="background:#1e1e3a;border-radius:10px;padding:10px;text-align:center">
+        <p style="font-size:11px;color:#6060a0">IPCA/ano</p>
+        <p id="cot-ipca" style="font-size:16px;font-weight:700;color:#E07B54">--</p>
+      </div>
+      <div class="cotacao-card" style="background:#1e1e3a;border-radius:10px;padding:10px;text-align:center">
+        <p style="font-size:11px;color:#6060a0">BTC</p>
+        <p id="cot-btc" style="font-size:14px;font-weight:700;color:#F28C8C">--</p>
+      </div>
+    </div>
+    <p id="cotacoes-hora" style="font-size:10px;color:#4060a0;margin-top:8px;text-align:right"></p>
+  </div>
+
+  <!-- Mapa de calor -->
+  <div class="card" style="margin-bottom:14px">
+    <h2 style="font-size:14px;margin-bottom:4px">🗓️ Mapa de Gastos</h2>
+    <p class="txt-muted" style="font-size:12px;margin-bottom:14px">Dias com mais gastos ficam mais escuros</p>
+    <div id="mapa-calor" style="display:flex;flex-direction:column;gap:4px"></div>
+    <div style="display:flex;gap:6px;align-items:center;margin-top:10px;justify-content:flex-end">
+      <span style="font-size:11px;color:#6060a0">Menos</span>
+      <div style="display:flex;gap:3px">
+        <div style="width:12px;height:12px;border-radius:2px;background:#1e1e3a"></div>
+        <div style="width:12px;height:12px;border-radius:2px;background:#1a3a2a"></div>
+        <div style="width:12px;height:12px;border-radius:2px;background:#2a5a3a"></div>
+        <div style="width:12px;height:12px;border-radius:2px;background:#3a8a4a"></div>
+        <div style="width:12px;height:12px;border-radius:2px;background:#6DBE8C"></div>
+      </div>
+      <span style="font-size:11px;color:#6060a0">Mais</span>
+    </div>
+  </div>
+
+  <!-- Simulador de Financiamento -->
+  <div class="card" style="margin-bottom:14px">
+    <h2 style="font-size:14px;margin-bottom:4px">🏠 Simulador de Financiamento</h2>
+    <p class="txt-muted" style="font-size:12px;margin-bottom:14px">Calcule parcelas de carro, imóvel ou empréstimo</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div><p class="txt-muted" style="margin-bottom:4px">Valor financiado (R$)</p><input id="fin-valor" type="number" placeholder="Ex: 50000" oninput="calcFinanciamento()"/></div>
+      <div><p class="txt-muted" style="margin-bottom:4px">Taxa mensal (%)</p><input id="fin-taxa" type="number" placeholder="Ex: 1.5" step="0.01" value="1.5" oninput="calcFinanciamento()"/></div>
+      <div><p class="txt-muted" style="margin-bottom:4px">Prazo (meses)</p><input id="fin-prazo" type="number" placeholder="Ex: 60" value="60" oninput="calcFinanciamento()"/></div>
+      <div><p class="txt-muted" style="margin-bottom:4px">Entrada (R$)</p><input id="fin-entrada" type="number" placeholder="Ex: 10000" value="0" oninput="calcFinanciamento()"/></div>
+    </div>
+    <div id="fin-resultado"></div>
+  </div>
+
+  <!-- Reserva de Emergência -->
+  <div class="card">
+    <h2 style="font-size:14px;margin-bottom:4px">🛡️ Reserva de Emergência</h2>
+    <p class="txt-muted" style="font-size:12px;margin-bottom:14px">Meta: 6 meses de despesas fixas guardadas</p>
+    <div id="reserva-content"></div>
+  </div>
+
+</div>
+
 <div id="sec-ia" class="section">
 
   <!-- Config API Key -->
@@ -6350,7 +6945,7 @@ if (fbToken && fbUserId) {
       <p id="ia-api-status" style="font-size:11px;margin-top:6px;color:#6060a0"></p>
     </div>
     <div style="display:flex;gap:8px;margin-top:12px">
-      <button onclick="abrirWhatsApp()" style="flex:1;padding:9px;background:linear-gradient(135deg,#25D366,#128C7E);border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer">🟢 WhatsApp Bot</button>
+      <button onclick="abrirWhatsApp()" style="flex:1;padding:9px;background:linear-gradient(135deg,#2496ED,#1a7bbf);border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer">✈️ Bot</button>
       <button id="btn-push-ativar" onclick="ativarNotificacoesPush()" style="flex:1;padding:9px;background:#1e1e3a;border:1px solid #E8B84B44;border-radius:10px;color:#E8B84B;font-size:13px;cursor:pointer">🔔 Ativar Push</button>
       <button onclick="abrirCompartilhar()" style="flex:1;padding:9px;background:#1e1e3a;border:1px solid #4FBDBA44;border-radius:10px;color:#4FBDBA;font-size:13px;cursor:pointer">👫 Compartilhar</button>
     </div>
@@ -6390,7 +6985,7 @@ if (fbToken && fbUserId) {
 <!-- ═══ WRAPPED ANUAL ═══ -->
 <div id="sec-wrapped" class="section">
   <div style="text-align:center;padding:20px 0 10px">
-    <div style="font-size:40px">🎵</div>
+    <div style="font-size:40px">📊</div>
     <h2 style="font-size:20px;font-weight:800;margin:8px 0 4px">Seu Ano em Revisão</h2>
     <p class="txt-muted" style="font-size:13px">Um resumo de tudo que aconteceu nas suas finanças</p>
     <select id="wrapped-ano" onchange="renderWrapped()" style="margin-top:12px;padding:8px 16px;font-size:14px;border-radius:10px"></select>
@@ -6520,37 +7115,149 @@ if (fbToken && fbUserId) {
 
 <!-- ═══ MODAL WHATSAPP BOT ═══ -->
 <div id="modal-whatsapp" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:3000;align-items:center;justify-content:center">
-  <div style="background:#13132b;border:1px solid #25D36644;border-radius:20px;padding:24px;max-width:360px;width:94%;max-height:90vh;overflow-y:auto">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
-      <h3 style="font-size:16px;font-weight:700">🟢 WhatsApp Bot</h3>
+  <div style="background:#13132b;border:1px solid #2496ED44;border-radius:20px;padding:24px;max-width:380px;width:94%;max-height:92vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h3 style="font-size:16px;font-weight:700">✈️ Bot de Notificações</h3>
       <button onclick="document.getElementById('modal-whatsapp').style.display='none'" class="btn-fechar-modal" style="border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;line-height:1;border:1px solid">×</button>
     </div>
-    <p style="font-size:13px;color:#a0a0c0;margin-bottom:14px">Envie gastos pelo WhatsApp! Digite no seu WhatsApp e o bot registra automaticamente.</p>
-    <!-- CallMeBot setup -->
-    <div style="background:#0d1a0d;border:1px solid #25D36633;border-radius:12px;padding:14px;margin-bottom:14px">
-      <p style="font-size:13px;font-weight:700;color:#25D366;margin-bottom:8px">📱 Configuração (CallMeBot — grátis)</p>
-      <ol style="font-size:12px;color:#a0a0c0;padding-left:16px;line-height:2">
-        <li>Adicione <strong style="color:#25D366">+34 644 59 71 26</strong> aos seus contatos</li>
-        <li>Envie: <strong style="color:#e8e8f0">I allow callmebot to send me messages</strong></li>
-        <li>Você receberá sua API Key por WhatsApp</li>
-        <li>Cole a API Key abaixo</li>
-      </ol>
+
+    <!-- Tabs Telegram / WhatsApp -->
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button id="bot-tab-tg"  onclick="botTab('telegram')"  style="flex:1;padding:8px;border-radius:10px;border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700;background:linear-gradient(135deg,#2496ED,#1a7bbf);color:#fff">✈️ Telegram</button>
+      <button id="bot-tab-wa"  onclick="botTab('whatsapp')"  style="flex:1;padding:8px;border-radius:10px;border:1px solid #2d2d4e;cursor:pointer;font-family:inherit;font-size:13px;background:transparent;color:#a0a0c0">🟢 WhatsApp</button>
     </div>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
-      <div><p class="txt-muted" style="margin-bottom:4px">Seu número (com DDI)</p><input id="wa-numero" placeholder="Ex: 5521999999999" type="tel"/></div>
-      <div><p class="txt-muted" style="margin-bottom:4px">API Key CallMeBot</p><input id="wa-apikey" placeholder="Ex: 1234567"/></div>
+
+    <!-- PAINEL TELEGRAM -->
+    <div id="bot-panel-telegram">
+      <div style="background:#0d1520;border:1px solid #2496ED33;border-radius:12px;padding:14px;margin-bottom:14px">
+        <p style="font-size:13px;font-weight:700;color:#2496ED;margin-bottom:10px">✈️ Configuração Telegram (grátis)</p>
+        <ol style="font-size:12px;color:#a0a0c0;padding-left:16px;line-height:2.2">
+          <li>Abra o Telegram e procure <a href="https://t.me/BotFather" target="_blank" style="color:#2496ED">@BotFather</a></li>
+          <li>Envie <strong style="color:#e8e8f0">/newbot</strong> e siga as instruções</li>
+          <li>Copie o <strong style="color:#e8e8f0">Token</strong> recebido e cole abaixo</li>
+          <li>Procure <a href="https://t.me/userinfobot" target="_blank" style="color:#2496ED">@userinfobot</a> e envie qualquer mensagem para obter seu <strong style="color:#e8e8f0">Chat ID</strong></li>
+        </ol>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+        <div><p class="txt-muted" style="margin-bottom:4px">Bot Token</p><input id="tg-token" placeholder="Ex: 7123456789:AAH..." style="font-size:12px"/></div>
+        <div><p class="txt-muted" style="margin-bottom:4px">Seu Chat ID</p><input id="tg-chatid" placeholder="Ex: 123456789" type="number"/></div>
+      </div>
+      <button onclick="salvarTelegram()" style="width:100%;padding:11px;background:linear-gradient(135deg,#2496ED,#1a7bbf);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px">💾 Salvar e testar</button>
+      <div id="tg-status" style="font-size:12px;text-align:center;color:#6060a0;min-height:18px"></div>
     </div>
-    <button class="btn btn-primary" onclick="salvarWhatsApp()" style="width:100%;margin-bottom:10px;background:linear-gradient(135deg,#25D366,#128C7E)">💾 Salvar e testar</button>
-    <div style="background:#1e1e3a;border-radius:12px;padding:12px">
+
+    <!-- PAINEL WHATSAPP -->
+    <div id="bot-panel-whatsapp" style="display:none">
+      <div style="background:#0d1a0d;border:1px solid #25D36633;border-radius:12px;padding:14px;margin-bottom:14px">
+        <p style="font-size:13px;font-weight:700;color:#25D366;margin-bottom:8px">🟢 WhatsApp via CallMeBot</p>
+        <p style="font-size:12px;color:#F28C8C;margin-bottom:8px">⚠️ O número do CallMeBot pode estar instável. Recomendamos usar o Telegram.</p>
+        <ol style="font-size:12px;color:#a0a0c0;padding-left:16px;line-height:2">
+          <li>Salve o número <strong style="color:#25D366">+34 644 59 71 26</strong> como contato</li>
+          <li>Envie via WhatsApp: <strong style="color:#e8e8f0">I allow callmebot to send me messages</strong></li>
+          <li>Aguarde a API Key chegar por mensagem</li>
+        </ol>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+        <div><p class="txt-muted" style="margin-bottom:4px">Número (com DDI, sem espaços)</p><input id="wa-numero" placeholder="Ex: 5511999999999" type="tel"/></div>
+        <div><p class="txt-muted" style="margin-bottom:4px">API Key CallMeBot</p><input id="wa-apikey" placeholder="Ex: 1234567"/></div>
+      </div>
+      <button onclick="salvarWhatsApp()" style="width:100%;padding:11px;background:linear-gradient(135deg,#25D366,#128C7E);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">💾 Salvar e testar</button>
+    </div>
+
+    <!-- Comandos (comum para os dois) -->
+    <div style="background:#1e1e3a;border-radius:12px;padding:12px;margin-top:14px">
       <p style="font-size:12px;font-weight:700;margin-bottom:8px">📋 Comandos disponíveis</p>
-      <div style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:#a0a0c0">
-        <p><strong style="color:#25D366">gastei 50 almoço</strong> → registra R$50 em Alimentação</p>
-        <p><strong style="color:#25D366">uber 35</strong> → registra R$35 em Transporte</p>
-        <p><strong style="color:#25D366">saldo</strong> → mostra resumo do mês</p>
-        <p><strong style="color:#25D366">resumo</strong> → envia relatório completo</p>
+      <div style="display:flex;flex-direction:column;gap:5px;font-size:12px;color:#a0a0c0">
+        <p><strong style="color:#4FBDBA">gastei 50 almoço</strong> → registra R$50 em Alimentação</p>
+        <p><strong style="color:#4FBDBA">uber 35</strong> → registra R$35 em Transporte</p>
+        <p><strong style="color:#4FBDBA">saldo</strong> → resumo do mês atual</p>
+        <p><strong style="color:#4FBDBA">resumo</strong> → relatório por categoria</p>
+        <p><strong style="color:#4FBDBA">metas</strong> → status das suas metas</p>
       </div>
     </div>
-    <p style="font-size:11px;color:#4060a0;margin-top:10px;text-align:center">Para receber comandos via WhatsApp, configure um webhook n8n/Zapier no ⚙️ Config da IA</p>
+  </div>
+</div>
+
+
+<!-- ═══ MODAL CONFIG ═══ -->
+<div id="modal-config" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:3000;align-items:center;justify-content:center">
+  <div style="background:#13132b;border:1px solid #2d2d4e;border-radius:20px;padding:24px;max-width:380px;width:94%;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <h3 style="font-size:16px;font-weight:700">⚙️ Configurações</h3>
+      <button onclick="fecharConfig()" class="btn-fechar-modal" style="border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;line-height:1;border:1px solid">×</button>
+    </div>
+
+    <!-- Tema -->
+    <div style="margin-bottom:20px">
+      <p style="font-size:13px;font-weight:700;margin-bottom:10px">🎨 Aparência</p>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button onclick="toggleTema()" id="config-tema-btn" class="btn btn-gray" style="flex:1;font-size:13px">🌙 Alternar tema</button>
+      </div>
+      <p style="font-size:12px;color:#a0a0c0;margin-bottom:8px">Cor de destaque:</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="setCorTema('#5B8DB8')" class="btn-cor-tema" style="width:32px;height:32px;border-radius:50%;background:#5B8DB8;border:3px solid transparent;cursor:pointer" data-cor="#5B8DB8"></button>
+        <button onclick="setCorTema('#6DBE8C')" class="btn-cor-tema" style="width:32px;height:32px;border-radius:50%;background:#6DBE8C;border:3px solid transparent;cursor:pointer" data-cor="#6DBE8C"></button>
+        <button onclick="setCorTema('#E8B84B')" class="btn-cor-tema" style="width:32px;height:32px;border-radius:50%;background:#E8B84B;border:3px solid transparent;cursor:pointer" data-cor="#E8B84B"></button>
+        <button onclick="setCorTema('#E07B54')" class="btn-cor-tema" style="width:32px;height:32px;border-radius:50%;background:#E07B54;border:3px solid transparent;cursor:pointer" data-cor="#E07B54"></button>
+        <button onclick="setCorTema('#A87BC9')" class="btn-cor-tema" style="width:32px;height:32px;border-radius:50%;background:#A87BC9;border:3px solid transparent;cursor:pointer" data-cor="#A87BC9"></button>
+        <button onclick="setCorTema('#4FBDBA')" class="btn-cor-tema" style="width:32px;height:32px;border-radius:50%;background:#4FBDBA;border:3px solid transparent;cursor:pointer" data-cor="#4FBDBA"></button>
+        <button onclick="setCorTema('#F28C8C')" class="btn-cor-tema" style="width:32px;height:32px;border-radius:50%;background:#F28C8C;border:3px solid transparent;cursor:pointer" data-cor="#F28C8C"></button>
+        <input type="color" id="cor-custom" value="#5B8DB8" onchange="setCorTema(this.value)" style="width:32px;height:32px;border-radius:50%;border:3px solid #2d2d4e;cursor:pointer;padding:0" title="Cor personalizada">
+      </div>
+    </div>
+
+    <!-- Relatório semanal -->
+    <div style="margin-bottom:20px;padding:14px;background:#1e1e3a;border-radius:12px">
+      <p style="font-size:13px;font-weight:700;margin-bottom:4px">📊 Relatório Semanal</p>
+      <p style="font-size:12px;color:#a0a0c0;margin-bottom:10px">Receba todo domingo um resumo da semana no Telegram</p>
+      <div style="display:flex;gap:10px;align-items:center">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="rel-semanal-ativo" onchange="toggleRelatorioSemanal()" style="width:18px;height:18px;cursor:pointer">
+          Ativar relatório semanal
+        </label>
+      </div>
+    </div>
+
+    <!-- Notificações -->
+    <div style="margin-bottom:20px;padding:14px;background:#1e1e3a;border-radius:12px">
+      <p style="font-size:13px;font-weight:700;margin-bottom:4px">🔔 Alertas Inteligentes</p>
+      <p style="font-size:12px;color:#a0a0c0;margin-bottom:10px">Lembretes automáticos para você não esquecer</p>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="alerta-renda" onchange="salvarAlertas()" style="width:16px;height:16px">
+          Lembrar de registrar renda (todo dia 5)
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="alerta-venc" onchange="salvarAlertas()" style="width:16px;height:16px" checked>
+          Alertar vencimentos próximos
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="alerta-meta" onchange="salvarAlertas()" style="width:16px;height:16px">
+          Lembrar de verificar metas
+        </label>
+      </div>
+    </div>
+
+    <!-- Sobre -->
+    <div style="text-align:center;padding-top:8px;border-top:1px solid #1e1e3a">
+      <p style="font-size:11px;color:#4060a0">💰 Finanças Pessoais · versão 3.0</p>
+      <p style="font-size:11px;color:#4060a0">by fransoares8849</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══ ONBOARDING ═══ -->
+<div id="onboarding" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9000;align-items:center;justify-content:center">
+  <div style="max-width:360px;width:94%;text-align:center;padding:32px 24px">
+    <div id="ob-step-dots" style="display:flex;gap:8px;justify-content:center;margin-bottom:24px"></div>
+    <div id="ob-icon" style="font-size:56px;margin-bottom:16px"></div>
+    <h2 id="ob-titulo" style="font-size:22px;font-weight:800;margin-bottom:10px;color:#fff"></h2>
+    <p id="ob-desc" style="font-size:14px;color:#a0a0c0;line-height:1.7;margin-bottom:28px"></p>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button id="ob-btn-pular" onclick="pularOnboarding()" class="btn btn-gray" style="padding:10px 20px">Pular</button>
+      <button id="ob-btn-proximo" onclick="proximoOnboarding()" class="btn btn-primary" style="padding:10px 24px;font-size:15px">Próximo →</button>
+    </div>
   </div>
 </div>
 
