@@ -1103,8 +1103,18 @@ const MP_LINK_MENSAL   = "https://mpago.la/1uofXTL"; // ex: https://mpago.la/abc
 const PRECO_MENSAL     = "R$ 5,90";
 const PRECO_ANUAL      = "R$ 119,90";
 
+// ── Contas com acesso total (admin) ──────────────────────────────────────────
+const ADMIN_EMAILS = [
+  "fran.soares8849@gmail.com",
+  "fran.soares23@yahoo.com.br"
+];
+function isAdmin() {
+  return ADMIN_EMAILS.includes((fbUserEmail || "").toLowerCase().trim());
+}
+
 function isPremium() {
-  // Verificar se é premium via Firestore (carregado no state)
+  // Admin sempre tem acesso total
+  if (isAdmin()) return true;
   return state.premium === true || localStorage.getItem("premium_" + fbUserId) === "1";
 }
 
@@ -4039,19 +4049,35 @@ async function ativarPremiumLocal() {
 }
 
 function atualizarBadgePremium() {
-  const prem = isPremium();
+  const prem  = isPremium();
+  const admin = isAdmin();
   // Badge flutuante
   const badge = document.getElementById("badge-premium");
-  if (badge) badge.style.display = "none"; // esconder badge flutuante
+  if (badge) badge.style.display = "none";
   // Botões no header
-  const btnPremium  = document.getElementById("btn-ver-planos");
-  const btnUpgrade  = document.getElementById("btn-upgrade-header");
-  if (btnPremium)  btnPremium.style.display  = prem ? "block" : "none";
-  if (btnUpgrade)  btnUpgrade.style.display  = prem ? "none"  : "block";
-  // Avatar dourado para premium
+  const btnPremium = document.getElementById("btn-ver-planos");
+  const btnUpgrade = document.getElementById("btn-upgrade-header");
+  if (btnUpgrade) btnUpgrade.style.display = "none"; // admin/premium: nunca mostra Upgrade
+  if (btnPremium) {
+    if (admin) {
+      btnPremium.style.display  = "block";
+      btnPremium.textContent    = "🛡️ Admin";
+      btnPremium.style.background = "linear-gradient(135deg,#5B8DB8,#4FBDBA)";
+      btnPremium.onclick        = null; // admin não precisa de modal
+    } else if (prem) {
+      btnPremium.style.display  = "block";
+      btnPremium.textContent    = "⭐ Premium";
+      btnPremium.style.background = "linear-gradient(135deg,#E8B84B,#E07B54)";
+    } else {
+      btnPremium.style.display  = "none";
+      if (btnUpgrade) btnUpgrade.style.display = "block";
+    }
+  }
+  // Avatar colorido
   const avatar = document.getElementById("user-avatar");
-  if (avatar && prem) {
-    avatar.style.background = "linear-gradient(135deg,#E8B84B,#E07B54)";
+  if (avatar) {
+    if (admin)      avatar.style.background = "linear-gradient(135deg,#5B8DB8,#4FBDBA)";
+    else if (prem)  avatar.style.background = "linear-gradient(135deg,#E8B84B,#E07B54)";
   }
 }
 
