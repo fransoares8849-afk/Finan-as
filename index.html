@@ -1571,6 +1571,9 @@ function render() {
   const secCal = document.getElementById("sec-calendario");
   if (secCal && secCal.classList.contains("on")) renderCalendario();
   mostrarFab();
+  // Reaplicar cor de tema (render cria novos elementos)
+  const corSalva = localStorage.getItem("cor_tema");
+  if (corSalva) aplicarCorTema(corSalva);
 }
 
 function renderMesSelect() {
@@ -5087,6 +5090,7 @@ _Comandos: gastei 50 almoço • saldo • resumo • metas_`;
   if (ok) {
     if (status) { status.textContent = "✅ Telegram conectado com sucesso!"; status.style.color="#6DBE8C"; }
     toast("✅ Telegram configurado! Verifique o bot.","#2496ED");
+    iniciarPollingTelegram(); // Iniciar polling imediatamente
     setTimeout(()=>{ document.getElementById("modal-whatsapp").style.display="none"; }, 1500);
   } else {
     if (status) { status.textContent = "❌ Erro. Verifique o Token e Chat ID."; status.style.color="#F28C8C"; }
@@ -5150,45 +5154,177 @@ async function enviarNotificacao(mensagem) {
 }
 
 // Processar comando recebido via WhatsApp (chamado por webhook externo via URL param)
-function processarComandoWhatsApp(texto) {
-  const t = texto.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+// ══════════════════════════════════════════════
+// TELEGRAM POLLING — recebe comandos em tempo real
+// ══════════════════════════════════════════════
+let _tgPollingTimer = null;
+let _tgPollingAtivo = false;
+
+function iniciarPollingTelegram() {
+  const token  = localStorage.getItem("tg_token");
+  const chatId = localStorage.getItem("tg_chatid");
+  if (!token || !chatId) return;
+  if (_tgPollingAtivo) return;
+  _tgPollingAtivo = true;
+  atualizarIndicadorBot(true);
+  _executarPoll();
+  _tgPollingTimer = setInterval(_executarPoll, 30000);
+}
+
+function pararPollingTelegram() {
+  _tgPollingAtivo = false;
+  if (_tgPollingTimer) { clearInterval(_tgPollingTimer); _tgPollingTimer = null; }
+  atualizarIndicadorBot(false);
+}
+
+async function _executarPoll() {
+  const token  = localStorage.getItem("tg_token");
+  const chatId = localStorage.getItem("tg_chatid");
+  if (!token || !chatId) { pararPollingTelegram(); return; }
+  const offset = parseInt(localStorage.getItem("tg_last_update")||"0") + 1;
+  try {
+    const r = await fetch(`https://api.telegram.org/bot${token}/getUpdates?offset=${offset}&limit=10&timeout=0`);
+    const d = await r.json();
+    if (!d.ok) return;
+    for (const upd of d.result) {
+      localStorage.setItem("tg_last_update", String(upd.update_id));
+      const msg = upd.message;
+      if (!msg?.text) continue;
+      // Só processar mensagens do usuário configurado
+      if (String(msg.chat.id) !== String(chatId)) continue;
+      await processarComandoTelegram(msg.text.trim());
+    }
+  } catch(e) {
+    console.warn("Telegram poll erro:", e);
+  }
+}
+
+function atualizarIndicadorBot(ativo) {
+  const el = document.getElementById("tg-indicador");
+  if (el) {
+    el.textContent = ativo ? "🟢 Bot ativo" : "⚫ Bot inativo";
+    el.style.color = ativo ? "#6DBE8C" : "#6060a0";
+  }
+}
+
+async function processarComandoTelegram(texto) {
+  const t = texto.toLowerCase().trim()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"");
   const ra = resumoAtivo();
-  if (t === "saldo" || t === "saldo do mes") {
-    const msg = `💰 *${mesNome(mesAtivo)}*\nRenda: R$ ${ra.renda.toFixed(2)}\nGastos: R$ ${ra.gasto.toFixed(2)}\nSaldo: R$ ${ra.saldoMes.toFixed(2)}`;
-    enviarNotificacao(msg);
+  const gm = gastosMes();
+
+  // ── /start ─────────────────────────────────
+  if (t === "/start" || t === "start") {
+    await enviarTelegram(`👋 *Olá, ${fbUserName||"Fran"}!*\n\nSou seu assistente financeiro. Aqui estão os comandos:\n\n` +
+      `💰 *saldo* → resumo do mês\n📊 *resumo* → gastos por categoria\n🎯 *metas* → status das metas\n⏰ *avencer* → contas a pagar\n📅 *hoje* → gastos de hoje\n\n` +
+      `Para registrar um gasto:\n*gastei 50 almoço*\n*paguei 120 farmácia*\n*uber 35*`);
     return;
   }
+
+  // ── saldo ──────────────────────────────────
+  if (t === "saldo" || t === "saldo do mes") {
+    const prev = calcPrevisaoFechamento();
+    await enviarTelegram(
+      `💰 *${mesNome(mesAtivo)}*\n\n` +
+      `📈 Renda: *${fmt(ra.renda)}*\n` +
+      `📉 Gastos: *${fmt(ra.gasto)}*\n` +
+      `✅ Saldo: *${fmt(ra.saldoMes)}*\n` +
+      (prev && mesAtivo===nowM() ? `\n🔮 Previsão fechamento: *${fmt(prev.saldoProjetado)}*` : "")
+    );
+    return;
+  }
+
+  // ── resumo ─────────────────────────────────
   if (t === "resumo") {
-    const gm = gastosMes();
     const porCat = {};
     gm.forEach(g=>{ porCat[g.cat]=(porCat[g.cat]||0)+g.valor; });
-    const cats = Object.entries(porCat).sort((a,b)=>b[1]-a[1]).map(([c,v])=>`• ${c}: R$ ${v.toFixed(2)}`).join("\n");
-    enviarNotificacao(`📊 *Resumo ${mesNome(mesAtivo)}*\n\n${cats}\n\n💰 Total: R$ ${ra.gasto.toFixed(2)}`);
+    const cats = Object.entries(porCat).sort((a,b)=>b[1]-a[1])
+      .map(([c,v])=>`  • ${c}: ${fmt(v)} (${ra.renda>0?((v/ra.renda)*100).toFixed(0):0}%)`)
+      .join("\n");
+    await enviarTelegram(`📊 *Resumo ${mesNome(mesAtivo)}*\n\n${cats||"Sem gastos ainda"}\n\n💸 Total: *${fmt(ra.gasto)}*`);
     return;
   }
+
+  // ── metas ──────────────────────────────────
   if (t === "metas") {
     const metas = state.metas||[];
-    if (!metas.length) { enviarNotificacao("Nenhuma meta cadastrada ainda."); return; }
-    const msg = metas.map(m=>`${m.icone} *${m.desc}*: ${fmt(m.aportado||0)}/${fmt(m.valor)} (${((m.aportado||0)/m.valor*100).toFixed(0)}%)`).join("\n");
-    enviarNotificacao(`🎯 *Suas Metas*\n\n${msg}`);
+    if (!metas.length) { await enviarTelegram("Nenhuma meta cadastrada ainda."); return; }
+    const msg = metas.map(m=>{
+      const pct = ((m.aportado||0)/m.valor*100).toFixed(0);
+      const bar = "█".repeat(Math.floor(pct/10)) + "░".repeat(10-Math.floor(pct/10));
+      return `${m.icone} *${m.desc}*\n${bar} ${pct}%\n${fmt(m.aportado||0)} / ${fmt(m.valor)}`;
+    }).join("\n\n");
+    await enviarTelegram(`🎯 *Suas Metas*\n\n${msg}`);
     return;
   }
-  // Padrão: "gastei X descrição" ou "X descrição"
-  const match = t.match(/(gastei|paguei|comprei|)?\s*([\d]+[,.]?[\d]*)\s+(.+)/);
+
+  // ── a vencer ──────────────────────────────
+  if (t === "avencer" || t === "a vencer" || t === "contas") {
+    const pendentes = gm.filter(g=>!isPagoMes(g.id,mesAtivo))
+      .sort((a,b)=>new Date(a.data)-new Date(b.data));
+    if (!pendentes.length) { await enviarTelegram("✅ Nenhuma conta pendente!"); return; }
+    const lista = pendentes.slice(0,8).map(g=>`• ${g.desc} — *${fmt(g.valor)}* (${new Date(g.data+"T12:00").toLocaleDateString("pt-BR")})`).join("\n");
+    await enviarTelegram(`⏰ *Contas a Pagar*\n\n${lista}\n\n💰 Total pendente: *${fmt(pendentes.reduce((s,g)=>s+g.valor,0))}*`);
+    return;
+  }
+
+  // ── hoje ───────────────────────────────────
+  if (t === "hoje") {
+    const hojeStr = todayS();
+    const gastosHoje = gm.filter(g=>g.data===hojeStr);
+    if (!gastosHoje.length) { await enviarTelegram("📅 Nenhum gasto registrado hoje."); return; }
+    const total = gastosHoje.reduce((s,g)=>s+g.valor,0);
+    const lista = gastosHoje.map(g=>`• ${g.desc} — *${fmt(g.valor)}*`).join("\n");
+    await enviarTelegram(`📅 *Gastos de hoje*\n\n${lista}\n\n💸 Total: *${fmt(total)}*`);
+    return;
+  }
+
+  // ── ajuda ──────────────────────────────────
+  if (t === "ajuda" || t === "help" || t === "/help") {
+    await enviarTelegram(
+      `📋 *Comandos disponíveis:*\n\n` +
+      `💰 *saldo* — resumo do mês\n📊 *resumo* — gastos por categoria\n🎯 *metas* — suas metas\n⏰ *avencer* — contas pendentes\n📅 *hoje* — gastos de hoje\n\n` +
+      `*Registrar gasto:*\n_gastei 50 almoço_\n_paguei 120 farmácia_\n_uber 35_\n_mercado 200_`
+    );
+    return;
+  }
+
+  // ── registrar gasto (padrão) ───────────────
+  const match = t.match(/^(?:gastei|paguei|comprei|)?\s*([\d]+[,.]?[\d]*)\s+(.+)$/);
   if (match) {
-    const valor = parseFloat(match[2].replace(",","."));
-    const descRaw = match[3].trim();
-    const catMap = {"almoç|jant|lanch|mercado|supermerc|ifood|restaur":"Alimentação","uber|taxi|gasolina|combustiv|onibus":"Transporte","aluguel|condomin|luz|agua|internet":"Moradia","farmacia|medico|saude|remedio":"Saúde","cinema|netflix|spotify|academia":"Lazer"};
+    const valor = parseFloat(match[1].replace(",","."));
+    const descRaw = texto.replace(/^(gastei|paguei|comprei)\s+/i,"").replace(/[\d]+[,.]?[\d]*\s*/,"").trim();
+    const desc = descRaw || "Gasto via Telegram";
+    const catMap = {
+      "almoç|jant|lanch|mercado|supermerc|ifood|restaur|padaria|cafe":"Alimentação",
+      "uber|taxi|gasolina|combustiv|onibus|metro|pedagio":"Transporte",
+      "aluguel|condomin|luz|agua|internet|tim|claro":"Moradia",
+      "farmacia|medico|saude|remedio|plano":"Saúde",
+      "cinema|netflix|spotify|academia|lazer":"Lazer",
+      "escola|curso|faculdade|livro":"Educação"
+    };
     let cat = "Outros";
-    for (const [k,v] of Object.entries(catMap)) { if(new RegExp(k,"i").test(descRaw)){cat=v;break;} }
-    state.gastos.push({id:mkId(),desc:descRaw,valor,cat,tipo:"variavel",data:document.getElementById("g-data")?.value||todayS(),notas:"Via WhatsApp"});
-    persist();
-    render();
-    enviarWhatsApp(`✅ Registrado!\n📦 *${descRaw}* — R$ ${valor.toFixed(2)}\n📁 Categoria: ${cat}`);
+    for (const [k,c] of Object.entries(catMap)) { if(new RegExp(k,"i").test(desc)){cat=c;break;} }
+    const novoGasto = {id:mkId(), desc, valor, cat, tipo:"variavel", data:todayS(), notas:"Via Telegram"};
+    state.gastos.push(novoGasto);
+    persist(); render();
+    await enviarTelegram(
+      `✅ *Gasto registrado!*\n\n` +
+      `📦 ${desc}\n💸 Valor: *${fmt(valor)}*\n📁 Categoria: ${cat}\n\n` +
+      `📊 Gastos do mês: *${fmt(resumoAtivo().gasto)}*`
+    );
     return;
   }
-  enviarWhatsApp("❓ Não entendi. Tente: *gastei 50 almoço* ou *saldo*");
+
+  // ── não entendeu ───────────────────────────
+  await enviarTelegram(`❓ Não entendi "*${texto}*"\n\nEnvie *ajuda* para ver os comandos.`);
 }
+
+function processarComandoWhatsApp(texto) {
+  processarComandoTelegram(texto);
+}
+
+
 
 // ══════════════════════════════════════════════
 // OPEN BANKING — Importadores específicos por banco
@@ -5318,19 +5454,15 @@ function processarExtrato() {
 // INIT: verificar grupo e push ao carregar
 // ══════════════════════════════════════════════
 function initRecursosExtras() {
-  // Retomar grupo compartilhado
   const codigo = localStorage.getItem("grupo_codigo");
   if (codigo) { grupoAtivo = codigo; iniciarSyncGrupo(); atualizarStatusCompartilhar(); }
-  // Verificar vencimentos ao abrir
   setTimeout(verificarPushVencimentos, 3000);
   setTimeout(verificarLembretesInteligentes, 4000);
-  // Verificar vencimentos diariamente
+  setTimeout(iniciarPollingTelegram, 5000); // Iniciar bot polling
   setInterval(verificarPushVencimentos, 3600000);
-  // Processar comando WhatsApp via URL param
   const params = new URLSearchParams(location.search);
   const waCmd = params.get("wa_cmd");
   if (waCmd) { setTimeout(()=>processarComandoWhatsApp(decodeURIComponent(waCmd)), 2000); }
-  // Onboarding para novos usuários (após login)
   setTimeout(()=>{ if(fbUserId) iniciarOnboarding(); }, 1500);
 }
 
@@ -5579,11 +5711,51 @@ function setCorTema(cor) {
 
 function aplicarCorTema(cor) {
   if (!cor) return;
-  const root = document.documentElement;
-  root.style.setProperty("--cor-primary", cor);
-  // Aplicar aos botões primários
-  document.querySelectorAll(".btn-primary").forEach(btn=>{ btn.style.background=cor; });
-  document.querySelectorAll("#user-avatar").forEach(el=>{ if(!isAdmin()) el.style.background=`linear-gradient(135deg,${cor},${ajustarCor(cor,-30)})`; });
+  const cor2 = ajustarCor(cor, -25);
+  const corClara = ajustarCor(cor, 40);
+
+  // 1. Injetar/atualizar <style> com a nova cor
+  let styleEl = document.getElementById("style-tema-cor");
+  if (!styleEl) {
+    styleEl = document.createElement("style");
+    styleEl.id = "style-tema-cor";
+    document.head.appendChild(styleEl);
+  }
+  styleEl.textContent = `
+    .btn-primary { background: linear-gradient(135deg, ${cor}, ${cor2}) !important; }
+    .tab.on { border-color: ${cor} !important; color: ${cor} !important; }
+    .txt-primary, .kpi-val.primary { color: ${cor} !important; }
+    input:focus, select:focus { border-color: ${cor} !important; outline-color: ${cor}; }
+    #score-circle { border-color: ${cor}44 !important; }
+    .pbar-fill { background: ${cor} !important; }
+    a { color: ${cor}; }
+  `;
+
+  // 2. Botões primários — inline override
+  document.querySelectorAll(".btn-primary").forEach(btn=>{
+    btn.style.background = `linear-gradient(135deg,${cor},${cor2})`;
+  });
+
+  // 3. Avatar do usuário
+  const avatar = document.getElementById("user-avatar");
+  if (avatar && !isAdmin()) {
+    avatar.style.background = `linear-gradient(135deg,${cor},${cor2})`;
+  }
+
+  // 4. FABs principais
+  const fabMain = document.getElementById("fab-main");
+  if (fabMain) fabMain.style.background = `linear-gradient(135deg,${cor},${cor2})`;
+
+  // 5. Tabs ativas
+  document.querySelectorAll(".tab.on").forEach(t=>{
+    t.style.borderColor = cor;
+    t.style.color = cor;
+  });
+
+  // 6. Barra de progresso do orçamento
+  document.querySelectorAll(".pbar-fill, [id$='-bar']").forEach(el=>{
+    el.style.background = cor;
+  });
 }
 
 function ajustarCor(hex, pct) {
@@ -6934,7 +7106,10 @@ if (fbToken && fbUserId) {
   <div class="card" style="margin-bottom:14px" id="ia-config-card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
       <h2 style="font-size:14px">🤖 Conselheiro Financeiro IA</h2>
-      <button class="btn btn-gray" onclick="toggleIaConfig()" style="font-size:11px;padding:4px 10px">⚙️ Config</button>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span id="tg-indicador" style="font-size:11px;color:#6060a0">⚫ Bot inativo</span>
+        <button class="btn btn-gray" onclick="toggleIaConfig()" style="font-size:11px;padding:4px 10px">⚙️ Config</button>
+      </div>
     </div>
     <div id="ia-config-panel" style="display:none;margin-bottom:12px;padding:12px;background:#0d0d1a;border-radius:10px;border:1px solid #1e1e3a">
       <p class="txt-muted" style="font-size:12px;margin-bottom:8px">Cole sua chave da API Claude (Anthropic) para ativar respostas reais. <a href="https://console.anthropic.com" target="_blank" style="color:#5B8DB8">Obter chave →</a></p>
