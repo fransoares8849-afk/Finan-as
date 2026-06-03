@@ -244,23 +244,6 @@ body.tema-claro [style*="background: #0a0a18"] {
   background: #edf2f7 !important;
   border-color: #cbd5e0 !important;
 }
-/* IA e Wrapped no modo claro */
-body.tema-claro .chat-bubble-ia  { background: #edf2f7 !important; color: #1a202c !important; }
-body.tema-claro #chat-ia-msgs > div > div:last-child { background: #edf2f7 !important; color: #1a202c !important; }
-body.tema-claro [style*="background:#1e1e3a"] { background: #f0f4f8 !important; }
-body.tema-claro [style*="background:#0d1a0d"],
-body.tema-claro [style*="background:#1a2a1a"],
-body.tema-claro [style*="background:#1a1a0a"],
-body.tema-claro [style*="background:#1a1010"],
-body.tema-claro [style*="background:#1a1020"],
-body.tema-claro [style*="background:#0f1a0f"] {
-  background: #f7faff !important; color: #1a202c !important;
-}
-body.tema-claro [style*="background:#2d1a3a"],
-body.tema-claro [style*="background:linear-gradient(135deg,#1e1e3a"] {
-  background: #e8edf5 !important;
-}
-
 /* Scrollbar */
 body.tema-claro ::-webkit-scrollbar-track { background: #f0f4f8; }
 body.tema-claro ::-webkit-scrollbar-thumb { background: #cbd5e0; }
@@ -322,7 +305,6 @@ body.tema-claro ::-webkit-scrollbar-thumb { background: #cbd5e0; }
     </div>
   </div>
   <div style="display:flex;gap:8px;align-items:center">
-    <button onclick="abrirCompartilhar()" id="btn-compartilhar" style="background:#1e1e3a;border:1px solid #4FBDBA44;border-radius:8px;color:#4FBDBA;font-size:11px;padding:6px 10px;cursor:pointer;font-family:inherit;display:none" title="Conta compartilhada">👫</button>
     <button onclick="mostrarUpgrade('badge')" id="btn-ver-planos" style="background:linear-gradient(135deg,#E8B84B,#E07B54);border:none;border-radius:8px;color:#fff;font-size:11px;padding:6px 12px;cursor:pointer;font-family:inherit;font-weight:700;display:none">⭐ Premium</button>
     <button onclick="mostrarUpgrade('geral')" id="btn-upgrade-header" style="background:#1e1e3a;border:1px solid #E8B84B44;border-radius:8px;color:#E8B84B;font-size:11px;padding:6px 12px;cursor:pointer;font-family:inherit;font-weight:600">🚀 Upgrade</button>
     <button onclick="toggleTema()" id="btn-tema" style="background:#1e1e3a;border:1px solid #2d2d4e;border-radius:8px;color:#a0a0c0;font-size:14px;padding:6px 10px;cursor:pointer;font-family:inherit">🌙</button>
@@ -352,7 +334,7 @@ body.tema-claro ::-webkit-scrollbar-thumb { background: #cbd5e0; }
       <button class="btn btn-gray" onclick="abrirConfig()" style="padding:7px 12px;font-size:12px;background:#1a1a2a;color:#a0a0c0;border-color:#2d2d4e">⚙️</button>
       <button class="btn btn-gray" onclick="gerarPDF()" style="padding:7px 12px;font-size:12px;background:#1a1a2a;color:#E8B84B;border-color:#E8B84B44">📄 PDF</button>
       <button class="btn btn-gray" onclick="exportCSV()" style="padding:7px 12px;font-size:12px">⬇️ CSV</button>
-      <button class="btn btn-gray" onclick="exportJSON()" style="padding:7px 12px;font-size:12px;background:#1a2a1a;color:#6DBE8C;border-color:#6DBE8C44">💾 Backup</button>
+      <button class="btn btn-gray" onclick="backupGoogleDrive()" style="padding:7px 12px;font-size:12px;background:#1a2a1a;color:#6DBE8C;border-color:#6DBE8C44">💾 Backup</button>
       <button class="btn btn-gray" onclick="document.getElementById('import-input').click()" style="padding:7px 12px;font-size:12px;background:#1a1a2a;color:#5B8DB8;border-color:#5B8DB844">📂 Restaurar</button>
       <input type="file" id="import-input" accept=".json" style="display:none" onchange="importJSON(event)"/>
       <button class="btn btn-gray" id="btn-voz" onclick="toggleVoz()" style="padding:7px 12px;font-size:12px;background:#1a1a2a;color:#4FBDBA;border-color:#4FBDBA44">🎤 Voz</button>
@@ -1069,8 +1051,8 @@ body.tema-claro ::-webkit-scrollbar-thumb { background: #cbd5e0; }
   <div class="card" style="margin-bottom:14px">
     <h2 style="font-size:14px;margin-bottom:4px">📈 Evolução do Score</h2>
     <p class="txt-muted" style="font-size:12px;margin-bottom:12px">Seu score financeiro ao longo dos meses</p>
-    <div id="score-historico-chart" style="display:flex;align-items:flex-end;gap:4px;height:80px;margin-bottom:8px"></div>
-    <div id="score-historico-labels" style="display:flex;gap:4px;margin-top:4px"></div>
+    <div id="score-historico-chart" style="display:flex;align-items:flex-end;gap:4px;height:80px;margin-bottom:4px"></div>
+    <div id="score-historico-labels" style="display:flex;gap:4px"></div>
   </div>
 
   <!-- Conquistas -->
@@ -1084,6 +1066,21 @@ body.tema-claro ::-webkit-scrollbar-thumb { background: #cbd5e0; }
     <h2 style="font-size:15px;margin-bottom:4px">🎯 Desafio do Mês</h2>
     <p class="txt-muted" style="margin-bottom:14px">Complete desafios para melhorar sua saúde financeira</p>
     <div id="desafios-list" style="display:flex;flex-direction:column;gap:10px"></div>
+  </div>
+
+  <!-- LINK DE COBRANÇA PIX -->
+  <div class="card" style="margin-top:14px">
+    <h2 style="font-size:14px;margin-bottom:4px">💚 Gerar Cobrança Pix</h2>
+    <p class="txt-muted" style="font-size:12px;margin-bottom:14px">Crie um QR Code Pix para cobrar amigos</p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px">
+      <div><p class="txt-muted" style="margin-bottom:4px">Chave Pix (CPF, e-mail, telefone ou aleatória)</p><input id="pix-chave" placeholder="Ex: 12345678901 ou email@email.com" oninput="gerarPix()"/></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div><p class="txt-muted" style="margin-bottom:4px">Valor (R$)</p><input id="pix-valor" type="number" placeholder="Ex: 50.00" step="0.01" oninput="gerarPix()"/></div>
+        <div><p class="txt-muted" style="margin-bottom:4px">Nome do recebedor</p><input id="pix-nome" placeholder="Ex: João Silva" oninput="gerarPix()"/></div>
+      </div>
+      <div><p class="txt-muted" style="margin-bottom:4px">Descrição (opcional)</p><input id="pix-desc" placeholder="Ex: Jantar do dia 01/06" oninput="gerarPix()"/></div>
+    </div>
+    <div id="pix-resultado"></div>
   </div>
 
 </div>
@@ -1303,13 +1300,9 @@ async function loadFromCloud(uid) {
           poupancas:    mergeById(state.poupancas,     data.poupancas),
           investimentos:mergeById(state.investimentos, data.investimentos),
           aportes:      mergeById(state.aportes,       data.aportes),
-          metas:        mergeById(state.metas,         data.metas),
-          templates:    mergeById(state.templates,     data.templates),
-          cartoes:      mergeById(state.cartoes,       data.cartoes),
           pagamentos:   Object.assign({}, data.pagamentos||{}, state.pagamentos||{}),
           recebimentos: Object.assign({}, data.recebimentos||{}, state.recebimentos||{}),
           antecipados:  Object.assign({}, data.antecipados||{},  state.antecipados||{}),
-          desafios:     Object.assign({}, data.desafios||{},     state.desafios||{}),
           _savedAt:     Math.max(localTs, nuvemTs) || Date.now(),
         });
 
@@ -1571,9 +1564,9 @@ function render() {
   const secCal = document.getElementById("sec-calendario");
   if (secCal && secCal.classList.contains("on")) renderCalendario();
   mostrarFab();
-  // Reaplicar cor de tema (render cria novos elementos)
-  const corSalva = localStorage.getItem("cor_tema");
-  if (corSalva) aplicarCorTema(corSalva);
+  // Reaplicar cor de tema
+  const cor = localStorage.getItem("cor_tema");
+  if (cor) aplicarCorTema(cor);
 }
 
 function renderMesSelect() {
@@ -1881,18 +1874,14 @@ function renderPoupanca() {
   const mesesG = Object.keys(porMes).sort().slice(-8);
   const maxV = Math.max(...mesesG.map(m=>porMes[m]),1);
   document.getElementById("poup-chart-wrap").style.display = "block";
-  const chartEl = document.getElementById("poup-chart");
-  chartEl.style.height = Math.min(mesesG.length * 40 + 60, 140) + "px";
-  chartEl.innerHTML = mesesG.map(m=>{
-    const pct = Math.max((porMes[m]/maxV)*80, 4);
-    return `<div class="chart-bar-col">
+  document.getElementById("poup-chart").innerHTML = mesesG.map(m=>`
+    <div class="chart-bar-col">
       <div style="flex:1;display:flex;align-items:flex-end;width:100%">
-        <div class="chart-bar" style="background:linear-gradient(180deg,#6DBE8C,#4FBDBA);height:${pct}px;width:100%"></div>
+        <div class="chart-bar" style="background:linear-gradient(180deg,#6DBE8C,#4FBDBA);height:${(porMes[m]/maxV)*110}px;width:100%"></div>
       </div>
       <span class="chart-lbl">${mesLabel(m)}</span>
-      <span class="chart-lbl" style="color:#6DBE8C">${fmt(porMes[m])}</span>
-    </div>`;
-  }).join("");
+      <span class="chart-lbl" style="color:#6DBE8C">${(porMes[m]/1000).toFixed(1)}k</span>
+    </div>`).join("");
 }
 
 function salvarPoupanca() {
@@ -2513,7 +2502,7 @@ function renderAlertas() {
         <div><p style="font-size:11px;color:#6060a0">Total projetado</p><p style="font-weight:700;color:#F28C8C">${fmt(prev.gastoProjetado)}</p></div>
         <div><p style="font-size:11px;color:#6060a0">Saldo estimado</p><p style="font-weight:700;color:${cor}">${fmt(prev.saldoProjetado)}</p></div>
       </div>
-      <p style="font-size:11px;color:#6060a0;padding:6px 16px 10px">${prev.diaAtual<3?"Início do mês — projeção baseada nos gastos fixos":"Ritmo de "+fmt(prev.ritmo)+"/dia em variáveis · dia "+prev.diaAtual+" de "+prev.diasNoMes}</p>
+      <p style="font-size:11px;color:#6060a0;padding:6px 16px 10px">Baseado no ritmo de ${fmt(prev.ritmo)}/dia · dia ${prev.diaAtual} de ${prev.diasNoMes}</p>
     </div>`;
   }
 
@@ -3803,29 +3792,18 @@ function calcPrevisaoFechamento() {
   const ra = resumoAtivo();
   if (diaAtual <= 0 || ra.renda === 0) return null;
 
+  // Gastos já pagos + variáveis lançados
   const gm = gastosMes();
   const gastoFixo = gm.filter(g=>g.tipo==="fixo").reduce((s,g)=>s+g.valor,0);
   const gastoVar  = gm.filter(g=>g.tipo==="variavel").reduce((s,g)=>s+g.valor,0);
 
-  // Só projetar se estivermos no mês atual E ainda restar dias significativos
-  const diasRestantes = diasNoMes - diaAtual;
-  let gastoProjetado;
-  if (mesAtivo !== nowM() || diaAtual >= diasNoMes - 1) {
-    // Mês passado ou último dia: usar valor real
-    gastoProjetado = gastoFixo + gastoVar;
-  } else if (diaAtual < 3) {
-    // Muito cedo no mês: não projeta variável (dados insuficientes)
-    gastoProjetado = gastoFixo + gastoVar;
-  } else {
-    // Projetar pelo ritmo diário apenas a parte restante
-    const ritmo = gastoVar / diaAtual;
-    const projecaoRestante = ritmo * diasRestantes;
-    gastoProjetado = gastoFixo + gastoVar + projecaoRestante;
-  }
-
-  const ritmo = diaAtual >= 3 ? gastoVar / diaAtual : 0;
+  // Projetar variável pelo ritmo diário
+  const ritmo = diaAtual > 0 ? gastoVar / diaAtual : 0;
+  const projecaoVar = ritmo * diasNoMes;
+  const gastoProjetado = gastoFixo + projecaoVar;
   const saldoProjetado = ra.renda - gastoProjetado;
-  return {gastoFixo, gastoVar, gastoProjetado, saldoProjetado, ritmo, diasNoMes, diaAtual, diasRestantes};
+
+  return {gastoFixo, gastoVar, gastoProjetado, saldoProjetado, ritmo, diasNoMes, diaAtual};
 }
 
 // ══════════════════════════════════════════════
@@ -3990,7 +3968,6 @@ function delTemplate(id) {
 
 // ── Simulador de Patrimônio ───────────────────
 function calcSimulador() {
-  if (!document.getElementById("sim-aporte")) return;
   const aporte   = parseFloat(document.getElementById("sim-aporte")?.value)||0;
   const taxaAnual= parseFloat(document.getElementById("sim-taxa")?.value)||12;
   const anos     = parseInt(document.getElementById("sim-anos")?.value)||10;
@@ -4074,7 +4051,6 @@ function usadoCartao(cartao) {
 
 // ── Divisão de Gastos ─────────────────────────
 function calcDivisao() {
-  if (!document.getElementById("div-total")) return;
   const total   = parseFloat(document.getElementById("div-total")?.value)||0;
   const pessoas = parseInt(document.getElementById("div-pessoas")?.value)||2;
   const el = document.getElementById("div-resultado");
@@ -4090,8 +4066,6 @@ function calcDivisao() {
 
 // ── Render geral da aba Extras ────────────────
 function renderExtras() {
-  const secExtras = document.getElementById("sec-extras");
-  if (!secExtras || !secExtras.classList.contains("on")) return;
   renderBenchmark();
   renderDesafios();
   // Metas
@@ -4353,8 +4327,8 @@ function analiseLocal() {
   // Previsão
   const prev = calcPrevisaoFechamento();
   if (prev && mesAtivo===nowM()) {
-    if (prev.saldoProjetado < 0) pontos.push({tipo:"danger", msg:`🔴 Previsão: se mantiver o ritmo de ${fmt(prev.ritmo)}/dia em variáveis, você fecha o mês ${fmt(Math.abs(prev.saldoProjetado))} no negativo.`});
-    else pontos.push({tipo:"ok", msg:`🟢 Previsão: você deve fechar o mês com ${fmt(prev.saldoProjetado)} positivo.`});
+    if (prev.saldoProjetado < 0) pontos.push({tipo:"danger", msg:`🔴 Previsão: você vai fechar o mês ${fmt(Math.abs(prev.saldoProjetado))} no negativo se mantiver o ritmo atual.`});
+    else pontos.push({tipo:"ok", msg:`🟢 Previsão: você vai fechar o mês com ${fmt(prev.saldoProjetado)} positivo.`});
   }
   // Gastos a pagar
   const apagar = gm.filter(g=>!isPagoMes(g.id,mesAtivo)).reduce((s,g)=>s+g.valor,0);
@@ -4420,97 +4394,31 @@ Seja direto, use emojis moderadamente, máximo 150 palavras por resposta.`;
 }
 
 function respostaLocal(pergunta, ctx) {
-  const p = pergunta.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  const p = pergunta.toLowerCase();
   const ra = resumoAtivo();
   const gm = gastosMes();
   const prev = calcPrevisaoFechamento();
-  const porCat = {};
-  gm.forEach(g=>{ porCat[g.cat]=(porCat[g.cat]||0)+g.valor; });
-  const pct = ra.renda>0?(ra.gasto/ra.renda*100).toFixed(0):0;
-
-  // Situação geral / como estão os gastos
-  if (p.match(/como (estao|estou|esta|fico|ficou|ficando)|meus gastos|situac|gastos (do mes|este mes|esse mes)/)) {
-    const catMaior = Object.entries(porCat).sort((a,b)=>b[1]-a[1])[0];
-    return `📊 **${mesNome(mesAtivo)}**\n` +
-      `• Renda: ${fmt(ra.renda)}\n` +
-      `• Gastos: ${fmt(ra.gasto)} (${pct}% da renda)\n` +
-      `• Saldo: ${fmt(ra.saldoMes)}\n` +
-      (catMaior ? `• Maior gasto: ${catMaior[0]} (${fmt(catMaior[1])})\n` : "") +
-      (ra.saldoMes >= 0 ? `✅ Você está no positivo!` : `⚠️ Gastos acima da renda.`);
+  if (p.includes("fechar") || p.includes("previsão") || p.includes("previsao")) {
+    if (prev) return prev.saldoProjetado>=0 ? `📈 Boa notícia! Você deve fechar o mês com **${fmt(prev.saldoProjetado)}** positivo, baseado no ritmo atual de gastos.` : `⚠️ No ritmo atual, você vai fechar o mês com **${fmt(Math.abs(prev.saldoProjetado))} negativo**. Tente reduzir gastos variáveis.`;
+    return "Adicione mais lançamentos para eu calcular a previsão.";
   }
-
-  // Previsão de fechamento
-  if (p.match(/fechar|previsao|vai sobrar|vou terminar|fim do mes|fechamento/)) {
-    if (!prev) return "Adicione lançamentos variáveis para eu calcular a previsão.";
-    const icon = prev.saldoProjetado >= 0 ? "📈" : "📉";
-    return `${icon} **Previsão para ${mesNome(mesAtivo)}:**\n` +
-      `• Gastos fixos: ${fmt(prev.gastoFixo)}\n` +
-      `• Gastos variáveis até agora: ${fmt(prev.gastoVar)}\n` +
-      `• Total projetado: ${fmt(prev.gastoProjetado)}\n` +
-      `• Saldo estimado: **${fmt(prev.saldoProjetado)}**\n` +
-      (prev.saldoProjetado >= 0 ? "✅ Deve fechar positivo!" : "⚠️ Risco de fechar no negativo.");
+  if (p.includes("economizar") || p.includes("cortar") || p.includes("reduzir")) {
+    const porCat = {};
+    gm.forEach(g=>{ porCat[g.cat]=(porCat[g.cat]||0)+g.valor; });
+    const [catMax,valMax] = Object.entries(porCat).sort((a,b)=>b[1]-a[1])[0]||["nenhuma",0];
+    return `💡 Seu maior gasto é **${catMax}** (${fmt(valMax)}). Aqui vão 3 sugestões:\n1. Revise gastos variáveis em ${catMax}\n2. Negocie contas fixas (internet, planos)\n3. Use a regra 50-30-20 como guia`;
   }
-
-  // Economizar / cortar
-  if (p.match(/economizar|cortar|reduzir|gastar menos|poupar mais|onde (posso|da pra|dá)/)) {
-    const [catMax, valMax] = Object.entries(porCat).sort((a,b)=>b[1]-a[1])[0]||["nenhuma",0];
-    const vars = gm.filter(g=>g.tipo==="variavel").reduce((s,g)=>s+g.valor,0);
-    return `💡 **Dicas para economizar:**\n` +
-      `• Maior gasto: **${catMax}** (${fmt(valMax)})\n` +
-      `• Gastos variáveis: ${fmt(vars)} — mais fácil de cortar\n` +
-      `1. Revise assinaturas e serviços recorrentes\n` +
-      `2. Negocie internet, plano de celular\n` +
-      `3. Use a regra 50-30-20 como guia`;
+  if (p.includes("como estou") || p.includes("situação") || p.includes("situacao")) {
+    const pct = ra.renda>0?(ra.gasto/ra.renda*100).toFixed(0):0;
+    return `📊 Em ${mesNome(mesAtivo)}:\n- Renda: ${fmt(ra.renda)}\n- Gastos: ${fmt(ra.gasto)} (${pct}% da renda)\n- Saldo: ${fmt(ra.saldoMes)}\n${ra.saldoMes>=0?"✅ Você está no positivo!":"⚠️ Gastos maiores que a renda."}`;
   }
-
-  // Meta / poupança
-  if (p.match(/meta|objetivo|poupar|poupanca|investir|guardar/)) {
+  if (p.includes("meta") || p.includes("objetivo") || p.includes("poupar")) {
     const metaMensal = ra.renda*(state.meta||20)/100;
-    const metas = state.metas||[];
-    let resp = `🎯 **Meta de poupança:** ${state.meta||20}% = ${fmt(metaMensal)}/mês\n` +
-      `• Saldo disponível: ${fmt(Math.max(ra.saldoMes,0))}\n` +
-      (ra.saldoMes >= metaMensal ? "✅ Você está atingindo a meta!" : `💪 Faltam ${fmt(metaMensal-ra.saldoMes)} para bater a meta.`);
-    if (metas.length) resp += `\n\n🎯 Metas cadastradas:\n` + metas.map(m=>`• ${m.icone} ${m.desc}: ${fmt(m.aportado||0)}/${fmt(m.valor)}`).join("\n");
-    return resp;
+    return `🎯 Sua meta é poupar ${state.meta||20}% da renda = **${fmt(metaMensal)}/mês**.\nAtualmente você tem ${fmt(Math.max(ra.saldoMes,0))} disponível.\n${ra.saldoMes>=metaMensal?"✅ Você está atingindo a meta!":"💪 Ainda falta "+fmt(metaMensal-ra.saldoMes)+" para bater a meta."}`;
   }
-
-  // Maior gasto / categoria
-  if (p.match(/maior gasto|categoria|onde gasto mais|mais gasto/)) {
-    if (!Object.keys(porCat).length) return "Nenhum gasto lançado neste mês ainda.";
-    const sorted = Object.entries(porCat).sort((a,b)=>b[1]-a[1]);
-    return `📦 **Gastos por categoria em ${mesNome(mesAtivo)}:**\n` +
-      sorted.map(([c,v])=>`• ${c}: ${fmt(v)} (${ra.renda>0?((v/ra.renda)*100).toFixed(0):0}%)`).join("\n");
-  }
-
-  // Quitar / dívida / parcela
-  if (p.match(/quitar|divida|parcela|pagar|prazo|meses para/)) {
-    const fixos = gm.filter(g=>g.tipo==="fixo").reduce((s,g)=>s+g.valor,0);
-    const livre = Math.max(ra.saldoMes, 0);
-    if (!livre) return "⚠️ Sem saldo disponível este mês para quitação extra.";
-    const numMatch = p.match(/\d[\d.,]*/);
-    if (numMatch) {
-      const divida = parseFloat(numMatch[0].replace(",","."));
-      const mesesN = Math.ceil(divida/livre);
-      return `💳 Para quitar **${fmt(divida)}** com seu saldo livre de **${fmt(livre)}/mês**:\n→ Você consegue em aproximadamente **${mesesN} mês${mesesN>1?"es":""}**.`;
-    }
-    return `💳 Seu saldo livre este mês é **${fmt(livre)}**. Me diga o valor da dívida e calculo o prazo!`;
-  }
-
-  // Saldo / patrimônio
-  if (p.match(/saldo|patrimonio|acumulado|quanto tenho|valor total/)) {
-    return `🏦 **Resumo patrimonial:**\n• Saldo do mês: ${fmt(ra.saldoMes)}\n• Saldo acumulado: ${fmt(ra.acum)}\n• Poupado no mês: ${fmt(Math.max(ra.saldoMes,0))}`;
-  }
-
-  // Fallback com dados reais
-  if (ra.renda > 0 || gm.length > 0) {
-    return `📊 Em ${mesNome(mesAtivo)} você tem ${fmt(ra.renda)} de renda e ${fmt(ra.gasto)} de gastos (saldo ${fmt(ra.saldoMes)}).\n\nPosso responder sobre: situação do mês, previsão de fechamento, onde economizar, metas, parcelas ou categorias. Qual dessas?`;
-  }
-  return `Ainda não há lançamentos em ${mesNome(mesAtivo)}. Adicione rendas e gastos para que eu possa te ajudar! 💡`;
+  return `Para uma análise detalhada, adicione sua API Key Claude no ⚙️ Config acima. Por enquanto, clique em ✨ Analisar para ver um diagnóstico do mês.`;
 }
 
-function mdParaHtml(t) {
-  return t.replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>").replace(/\*([^*]+)\*/g,"<em>$1</em>").replace(/\n/g,"<br>");
-}
 function adicionarMensagemChat(tipo, texto, temp=false) {
   const el = document.getElementById("chat-ia-msgs");
   const isIA = tipo==="ia";
@@ -4519,7 +4427,7 @@ function adicionarMensagemChat(tipo, texto, temp=false) {
   if (temp) div.id = "chat-msg-temp";
   div.innerHTML = `
     <div style="width:28px;height:28px;border-radius:50%;background:${isIA?"#5B8DB8":"#E8B84B"};display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0">${isIA?"🤖":"👤"}</div>
-    <div style="max-width:80%;background:${isIA?"#1e1e3a":"#1a2a1a"};border-radius:${isIA?"4px 12px 12px 12px":"12px 4px 12px 12px"};padding:10px 14px;font-size:13px;line-height:1.6">${mdParaHtml(texto)}</div>`;
+    <div style="max-width:80%;background:${isIA?"#1e1e3a":"#1a2a1a"};border-radius:${isIA?"4px 12px 12px 12px":"12px 4px 12px 12px"};padding:10px 14px;font-size:13px;line-height:1.6;white-space:pre-wrap">${texto}</div>`;
   el.appendChild(div);
   el.scrollTop = el.scrollHeight;
 }
@@ -4535,10 +4443,8 @@ function renderWrapped() {
   // Popular anos disponíveis
   const anos = [...new Set([...state.gastos,...state.rendas].map(x=>x.data?.slice(0,4)).filter(Boolean))].sort().reverse();
   if (!anos.length) { document.getElementById("wrapped-content").innerHTML='<p style="color:#6060a0;text-align:center;padding:40px">Adicione lançamentos para ver o resumo anual.</p>'; return; }
-  // Sempre repopular se necessário
   if (!anoEl.options.length || !anos.includes(anoEl.value)) {
     anoEl.innerHTML = anos.map(a=>`<option value="${a}">${a}</option>`).join("");
-    anoEl.value = anos[0];
   }
   const ano = anoEl.value || anos[0];
   // Calcular stats do ano
@@ -4554,9 +4460,7 @@ function renderWrapped() {
   const totalGasto = stats.reduce((s,m)=>s+m.gasto,0);
   const totalPoupado = totalRenda - totalGasto;
   const melhorMes = stats.reduce((a,b)=>b.renda-b.gasto>a.renda-a.gasto?b:a);
-  // Mês mais pesado = maior gasto absoluto (excluindo meses sem gasto)
-  const statsComGasto = stats.filter(s=>s.gasto>0);
-  const piorMes   = statsComGasto.length ? statsComGasto.reduce((a,b)=>b.gasto>a.gasto?b:a) : stats[stats.length-1];
+  const piorMes   = stats.reduce((a,b)=>b.gasto-b.renda>a.gasto-a.renda?b:a);
   // Categoria mais gasta no ano
   const porCatAno = {};
   state.gastos.filter(g=>g.data?.startsWith(ano)).forEach(g=>{ porCatAno[g.cat]=(porCatAno[g.cat]||0)+g.valor; });
@@ -4581,17 +4485,17 @@ function renderWrapped() {
     </div>
     <!-- Destaques -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-      <div style="border:1px solid #6DBE8C33;border-radius:12px;padding:14px;text-align:center">
+      <div style="background:#1a2a1a;border:1px solid #6DBE8C33;border-radius:12px;padding:14px;text-align:center">
         <p style="font-size:22px">🏆</p>
         <p style="font-size:11px;color:#6060a0;margin:4px 0">Melhor mês</p>
         <p style="font-size:14px;font-weight:700;color:#6DBE8C">${melhorMes.label}</p>
         <p style="font-size:11px;color:#6DBE8C">+${fmt(melhorMes.renda-melhorMes.gasto)}</p>
       </div>
-      <div style="border:1px solid #F28C8C33;border-radius:12px;padding:14px;text-align:center">
+      <div style="background:#1a1010;border:1px solid #F28C8C33;border-radius:12px;padding:14px;text-align:center">
         <p style="font-size:22px">📉</p>
         <p style="font-size:11px;color:#6060a0;margin:4px 0">Mês mais pesado</p>
         <p style="font-size:14px;font-weight:700;color:#F28C8C">${piorMes.label}</p>
-        <p style="font-size:11px;color:#F28C8C">${fmt(piorMes.gasto)} em gastos</p>
+        <p style="font-size:11px;color:#F28C8C">${fmt(piorMes.gasto)} gastos</p>
       </div>
       <div style="background:#1a1a0a;border:1px solid #E8B84B33;border-radius:12px;padding:14px;text-align:center">
         <p style="font-size:22px">📦</p>
@@ -4621,10 +4525,10 @@ function renderWrapped() {
     <div class="card">
       <h3 style="font-size:13px;margin-bottom:12px;font-weight:700">🏅 Conquistas de ${ano}</h3>
       <div style="display:flex;flex-direction:column;gap:8px">
-        ${pctPoupado>=20?'<div style="border:1px solid #6DBE8C44;border-radius:10px;padding:10px 14px"><span style="color:#6DBE8C">✅ Poupador Disciplinado</span> <span style="font-size:12px;color:#a0a0c0">— Poupou mais de 20% da renda</span></div>':""}
-        ${totalLanc>=50?'<div style="border:1px solid #5B8DB844;border-radius:10px;padding:10px 14px"><span style="color:#5B8DB8">📋 Registrador Fiel</span> <span style="font-size:12px;color:#a0a0c0">— Mais de 50 lançamentos no ano</span></div>':""}
-        ${stats.filter(s=>s.renda>s.gasto).length>=10?'<div style="border:1px solid #4FBDBA44;border-radius:10px;padding:10px 14px"><span style="color:#4FBDBA">🔥 Streak Master</span> <span style="font-size:12px;color:#a0a0c0">— 10+ meses no positivo</span></div>':""}
-        ${totalRenda>=totalGasto?'<div style="border:1px solid #E8B84B44;border-radius:10px;padding:10px 14px"><span style="color:#E8B84B">💪 Ano Positivo</span> <span style="font-size:12px;color:#a0a0c0">— Renda maior que gastos no ano</span></div>':""}
+        ${pctPoupado>=20?'<div style="background:#1a2a1a;border:1px solid #6DBE8C44;border-radius:10px;padding:10px 14px"><span style="color:#6DBE8C">✅ Poupador Disciplinado</span> <span style="font-size:12px;color:#a0a0c0">— Poupou mais de 20% da renda</span></div>':""}
+        ${totalLanc>=50?'<div style="background:#1a1a2a;border:1px solid #5B8DB844;border-radius:10px;padding:10px 14px"><span style="color:#5B8DB8">📋 Registrador Fiel</span> <span style="font-size:12px;color:#a0a0c0">— Mais de 50 lançamentos no ano</span></div>':""}
+        ${stats.filter(s=>s.renda>s.gasto).length>=10?'<div style="background:#1a2a1a;border:1px solid #4FBDBA44;border-radius:10px;padding:10px 14px"><span style="color:#4FBDBA">🔥 Streak Master</span> <span style="font-size:12px;color:#a0a0c0">— 10+ meses no positivo</span></div>':""}
+        ${totalRenda>=totalGasto?'<div style="background:#1a1a0a;border:1px solid #E8B84B44;border-radius:10px;padding:10px 14px"><span style="color:#E8B84B">💪 Ano Positivo</span> <span style="font-size:12px;color:#a0a0c0">— Renda maior que gastos no ano</span></div>':""}
         ${!pctPoupado&&!totalLanc?'<div style="background:#1a1a1a;border-radius:10px;padding:10px 14px;color:#6060a0;font-size:13px">Adicione mais lançamentos para desbloquear conquistas!</div>':""}
       </div>
     </div>`;
@@ -4766,1143 +4670,365 @@ function pararDesafio(id) {
 }
 
 // ══════════════════════════════════════════════
-// CONTAS COMPARTILHADAS
+// 1. OCR — FOTO DO COMPROVANTE COM IA
 // ══════════════════════════════════════════════
-let grupoAtivo = null; // código do grupo atual
-let grupoSyncInterval = null;
+function abrirModalOCR() {
+  document.getElementById("modal-ocr").style.display = "flex";
+  document.getElementById("ocr-preview").style.display = "none";
+  document.getElementById("ocr-status").style.display = "none";
+  document.getElementById("ocr-resultado").style.display = "none";
+  document.getElementById("ocr-sem-key").style.display = "none";
+  document.getElementById("ocr-upload-area").style.display = "block";
+}
+function fecharModalOCR() { document.getElementById("modal-ocr").style.display = "none"; }
 
-function abrirCompartilhar() {
-  document.getElementById("modal-compartilhar").style.display = "flex";
-  atualizarStatusCompartilhar();
-}
-function fecharCompartilhar() {
-  document.getElementById("modal-compartilhar").style.display = "none";
-}
-function compTab(tab) {
-  document.getElementById("comp-panel-criar").style.display  = tab==="criar"  ? "block" : "none";
-  document.getElementById("comp-panel-entrar").style.display = tab==="entrar" ? "block" : "none";
-  document.getElementById("comp-tab-criar").className  = "btn " + (tab==="criar"  ? "btn-primary" : "btn-gray");
-  document.getElementById("comp-tab-entrar").className = "btn " + (tab==="entrar" ? "btn-primary" : "btn-gray");
-}
-
-function gerarCodigoGrupo() {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  return Array.from({length:6}, ()=>chars[Math.floor(Math.random()*chars.length)]).join("");
-}
-
-async function criarGrupo() {
-  if (!fbUserId || !fbToken) { toast("Faça login para criar um grupo","#F28C8C"); return; }
-  const codigo = gerarCodigoGrupo();
-  const grupoData = {
-    codigo, owner: fbUserId, ownerEmail: fbUserEmail,
-    members: [{uid:fbUserId, email:fbUserEmail, nome:fbUserName||fbUserEmail, joined:Date.now()}],
-    criadoEm: Date.now(), dados: JSON.stringify(state)
-  };
-  try {
-    await fbSetGrupo(codigo, grupoData);
-    localStorage.setItem("grupo_codigo", codigo);
-    grupoAtivo = codigo;
-    document.getElementById("comp-codigo-gerado").style.display = "block";
-    document.getElementById("comp-codigo-txt").textContent = codigo;
-    atualizarStatusCompartilhar();
-    iniciarSyncGrupo();
-    toast("Grupo criado! Compartilhe o código 👫","#4FBDBA");
-  } catch(e) {
-    toast("Erro ao criar grupo: "+e.message,"#F28C8C");
-  }
-}
-
-async function entrarGrupo() {
-  const codigo = (document.getElementById("comp-codigo-input").value||"").trim().toUpperCase();
-  if (codigo.length !== 6) { toast("Código deve ter 6 caracteres","#F28C8C"); return; }
-  if (!fbUserId || !fbToken) { toast("Faça login primeiro","#F28C8C"); return; }
-  try {
-    const grupo = await fbGetGrupo(codigo);
-    if (!grupo) { toast("Código inválido ou expirado","#F28C8C"); return; }
-    // Adicionar como membro se ainda não está
-    const jaEMembro = (grupo.members||[]).some(m=>m.uid===fbUserId);
-    if (!jaEMembro) {
-      grupo.members = [...(grupo.members||[]), {uid:fbUserId, email:fbUserEmail, nome:fbUserName||fbUserEmail, joined:Date.now()}];
-      await fbSetGrupo(codigo, grupo);
-    }
-    // Carregar dados do grupo
-    if (grupo.dados) {
-      try {
-        const dadosGrupo = JSON.parse(grupo.dados);
-        state = sanitizeState(dadosGrupo);
-        localStorage.setItem(STORE, JSON.stringify(state));
-        render();
-      } catch(_){}
-    }
-    localStorage.setItem("grupo_codigo", codigo);
-    grupoAtivo = codigo;
-    atualizarStatusCompartilhar();
-    iniciarSyncGrupo();
-    toast("Entrou no grupo de "+grupo.ownerEmail+" ✅","#6DBE8C");
-  } catch(e) {
-    toast("Erro: "+e.message,"#F28C8C");
-  }
-}
-
-async function atualizarStatusCompartilhar() {
-  const statusCard = document.getElementById("comp-status-card");
-  const statusTxt  = document.getElementById("comp-status-txt");
-  const membrosEl  = document.getElementById("comp-membros");
-  const sairWrap   = document.getElementById("comp-sair-wrap");
-  const codigo = grupoAtivo || localStorage.getItem("grupo_codigo");
-  if (!codigo) {
-    statusTxt.innerHTML = '<span style="color:#6060a0">Você está usando uma conta individual</span>';
-    if (membrosEl) membrosEl.innerHTML = "";
-    if (sairWrap) sairWrap.style.display = "none";
-    return;
-  }
-  try {
-    const grupo = await fbGetGrupo(codigo);
-    if (!grupo) {
-      localStorage.removeItem("grupo_codigo"); grupoAtivo = null;
-      statusTxt.innerHTML = '<span style="color:#F28C8C">Grupo não encontrado</span>';
+async function processarOCR(event) {
+  const file = event.target.files[0]; if (!file) return;
+  // Mostrar preview
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const base64 = e.target.result;
+    document.getElementById("ocr-img").src = base64;
+    document.getElementById("ocr-preview").style.display = "block";
+    document.getElementById("ocr-upload-area").style.display = "none";
+    const key = localStorage.getItem("ia_api_key");
+    if (!key) {
+      document.getElementById("ocr-sem-key").style.display = "block";
+      // Preencher data com hoje
+      document.getElementById("ocr-data").value = todayS();
       return;
     }
-    const membros = grupo.members||[];
-    statusTxt.innerHTML = `<span style="color:#4FBDBA">👫 Grupo ativo: <strong>${codigo}</strong></span><br><span style="font-size:11px;color:#a0a0c0">${membros.length} membro(s)</span>`;
-    if (membrosEl) membrosEl.innerHTML = `
-      <p style="font-size:12px;color:#a0a0c0;margin-bottom:8px">Membros do grupo:</p>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        ${membros.map(m=>`<div style="display:flex;align-items:center;gap:10px;background:#1e1e3a;border-radius:8px;padding:8px 12px">
-          <div style="width:30px;height:30px;border-radius:50%;background:${m.uid===fbUserId?"#4FBDBA":"#E8B84B"};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff">${(m.nome||m.email).slice(0,1).toUpperCase()}</div>
-          <div><p style="font-size:13px;font-weight:600">${m.nome||m.email} ${m.uid===fbUserId?"(você)":""}</p><p style="font-size:11px;color:#6060a0">${m.email}</p></div>
-        </div>`).join("")}
-      </div>`;
-    if (sairWrap) sairWrap.style.display = "block";
-    // Mostrar botão compartilhar na user-bar
-    const btnComp = document.getElementById("btn-compartilhar");
-    if (btnComp) { btnComp.style.display="block"; btnComp.textContent="👫 "+membros.length; }
-  } catch(e) {}
-}
-
-async function sairDoGrupo() {
-  if (!confirm("Sair do grupo compartilhado? Seus dados locais serão mantidos.")) return;
-  localStorage.removeItem("grupo_codigo");
-  grupoAtivo = null;
-  if (grupoSyncInterval) { clearInterval(grupoSyncInterval); grupoSyncInterval = null; }
-  const btnComp = document.getElementById("btn-compartilhar");
-  if (btnComp) btnComp.style.display = "none";
-  atualizarStatusCompartilhar();
-  toast("Saiu do grupo","#E8B84B");
-}
-
-function copiarCodigo() {
-  const c = document.getElementById("comp-codigo-txt")?.textContent;
-  if (c) { navigator.clipboard?.writeText(c).then(()=>toast("Código copiado!","#4FBDBA")); }
-}
-
-function iniciarSyncGrupo() {
-  if (grupoSyncInterval) clearInterval(grupoSyncInterval);
-  // Sync a cada 15 segundos
-  grupoSyncInterval = setInterval(async()=>{
-    const codigo = grupoAtivo || localStorage.getItem("grupo_codigo");
-    if (!codigo || !fbUserId) return;
+    document.getElementById("ocr-status").style.display = "block";
     try {
-      // Salvar estado atual no grupo
-      const grupo = await fbGetGrupo(codigo);
-      if (!grupo) return;
-      const agora = Date.now();
-      // Só sobrescrever se este user editou mais recente
-      const dadosAtuais = grupo.dados ? JSON.parse(grupo.dados) : null;
-      const tsGrupo = dadosAtuais?._savedAt || 0;
-      if ((state._savedAt||0) >= tsGrupo) {
-        grupo.dados = JSON.stringify(state);
-        grupo.lastSync = {uid:fbUserId, at:agora};
-        await fbSetGrupo(codigo, grupo);
-      } else {
-        // Outro membro editou — mesclar
-        const merged = sanitizeState({
-          ...dadosAtuais,
-          gastos: mergeById(state.gastos, dadosAtuais.gastos),
-          rendas: mergeById(state.rendas, dadosAtuais.rendas),
-          pagamentos: Object.assign({}, dadosAtuais.pagamentos||{}, state.pagamentos||{}),
-          antecipados: Object.assign({}, dadosAtuais.antecipados||{}, state.antecipados||{}),
-          _savedAt: agora
-        });
-        state = merged;
-        localStorage.setItem(STORE, JSON.stringify(state));
-        render();
-        toast("🔄 Dados atualizados por outro membro","#4FBDBA");
-      }
-    } catch(e) {}
-  }, 15000);
-}
-
-// Firebase REST — grupo
-async function fbSetGrupo(codigo, data) {
-  if (!fbToken) fbToken = localStorage.getItem("fb_token");
-  const fields = { dados: { stringValue: JSON.stringify(data) } };
-  let r = await fetch(FB_DB_URL + "/grupos/" + codigo + "?updateMask.fieldPaths=dados", {
-    method:"PATCH", headers:{"Content-Type":"application/json","Authorization":"Bearer "+fbToken},
-    body: JSON.stringify({fields})
-  });
-  if (r.status===401) { await fbRefreshToken(); r = await fetch(FB_DB_URL + "/grupos/" + codigo + "?updateMask.fieldPaths=dados", {method:"PATCH",headers:{"Content-Type":"application/json","Authorization":"Bearer "+fbToken},body:JSON.stringify({fields})}); }
-}
-async function fbGetGrupo(codigo) {
-  if (!fbToken) fbToken = localStorage.getItem("fb_token");
-  let r = await fetch(FB_DB_URL + "/grupos/" + codigo, {headers:{"Authorization":"Bearer "+fbToken}});
-  if (r.status===401) { await fbRefreshToken(); r = await fetch(FB_DB_URL + "/grupos/" + codigo, {headers:{"Authorization":"Bearer "+fbToken}}); }
-  if (r.status===404) return null;
-  const d = await r.json();
-  if (d.fields?.dados) return JSON.parse(d.fields.dados.stringValue);
-  return null;
-}
-
-// ══════════════════════════════════════════════
-// NOTIFICAÇÕES PUSH REAIS (Web Push API)
-// ══════════════════════════════════════════════
-const VAPID_PUBLIC = "BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjZkiDgMGsKIy2IkPNXQRYCgxOgfY";
-
-async function ativarNotificacoesPush() {
-  const btn = document.getElementById("btn-push-ativar");
-  if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-    toast("Notificações push não suportadas neste navegador","#F28C8C"); return;
-  }
-  try {
-    const perm = await Notification.requestPermission();
-    if (perm !== "granted") { toast("Permissão de notificação negada","#F28C8C"); return; }
-    const reg = await navigator.serviceWorker.ready;
-    // Tentar subscrever (pode falhar se VAPID key não bate com SW)
-    try {
-      const sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC)
+      const imgData = base64.split(",")[1];
+      const mediaType = file.type || "image/jpeg";
+      const resp = await fetch("https://api.anthropic.com/v1/messages", {
+        method:"POST",
+        headers:{"Content-Type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+        body: JSON.stringify({
+          model:"claude-haiku-4-5-20251001", max_tokens:300,
+          messages:[{role:"user", content:[
+            {type:"image", source:{type:"base64", media_type:mediaType, data:imgData}},
+            {type:"text", text:`Analise este comprovante/recibo e extraia APENAS em JSON (sem markdown):
+{"descricao":"nome do estabelecimento ou serviço","valor":valor_numerico,"data":"YYYY-MM-DD","categoria":"Alimentação|Moradia|Transporte|Saúde|Lazer|Educação|Vestuário|Outros"}
+Se não conseguir extrair algum campo, use null. Responda APENAS o JSON.`}
+          ]}]
+        })
       });
-      const subJson = JSON.stringify(sub);
-      localStorage.setItem("push_subscription", subJson);
-      localStorage.setItem("push_ativo", "1");
-      if (btn) { btn.textContent = "✅ Push ativo"; btn.style.background="#1a2a1a"; btn.style.color="#6DBE8C"; }
-      toast("Notificações push ativadas! 🔔","#6DBE8C");
-      // Salvar subscription no Firebase para notificações remotas
-      if (fbUserId) await salvarPushSubscription(subJson);
-    } catch(e) {
-      // Fallback: usar notificações locais (sem push server)
-      localStorage.setItem("push_ativo", "1");
-      if (btn) { btn.textContent = "✅ Notificações ativas"; btn.style.background="#1a2a1a"; btn.style.color="#6DBE8C"; }
-      toast("Notificações locais ativadas! 🔔","#6DBE8C");
-    }
-  } catch(e) {
-    toast("Erro: "+e.message,"#F28C8C");
-  }
-}
-
-function urlBase64ToUint8Array(base64String) {
-  const padding = "=".repeat((4 - base64String.length%4)%4);
-  const base64 = (base64String+padding).replace(/-/g,"+").replace(/_/g,"/");
-  const raw = window.atob(base64);
-  return new Uint8Array([...raw].map(c=>c.charCodeAt(0)));
-}
-
-async function salvarPushSubscription(subJson) {
-  try {
-    const fields = { pushSub: { stringValue: subJson } };
-    await fetch(FB_DB_URL + "/push_subs/" + fbUserId + "?updateMask.fieldPaths=pushSub", {
-      method:"PATCH", headers:{"Content-Type":"application/json","Authorization":"Bearer "+fbToken},
-      body: JSON.stringify({fields})
-    });
-  } catch(_) {}
-}
-
-// Verificar vencimentos e disparar push local
-function verificarPushVencimentos() {
-  if (localStorage.getItem("push_ativo") !== "1") return;
-  if (Notification.permission !== "granted") return;
-  const hoje = new Date();
-  const hojeStr = hoje.getFullYear()+"-"+String(hoje.getMonth()+1).padStart(2,"0")+"-"+String(hoje.getDate()).padStart(2,"0");
-  const amanha = new Date(hoje); amanha.setDate(amanha.getDate()+1);
-  const amanhaStr = amanha.getFullYear()+"-"+String(amanha.getMonth()+1).padStart(2,"0")+"-"+String(amanha.getDate()).padStart(2,"0");
-  const gm = gastosMes();
-  const vencendoHoje   = gm.filter(g=>g.data===hojeStr   && !isPagoMes(g.id,mesAtivo));
-  const vencendoAmanha = gm.filter(g=>g.data===amanhaStr && !isPagoMes(g.id,mesAtivo));
-  if (vencendoHoje.length) {
-    new Notification("🔔 Finanças Pessoais", {
-      body: `${vencendoHoje.length} conta(s) vencem HOJE: ${vencendoHoje.map(g=>g.desc).join(", ")}`,
-      icon: "/favicon.ico", tag: "venc-hoje"
-    });
-  }
-  if (vencendoAmanha.length) {
-    new Notification("⏰ Finanças Pessoais", {
-      body: `${vencendoAmanha.length} conta(s) vencem amanhã: ${vencendoAmanha.map(g=>g.desc).join(", ")}`,
-      icon: "/favicon.ico", tag: "venc-amanha"
-    });
-  }
-}
-
-// ══════════════════════════════════════════════
-// BOT NOTIFICAÇÕES (Telegram + WhatsApp fallback)
-// ══════════════════════════════════════════════
-function abrirWhatsApp() {
-  document.getElementById("modal-whatsapp").style.display = "flex";
-  // Carregar valores salvos
-  const tgToken  = localStorage.getItem("tg_token");
-  const tgChatId = localStorage.getItem("tg_chatid");
-  const waNum    = localStorage.getItem("wa_numero");
-  const waKey    = localStorage.getItem("wa_apikey");
-  if (tgToken)  { const el=document.getElementById("tg-token");  if(el) el.value=tgToken; }
-  if (tgChatId) { const el=document.getElementById("tg-chatid"); if(el) el.value=tgChatId; }
-  if (waNum)    { const el=document.getElementById("wa-numero"); if(el) el.value=waNum; }
-  if (waKey)    { const el=document.getElementById("wa-apikey"); if(el) el.value=waKey; }
-  // Activar aba conforme configuração existente
-  botTab(tgToken ? "telegram" : "telegram");
-}
-
-function botTab(aba) {
-  document.getElementById("bot-panel-telegram").style.display  = aba==="telegram"  ? "block" : "none";
-  document.getElementById("bot-panel-whatsapp").style.display  = aba==="whatsapp"  ? "block" : "none";
-  const tgBtn = document.getElementById("bot-tab-tg");
-  const waBtn = document.getElementById("bot-tab-wa");
-  if (tgBtn) {
-    tgBtn.style.background = aba==="telegram" ? "linear-gradient(135deg,#2496ED,#1a7bbf)" : "transparent";
-    tgBtn.style.color      = aba==="telegram" ? "#fff" : "#a0a0c0";
-    tgBtn.style.border     = aba==="telegram" ? "none" : "1px solid #2d2d4e";
-  }
-  if (waBtn) {
-    waBtn.style.background = aba==="whatsapp" ? "linear-gradient(135deg,#25D366,#128C7E)" : "transparent";
-    waBtn.style.color      = aba==="whatsapp" ? "#fff" : "#a0a0c0";
-    waBtn.style.border     = aba==="whatsapp" ? "none" : "1px solid #2d2d4e";
-  }
-}
-
-// ── Telegram ────────────────────────────────
-async function salvarTelegram() {
-  const token  = (document.getElementById("tg-token")?.value||"").trim();
-  const chatId = (document.getElementById("tg-chatid")?.value||"").trim();
-  const status = document.getElementById("tg-status");
-  if (!token || !chatId) { toast("Preencha Token e Chat ID","#F28C8C"); return; }
-  if (status) status.textContent = "⏳ Testando conexão...";
-  localStorage.setItem("tg_token",  token);
-  localStorage.setItem("tg_chatid", chatId);
-  const ra = resumoAtivo();
-  const msg = `✅ *Finanças Pessoais conectado!*
-
-📊 *${mesNome(mesAtivo)}*
-Renda: R$ ${ra.renda.toFixed(2)}
-Gastos: R$ ${ra.gasto.toFixed(2)}
-Saldo: R$ ${ra.saldoMes.toFixed(2)}
-
-_Comandos: gastei 50 almoço • saldo • resumo • metas_`;
-  const ok = await enviarTelegram(msg);
-  if (ok) {
-    if (status) { status.textContent = "✅ Telegram conectado com sucesso!"; status.style.color="#6DBE8C"; }
-    toast("✅ Telegram configurado! Verifique o bot.","#2496ED");
-    iniciarPollingTelegram(); // Iniciar polling imediatamente
-    setTimeout(()=>{ document.getElementById("modal-whatsapp").style.display="none"; }, 1500);
-  } else {
-    if (status) { status.textContent = "❌ Erro. Verifique o Token e Chat ID."; status.style.color="#F28C8C"; }
-    toast("Erro na conexão. Verifique os dados.","#F28C8C");
-  }
-}
-
-async function enviarTelegram(mensagem) {
-  const token  = localStorage.getItem("tg_token");
-  const chatId = localStorage.getItem("tg_chatid");
-  if (!token || !chatId) return false;
-  try {
-    const url = `https://api.telegram.org/bot${token}/sendMessage`;
-    const r = await fetch(url, {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({chat_id: chatId, text: mensagem, parse_mode:"Markdown"})
-    });
-    const d = await r.json();
-    return d.ok === true;
-  } catch(e) {
-    console.warn("Telegram erro:", e);
-    return false;
-  }
-}
-
-// ── WhatsApp (CallMeBot fallback) ───────────
-async function salvarWhatsApp() {
-  const num = (document.getElementById("wa-numero")?.value||"").trim().replace(/\D/g,"");
-  const key = (document.getElementById("wa-apikey")?.value||"").trim();
-  if (!num || !key) { toast("Preencha número e API Key","#F28C8C"); return; }
-  localStorage.setItem("wa_numero", num);
-  localStorage.setItem("wa_apikey", key);
-  const ok = await enviarWhatsApp("✅ *Finanças Pessoais* conectado! Envie *saldo* para testar.");
-  if (ok) {
-    toast("✅ WhatsApp configurado!","#25D366");
-    document.getElementById("modal-whatsapp").style.display = "none";
-  } else {
-    toast("Erro. O número do CallMeBot pode estar instável. Use o Telegram.","#F28C8C");
-  }
-}
-
-async function enviarWhatsApp(mensagem) {
-  const num = localStorage.getItem("wa_numero");
-  const key = localStorage.getItem("wa_apikey");
-  if (!num || !key) return false;
-  try {
-    const url = `https://api.callmebot.com/whatsapp.php?phone=${num}&text=${encodeURIComponent(mensagem)}&apikey=${key}`;
-    await fetch(url, {mode:"no-cors"});
-    return true;
-  } catch(e) { return false; }
-}
-
-// Enviar notificação por canal configurado (Telegram preferido)
-async function enviarNotificacao(mensagem) {
-  const tgToken = localStorage.getItem("tg_token");
-  if (tgToken) return await enviarTelegram(mensagem);
-  const waNum = localStorage.getItem("wa_numero");
-  if (waNum)   return await enviarWhatsApp(mensagem);
-  return false;
-}
-
-// Processar comando recebido via WhatsApp (chamado por webhook externo via URL param)
-// ══════════════════════════════════════════════
-// TELEGRAM POLLING — recebe comandos em tempo real
-// ══════════════════════════════════════════════
-let _tgPollingTimer = null;
-let _tgPollingAtivo = false;
-
-function iniciarPollingTelegram() {
-  const token  = localStorage.getItem("tg_token");
-  const chatId = localStorage.getItem("tg_chatid");
-  if (!token || !chatId) return;
-  if (_tgPollingAtivo) return;
-  _tgPollingAtivo = true;
-  atualizarIndicadorBot(true);
-  _executarPoll();
-  _tgPollingTimer = setInterval(_executarPoll, 30000);
-}
-
-function pararPollingTelegram() {
-  _tgPollingAtivo = false;
-  if (_tgPollingTimer) { clearInterval(_tgPollingTimer); _tgPollingTimer = null; }
-  atualizarIndicadorBot(false);
-}
-
-async function _executarPoll() {
-  const token  = localStorage.getItem("tg_token");
-  const chatId = localStorage.getItem("tg_chatid");
-  if (!token || !chatId) { pararPollingTelegram(); return; }
-  const offset = parseInt(localStorage.getItem("tg_last_update")||"0") + 1;
-  try {
-    const r = await fetch(`https://api.telegram.org/bot${token}/getUpdates?offset=${offset}&limit=10&timeout=0`);
-    const d = await r.json();
-    if (!d.ok) return;
-    for (const upd of d.result) {
-      localStorage.setItem("tg_last_update", String(upd.update_id));
-      const msg = upd.message;
-      if (!msg?.text) continue;
-      // Só processar mensagens do usuário configurado
-      if (String(msg.chat.id) !== String(chatId)) continue;
-      await processarComandoTelegram(msg.text.trim());
-    }
-  } catch(e) {
-    console.warn("Telegram poll erro:", e);
-  }
-}
-
-function atualizarIndicadorBot(ativo) {
-  const el = document.getElementById("tg-indicador");
-  if (el) {
-    el.textContent = ativo ? "🟢 Bot ativo" : "⚫ Bot inativo";
-    el.style.color = ativo ? "#6DBE8C" : "#6060a0";
-  }
-}
-
-async function processarComandoTelegram(texto) {
-  const t = texto.toLowerCase().trim()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-  const ra = resumoAtivo();
-  const gm = gastosMes();
-
-  // ── /start ─────────────────────────────────
-  if (t === "/start" || t === "start") {
-    await enviarTelegram(`👋 *Olá, ${fbUserName||"Fran"}!*\n\nSou seu assistente financeiro. Aqui estão os comandos:\n\n` +
-      `💰 *saldo* → resumo do mês\n📊 *resumo* → gastos por categoria\n🎯 *metas* → status das metas\n⏰ *avencer* → contas a pagar\n📅 *hoje* → gastos de hoje\n\n` +
-      `Para registrar um gasto:\n*gastei 50 almoço*\n*paguei 120 farmácia*\n*uber 35*`);
-    return;
-  }
-
-  // ── saldo ──────────────────────────────────
-  if (t === "saldo" || t === "saldo do mes") {
-    const prev = calcPrevisaoFechamento();
-    await enviarTelegram(
-      `💰 *${mesNome(mesAtivo)}*\n\n` +
-      `📈 Renda: *${fmt(ra.renda)}*\n` +
-      `📉 Gastos: *${fmt(ra.gasto)}*\n` +
-      `✅ Saldo: *${fmt(ra.saldoMes)}*\n` +
-      (prev && mesAtivo===nowM() ? `\n🔮 Previsão fechamento: *${fmt(prev.saldoProjetado)}*` : "")
-    );
-    return;
-  }
-
-  // ── resumo ─────────────────────────────────
-  if (t === "resumo") {
-    const porCat = {};
-    gm.forEach(g=>{ porCat[g.cat]=(porCat[g.cat]||0)+g.valor; });
-    const cats = Object.entries(porCat).sort((a,b)=>b[1]-a[1])
-      .map(([c,v])=>`  • ${c}: ${fmt(v)} (${ra.renda>0?((v/ra.renda)*100).toFixed(0):0}%)`)
-      .join("\n");
-    await enviarTelegram(`📊 *Resumo ${mesNome(mesAtivo)}*\n\n${cats||"Sem gastos ainda"}\n\n💸 Total: *${fmt(ra.gasto)}*`);
-    return;
-  }
-
-  // ── metas ──────────────────────────────────
-  if (t === "metas") {
-    const metas = state.metas||[];
-    if (!metas.length) { await enviarTelegram("Nenhuma meta cadastrada ainda."); return; }
-    const msg = metas.map(m=>{
-      const pct = ((m.aportado||0)/m.valor*100).toFixed(0);
-      const bar = "█".repeat(Math.floor(pct/10)) + "░".repeat(10-Math.floor(pct/10));
-      return `${m.icone} *${m.desc}*\n${bar} ${pct}%\n${fmt(m.aportado||0)} / ${fmt(m.valor)}`;
-    }).join("\n\n");
-    await enviarTelegram(`🎯 *Suas Metas*\n\n${msg}`);
-    return;
-  }
-
-  // ── a vencer ──────────────────────────────
-  if (t === "avencer" || t === "a vencer" || t === "contas") {
-    const pendentes = gm.filter(g=>!isPagoMes(g.id,mesAtivo))
-      .sort((a,b)=>new Date(a.data)-new Date(b.data));
-    if (!pendentes.length) { await enviarTelegram("✅ Nenhuma conta pendente!"); return; }
-    const lista = pendentes.slice(0,8).map(g=>`• ${g.desc} — *${fmt(g.valor)}* (${new Date(g.data+"T12:00").toLocaleDateString("pt-BR")})`).join("\n");
-    await enviarTelegram(`⏰ *Contas a Pagar*\n\n${lista}\n\n💰 Total pendente: *${fmt(pendentes.reduce((s,g)=>s+g.valor,0))}*`);
-    return;
-  }
-
-  // ── hoje ───────────────────────────────────
-  if (t === "hoje") {
-    const hojeStr = todayS();
-    const gastosHoje = gm.filter(g=>g.data===hojeStr);
-    if (!gastosHoje.length) { await enviarTelegram("📅 Nenhum gasto registrado hoje."); return; }
-    const total = gastosHoje.reduce((s,g)=>s+g.valor,0);
-    const lista = gastosHoje.map(g=>`• ${g.desc} — *${fmt(g.valor)}*`).join("\n");
-    await enviarTelegram(`📅 *Gastos de hoje*\n\n${lista}\n\n💸 Total: *${fmt(total)}*`);
-    return;
-  }
-
-  // ── ajuda ──────────────────────────────────
-  if (t === "ajuda" || t === "help" || t === "/help") {
-    await enviarTelegram(
-      `📋 *Comandos disponíveis:*\n\n` +
-      `💰 *saldo* — resumo do mês\n📊 *resumo* — gastos por categoria\n🎯 *metas* — suas metas\n⏰ *avencer* — contas pendentes\n📅 *hoje* — gastos de hoje\n\n` +
-      `*Registrar gasto:*\n_gastei 50 almoço_\n_paguei 120 farmácia_\n_uber 35_\n_mercado 200_`
-    );
-    return;
-  }
-
-  // ── registrar gasto (padrão) ───────────────
-  const match = t.match(/^(?:gastei|paguei|comprei|)?\s*([\d]+[,.]?[\d]*)\s+(.+)$/);
-  if (match) {
-    const valor = parseFloat(match[1].replace(",","."));
-    const descRaw = texto.replace(/^(gastei|paguei|comprei)\s+/i,"").replace(/[\d]+[,.]?[\d]*\s*/,"").trim();
-    const desc = descRaw || "Gasto via Telegram";
-    const catMap = {
-      "almoç|jant|lanch|mercado|supermerc|ifood|restaur|padaria|cafe":"Alimentação",
-      "uber|taxi|gasolina|combustiv|onibus|metro|pedagio":"Transporte",
-      "aluguel|condomin|luz|agua|internet|tim|claro":"Moradia",
-      "farmacia|medico|saude|remedio|plano":"Saúde",
-      "cinema|netflix|spotify|academia|lazer":"Lazer",
-      "escola|curso|faculdade|livro":"Educação"
-    };
-    let cat = "Outros";
-    for (const [k,c] of Object.entries(catMap)) { if(new RegExp(k,"i").test(desc)){cat=c;break;} }
-    const novoGasto = {id:mkId(), desc, valor, cat, tipo:"variavel", data:todayS(), notas:"Via Telegram"};
-    state.gastos.push(novoGasto);
-    persist(); render();
-    await enviarTelegram(
-      `✅ *Gasto registrado!*\n\n` +
-      `📦 ${desc}\n💸 Valor: *${fmt(valor)}*\n📁 Categoria: ${cat}\n\n` +
-      `📊 Gastos do mês: *${fmt(resumoAtivo().gasto)}*`
-    );
-    return;
-  }
-
-  // ── não entendeu ───────────────────────────
-  await enviarTelegram(`❓ Não entendi "*${texto}*"\n\nEnvie *ajuda* para ver os comandos.`);
-}
-
-function processarComandoWhatsApp(texto) {
-  processarComandoTelegram(texto);
-}
-
-
-
-// ══════════════════════════════════════════════
-// OPEN BANKING — Importadores específicos por banco
-// ══════════════════════════════════════════════
-const PARSERS_BANCO = {
-  nubank: {
-    nome: "Nubank",
-    detectar: (header) => header.includes("date") && header.includes("title") && header.includes("amount"),
-    parsear: (linhas) => {
-      return linhas.slice(1).map(l=>{
-        const cols = l.split(",");
-        if (cols.length < 3) return null;
-        const data = cols[0]?.trim(); // YYYY-MM-DD
-        const desc = cols[1]?.trim().replace(/"/g,"");
-        const valor = Math.abs(parseFloat(cols[2]?.trim())||0);
-        if (!valor) return null;
-        return {desc, valor, data, tipo:"variavel"};
-      }).filter(Boolean);
-    }
-  },
-  inter: {
-    nome: "Banco Inter",
-    detectar: (header) => header.includes("Data Lançamento") || header.includes("Histórico"),
-    parsear: (linhas) => {
-      return linhas.slice(1).map(l=>{
-        const cols = l.split(";");
-        if (cols.length < 3) return null;
-        const dataRaw = cols[0]?.trim(); // DD/MM/YYYY
-        const desc = cols[1]?.trim().replace(/"/g,"");
-        const valorStr = (cols[2]||"0").trim().replace(/\./g,"").replace(",",".").replace(/"/g,"");
-        const valor = Math.abs(parseFloat(valorStr)||0);
-        if (!valor || !dataRaw) return null;
-        const [d,m,a] = dataRaw.split("/");
-        const data = a+"-"+m+"-"+d;
-        return {desc, valor, data, tipo:"variavel"};
-      }).filter(Boolean);
-    }
-  },
-  bradesco: {
-    nome: "Bradesco",
-    detectar: (header) => header.includes("Lançamentos") || (header.includes("Data") && header.includes("Valor")),
-    parsear: (linhas) => {
-      return linhas.slice(2).map(l=>{
-        const cols = l.split(";");
-        if (cols.length < 4) return null;
-        const dataRaw = cols[0]?.trim();
-        const desc = cols[2]?.trim().replace(/"/g,"");
-        const valorStr = (cols[3]||"0").replace(/\./g,"").replace(",",".").replace(/"/g,"");
-        const valor = Math.abs(parseFloat(valorStr)||0);
-        if (!valor || !dataRaw) return null;
-        const [d,m,a] = dataRaw.split("/");
-        const data = (a?.length===2?"20"+a:a)+"-"+m+"-"+d;
-        return {desc, valor, data, tipo:"variavel"};
-      }).filter(Boolean);
-    }
-  }
-};
-
-function detectarBanco(texto) {
-  const header = texto.split("\n")[0].toLowerCase();
-  for (const [id, parser] of Object.entries(PARSERS_BANCO)) {
-    if (parser.detectar(header)) return {id, ...parser};
-  }
-  return null;
-}
-
-function processarExtratoComParser(texto, banco) {
-  try {
-    const linhas = texto.split("\n").filter(l=>l.trim());
-    const itens = banco.parsear(linhas);
-    return itens.map(item => {
-      // Detectar categoria
-      const catMap = {"mercado|supermercado|extra|carrefour|pao de acucar|ifood|rappi|aliment|restaur|lanche|padaria":"Alimentação","uber|99pop|taxi|combustiv|gasolina|pedagio|estacion|metro|onibus":"Transporte","aluguel|condomin|iptu|energia|agua|luz|gas|internet|tim|claro|vivo|oi ":"Moradia","farmacia|drogaria|ultrafarma|medico|hospital|plano|saude|lab":"Saúde","netflix|spotify|amazon|steam|cinema|academia|clube|lazer":"Lazer","escola|colegio|faculdade|curso|livro":"Educação","c&a|renner|zara|hm|riachuelo|roupa|sapato":"Vestuário"};
-      let cat = "Outros";
-      for (const [k,v] of Object.entries(catMap)) { if(new RegExp(k,"i").test(item.desc)){cat=v;break;} }
-      return {...item, cat, selecionado:true, idx:Math.random()};
-    });
-  } catch(e) { return []; }
-}
-
-// Override da função processarExtrato para detectar banco automaticamente
-const _processarExtrato_orig = window.processarExtrato;
-function processarExtrato() {
-  const texto = document.getElementById("importar-texto").value.trim();
-  if (!texto) { toast("Cole o extrato no campo acima","#F28C8C"); return; }
-  const banco = detectarBanco(texto);
-  if (banco) {
-    toast(`Formato ${banco.nome} detectado! 🏦`,"#4FBDBA");
-    _importarLinhas = processarExtratoComParser(texto, banco);
-  } else {
-    // Usar parser genérico (já existente)
-    const linhas = texto.split("\n").map(l=>l.trim()).filter(l=>l.length>3);
-    _importarLinhas = [];
-    linhas.forEach((linha,i)=>{
-      const valorMatch = linha.match(/R?\$?\s*([\d\.]+,\d{2})/);
-      if (!valorMatch) return;
-      const valor = parseFloat(valorMatch[1].replace(/\./g,"").replace(",","."));
-      if (!valor||valor<=0) return;
-      let desc = linha.replace(valorMatch[0],"").replace(/[*\/\\|]/g," ").trim().replace(/\s{2,}/g," ").slice(0,60);
-      const dataMatch = linha.match(/(\d{2})[\/\-](\d{2})(?:[\/\-](\d{2,4}))?/);
-      let data = mesAtivo+"-15";
-      if (dataMatch) { const dia=dataMatch[1],mes=dataMatch[2],ano=dataMatch[3]?(dataMatch[3].length===2?"20"+dataMatch[3]:dataMatch[3]):mesAtivo.slice(0,4); data=ano+"-"+mes.padStart(2,"0")+"-"+dia.padStart(2,"0"); }
-      const catMap = {"mercado|supermercado|aliment|restaurante|ifood|lanch|cafe|padaria":"Alimentação","aluguel|condominio|iptu|energia|agua|luz|gas|internet|tim|claro|vivo":"Moradia","uber|99|taxi|onibus|metro|combustivel|gasolina|estacion|pedagio":"Transporte","farmacia|drogaria|medico|hospital|plano|saude|laboratorio":"Saúde","cinema|netflix|spotify|amazon|steam|academia|clube":"Lazer","escola|colegio|faculdade|curso|livro|uft|unifor":"Educação","c&a|renner|zara|hm|riachuelo|roupa|sapato":"Vestuário"};
-      let cat = "Outros";
-      for (const [k,c] of Object.entries(catMap)) { if(new RegExp(k,"i").test(linha)){cat=c;break;} }
-      _importarLinhas.push({desc,valor,cat,data,selecionado:true,idx:i});
-    });
-  }
-  const preview = document.getElementById("importar-preview");
-  if (!_importarLinhas.length) { preview.innerHTML="<p style='color:#F28C8C;padding:12px'>Nenhum lançamento encontrado.</p>"; return; }
-  preview.innerHTML = `
-    <p style="font-size:12px;color:#a0a0c0;margin-bottom:8px">${_importarLinhas.length} lançamento(s)${banco?" — "+banco.nome:""}. Desmarque os que não quer importar:</p>
-    <div style="display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto">
-    ${_importarLinhas.map((l,i)=>`
-      <label style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:#1e1e3a;border-radius:8px;cursor:pointer">
-        <input type="checkbox" ${l.selecionado?"checked":""} onchange="_importarLinhas[${i}].selecionado=this.checked" style="width:16px;height:16px">
-        <div style="flex:1">
-          <p style="font-size:13px;font-weight:600">${l.desc}</p>
-          <p style="font-size:11px;color:#a0a0c0">${l.cat} · R$ ${l.valor.toFixed(2).replace(".",",")} · ${new Date(l.data+"T12:00").toLocaleDateString("pt-BR")}</p>
-        </div>
-      </label>`).join("")}
-    </div>
-    <button class="btn btn-primary" onclick="confirmarImportar()" style="margin-top:12px;width:100%">✅ Importar selecionados</button>`;
-}
-
-// ══════════════════════════════════════════════
-// INIT: verificar grupo e push ao carregar
-// ══════════════════════════════════════════════
-function initRecursosExtras() {
-  const codigo = localStorage.getItem("grupo_codigo");
-  if (codigo) { grupoAtivo = codigo; iniciarSyncGrupo(); atualizarStatusCompartilhar(); }
-  setTimeout(verificarPushVencimentos, 3000);
-  setTimeout(verificarLembretesInteligentes, 4000);
-  setTimeout(iniciarPollingTelegram, 5000); // Iniciar bot polling
-  setInterval(verificarPushVencimentos, 3600000);
-  const params = new URLSearchParams(location.search);
-  const waCmd = params.get("wa_cmd");
-  if (waCmd) { setTimeout(()=>processarComandoWhatsApp(decodeURIComponent(waCmd)), 2000); }
-  setTimeout(()=>{ if(fbUserId) iniciarOnboarding(); }, 1500);
-}
-
-// ══════════════════════════════════════════════
-// COTAÇÕES AO VIVO
-// ══════════════════════════════════════════════
-async function atualizarCotacoes() {
-  const btn = document.getElementById("btn-cotacoes");
-  if (btn) { btn.textContent = "⏳"; btn.disabled = true; }
-  try {
-    // USD e EUR via AwesomeAPI (CORS livre)
-    const [cambioR, selicR] = await Promise.allSettled([
-      fetch("https://economia.awesomeapi.com.br/json/last/USD-BRL,EUR-BRL").then(r=>r.json()),
-      fetch("https://brasilapi.com.br/api/taxa/v1").then(r=>r.json())
-    ]);
-    if (cambioR.status==="fulfilled") {
-      const d = cambioR.value;
-      const usd = parseFloat(d.USDBRL?.bid||0).toFixed(2);
-      const eur = parseFloat(d.EURBRL?.bid||0).toFixed(2);
-      const elUsd = document.getElementById("cot-usd");
-      const elEur = document.getElementById("cot-eur");
-      if (elUsd) elUsd.textContent = "R$"+usd;
-      if (elEur) elEur.textContent = "R$"+eur;
-    }
-    if (selicR.status==="fulfilled") {
-      const taxas = selicR.value;
-      const selic = taxas.find(t=>t.nome==="Selic");
-      const cdi   = taxas.find(t=>t.nome==="CDI");
-      const ipca  = taxas.find(t=>t.nome==="IPCA");
-      const elSelic = document.getElementById("cot-selic");
-      const elCdi   = document.getElementById("cot-cdi");
-      const elIpca  = document.getElementById("cot-ipca");
-      if (elSelic && selic) elSelic.textContent = selic.valor+"%a.a.";
-      if (elCdi   && cdi)   elCdi.textContent   = cdi.valor+"%a.a.";
-      if (elIpca  && ipca)  elIpca.textContent  = ipca.valor+"%a.a.";
-    }
-    // BTC via CoinGecko
-    try {
-      const btcR = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=brl");
-      const btcD = await btcR.json();
-      const elBtc = document.getElementById("cot-btc");
-      if (elBtc && btcD.bitcoin) {
-        const val = btcD.bitcoin.brl;
-        elBtc.textContent = val>1000 ? "R$"+(val/1000).toFixed(0)+"k" : "R$"+val.toFixed(0);
+      const d = await resp.json();
+      const txt = d.content?.[0]?.text || "";
+      let dados; try { dados = JSON.parse(txt.replace(/```json|```/g,"")); } catch(_) { dados = null; }
+      document.getElementById("ocr-status").style.display = "none";
+      if (dados) {
+        document.getElementById("ocr-desc").value  = dados.descricao || "";
+        document.getElementById("ocr-valor").value = dados.valor || "";
+        document.getElementById("ocr-cat").value   = dados.categoria || "Outros";
+        document.getElementById("ocr-data").value  = dados.data || todayS();
+        document.getElementById("ocr-resultado").style.display = "block";
+      } else {
+        usarSemOCR();
       }
-    } catch(_) {}
-    const horaEl = document.getElementById("cotacoes-hora");
-    if (horaEl) horaEl.textContent = "Atualizado: "+new Date().toLocaleTimeString("pt-BR");
-    localStorage.setItem("cotacoes_ts", Date.now());
-  } catch(e) {
-    console.warn("Cotações erro:", e);
-  } finally {
-    if (btn) { btn.textContent = "🔄 Atualizar"; btn.disabled = false; }
-  }
+    } catch(e) {
+      document.getElementById("ocr-status").style.display = "none";
+      usarSemOCR();
+      toast("Erro na IA. Preencha manualmente.","#E8B84B");
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function usarSemOCR() {
+  document.getElementById("ocr-sem-key").style.display = "none";
+  document.getElementById("ocr-desc").value  = "";
+  document.getElementById("ocr-valor").value = "";
+  document.getElementById("ocr-cat").value   = "Outros";
+  document.getElementById("ocr-data").value  = todayS();
+  document.getElementById("ocr-resultado").style.display = "block";
+}
+
+function confirmarOCR() {
+  const desc  = document.getElementById("ocr-desc").value.trim();
+  const valor = parseFloat(document.getElementById("ocr-valor").value)||0;
+  const cat   = document.getElementById("ocr-cat").value;
+  const data  = document.getElementById("ocr-data").value || todayS();
+  if (!desc || !valor) { toast("Preencha descrição e valor","#F28C8C"); return; }
+  state.gastos.push({id:mkId(), desc, valor, cat, tipo:"variavel", data, notas:"Via OCR"});
+  persist(); render(); fecharModalOCR();
+  toast(`✅ Gasto "${desc}" adicionado via comprovante!`,"#6DBE8C");
 }
 
 // ══════════════════════════════════════════════
-// MAPA DE CALOR
+// 2. DETECÇÃO DE GASTOS REPETIDOS/SUBSCRIPTIONS
 // ══════════════════════════════════════════════
-function renderMapaCalor() {
-  const el = document.getElementById("mapa-calor");
-  if (!el) return;
-  const [ano, mes] = mesAtivo.split("-").map(Number);
-  const diasNoMes = new Date(ano, mes, 0).getDate();
-  const primeiroDia = new Date(ano, mes-1, 1).getDay(); // 0=dom
+function detectarGastosRepetidos() {
+  // Buscar gastos dos últimos 3 meses
+  const ultimosMeses = allMeses().filter(m => !calcResumo().find(r=>r.mes===m)?.projecao).slice(-3);
+  const todosMeses = ultimosMeses.flatMap(m => gastosDoMes(m));
 
-  // Calcular gastos por dia
-  const porDia = {};
-  gastosMes().forEach(g => {
-    const dia = parseInt(g.data.slice(8,10));
-    if (!isNaN(dia)) porDia[dia] = (porDia[dia]||0) + g.valor;
+  // Agrupar por descrição similar
+  const grupos = {};
+  todosMeses.forEach(g => {
+    const chave = g.desc.toLowerCase().replace(/\s+\d+\/\d+/g,"").replace(/parcela.*/i,"").trim().slice(0,30);
+    if (!grupos[chave]) grupos[chave] = [];
+    grupos[chave].push(g);
   });
-  const maxDia = Math.max(...Object.values(porDia), 1);
 
-  const DIAS_SEMANA = ["D","S","T","Q","Q","S","S"];
-  let html = `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px">
-    ${DIAS_SEMANA.map(d=>`<div style="text-align:center;font-size:10px;color:#6060a0;padding:2px">${d}</div>`).join("")}
-  </div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">`;
-
-  // Células vazias antes do primeiro dia
-  for (let i=0; i<primeiroDia; i++) html += `<div></div>`;
-
-  for (let d=1; d<=diasNoMes; d++) {
-    const val = porDia[d]||0;
-    const pct = val/maxDia;
-    const bg = pct===0 ? "#1e1e3a" : pct<.25 ? "#1a3a2a" : pct<.5 ? "#2a5a3a" : pct<.75 ? "#3a8a4a" : "#6DBE8C";
-    const hoje = new Date(); const isHoje = ano===hoje.getFullYear()&&mes===hoje.getMonth()+1&&d===hoje.getDate();
-    html += `<div title="Dia ${d}: ${val>0?fmt(val):"sem gastos"}" style="aspect-ratio:1;border-radius:4px;background:${bg};cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;color:${pct>.5?"#fff":"#4060a0"};border:${isHoje?"2px solid #E8B84B":"none"}" onclick="mostrarDiaCalendario(${d})">${d}</div>`;
+  // Identificar suspeitos: aparecem em 2+ meses diferentes
+  const suspeitos = [];
+  for (const [chave, gastos] of Object.entries(grupos)) {
+    const mesesGasto = [...new Set(gastos.map(g=>mesStr(g.data)))];
+    if (mesesGasto.length >= 2) {
+      const media = gastos.reduce((s,g)=>s+g.valor,0)/gastos.length;
+      suspeitos.push({chave, gastos, mesesGasto, media, cat:gastos[0].cat});
+    }
   }
-  html += "</div>";
+
+  // Detectar "subscriptions" por palavras-chave
+  const subKeywords = /netflix|spotify|amazon|prime|disney|hbo|youtube|apple|microsoft|adobe|canva|dropbox|icloud|google\s*one|deezer|globoplay|telecine/i;
+  const subscriptions = todosMeses.filter(g => subKeywords.test(g.desc));
+  const subUnicas = [...new Map(subscriptions.map(g=>[g.desc.toLowerCase(), g])).values()];
+
+  return { suspeitos, subscriptions: subUnicas };
+}
+
+function renderDeteccaoRepetidos() {
+  const el = document.getElementById("gastos-repetidos-content");
+  if (!el) return;
+  const { suspeitos, subscriptions } = detectarGastosRepetidos();
+
+  let html = "";
+
+  // Subscriptions detectadas
+  if (subscriptions.length) {
+    const total = subscriptions.reduce((s,g)=>s+g.valor,0);
+    html += `<div style="background:#1a1020;border:1px solid #A87BC944;border-radius:12px;padding:14px;margin-bottom:12px">
+      <p style="font-size:13px;font-weight:700;color:#A87BC9;margin-bottom:10px">📺 Assinaturas detectadas — Total: ${fmt(total)}/mês</p>
+      <div style="display:flex;flex-direction:column;gap:8px">
+      ${subscriptions.map(g=>`<div style="display:flex;justify-content:space-between;align-items:center;background:#13132b;border-radius:8px;padding:8px 12px">
+        <span style="font-size:13px">${g.desc}</span>
+        <span style="color:#A87BC9;font-weight:700">${fmt(g.valor)}/mês</span>
+      </div>`).join("")}
+      </div>
+      <p style="font-size:11px;color:#6060a0;margin-top:8px">💡 ${subscriptions.length} assinatura(s) ativas — avalie se está usando todas!</p>
+    </div>`;
+  }
+
+  // Gastos recorrentes suspeitos
+  const semSubscriptions = suspeitos.filter(s => !/netflix|spotify|amazon|prime|disney|hbo|youtube|apple/i.test(s.chave));
+  if (semSubscriptions.length) {
+    html += `<div style="background:#1a1a0a;border:1px solid #E8B84B44;border-radius:12px;padding:14px;margin-bottom:12px">
+      <p style="font-size:13px;font-weight:700;color:#E8B84B;margin-bottom:10px">🔁 Gastos que se repetem (últimos 3 meses)</p>
+      <div style="display:flex;flex-direction:column;gap:8px">
+      ${semSubscriptions.slice(0,6).map(s=>`<div style="display:flex;justify-content:space-between;align-items:center;background:#13132b;border-radius:8px;padding:8px 12px">
+        <div><p style="font-size:13px">${s.chave}</p><p style="font-size:11px;color:#6060a0">${s.mesesGasto.map(m=>mesLabel(m)).join(", ")} · ${s.cat}</p></div>
+        <span style="color:#E8B84B;font-weight:700">~${fmt(s.media)}</span>
+      </div>`).join("")}
+      </div>
+    </div>`;
+  }
+
+  if (!html) html = `<p style="color:#6060a0;text-align:center;padding:20px;font-size:13px">Adicione mais lançamentos para detectar padrões.</p>`;
   el.innerHTML = html;
 }
 
-function mostrarDiaCalendario(dia) {
-  const [ano, mes] = mesAtivo.split("-").map(Number);
-  const diaStr = ano+"-"+String(mes).padStart(2,"0")+"-"+String(dia).padStart(2,"0");
-  const gastosdia = gastosMes().filter(g=>g.data===diaStr);
-  if (!gastosdia.length) { toast(`Dia ${dia}: sem gastos registrados`,"#6060a0"); return; }
-  const total = gastosdia.reduce((s,g)=>s+g.valor,0);
-  toast(`Dia ${dia}: ${gastosdia.length} gasto(s) — ${fmt(total)}`,"#E8B84B");
+// ══════════════════════════════════════════════
+// 3. BACKUP GOOGLE DRIVE
+// ══════════════════════════════════════════════
+function backupGoogleDrive() {
+  // Gerar arquivo JSON para download + instruções para Drive
+  const dados = JSON.stringify(state, null, 2);
+  const blob = new Blob([dados], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const data = new Date().toISOString().slice(0,10);
+  a.href = url; a.download = `financas_backup_${data}.json`; a.click();
+  URL.revokeObjectURL(url);
+  // Tentar abrir Google Drive após download
+  setTimeout(()=>{
+    toast("📥 Arquivo baixado! Agora envie para o Google Drive para guardar.","#6DBE8C");
+    if (confirm("Abrir Google Drive para enviar o backup?")) {
+      window.open("https://drive.google.com/drive/my-drive","_blank");
+    }
+  }, 500);
+}
+
+function abrirBackupConfig() {
+  const modal = document.getElementById("modal-backup-config");
+  if (modal) modal.style.display = "flex";
+}
+
+// Backup automático semanal (salva no localStorage como JSON comprimido + lembrete)
+function agendarBackupAuto() {
+  setInterval(() => {
+    const ultima = parseInt(localStorage.getItem("ultimo_backup")||"0");
+    const semana = 7 * 24 * 3600 * 1000;
+    if (Date.now() - ultima > semana) {
+      localStorage.setItem("ultimo_backup", Date.now());
+      exportJSON(); // backup automático como download
+      toast("💾 Backup semanal automático realizado!","#6DBE8C");
+    }
+  }, 3600000 * 24); // verifica 1x por dia
 }
 
 // ══════════════════════════════════════════════
-// SIMULADOR DE FINANCIAMENTO
+// 4. CALCULADORA FGTS
 // ══════════════════════════════════════════════
-function calcFinanciamento() {
-  const val    = parseFloat(document.getElementById("fin-valor")?.value)||0;
-  const taxa   = parseFloat(document.getElementById("fin-taxa")?.value)||0;
-  const prazo  = parseInt(document.getElementById("fin-prazo")?.value)||0;
-  const entrada= parseFloat(document.getElementById("fin-entrada")?.value)||0;
-  const el = document.getElementById("fin-resultado");
+function calcFGTS() {
+  const sal   = parseFloat(document.getElementById("fgts-salario")?.value)||0;
+  const meses = parseInt(document.getElementById("fgts-meses")?.value)||0;
+  const tipo  = document.getElementById("fgts-tipo")?.value||"sem_justa";
+  const saldoAtual = parseFloat(document.getElementById("fgts-saldo")?.value)||0;
+  const el = document.getElementById("fgts-resultado");
   if (!el) return;
-  if (!val || !taxa || !prazo) { el.innerHTML=""; return; }
-  const principal = val - entrada;
-  if (principal <= 0) { el.innerHTML=`<p style="color:#6DBE8C;text-align:center">✅ Entrada cobre o valor total!</p>`; return; }
-  const t = taxa/100;
-  // Sistema Price (parcelas iguais)
-  const parcela = principal * (t*Math.pow(1+t,prazo)) / (Math.pow(1+t,prazo)-1);
-  const totalPago = parcela * prazo + entrada;
-  const juros = totalPago - val;
+  if (!sal || !meses) { el.innerHTML=""; return; }
+
+  const depositoMensal = sal * 0.08;
+  const saldoFGTS = saldoAtual || (depositoMensal * meses);
+  let multa = 0, aviso = 0, ferias = 0, decimoTerceiro = 0, total = 0;
+  let descricao = "";
+
+  const mesAtualAno = new Date().getMonth() + 1;
+  ferias = (sal / 12) * mesAtualAno + (sal / 3); // férias proporcionais + 1/3
+  decimoTerceiro = (sal / 12) * mesAtualAno; // 13º proporcional
+
+  switch(tipo) {
+    case "sem_justa":
+      multa = saldoFGTS * 0.4; // 40% do FGTS
+      aviso = sal; // 1 mês aviso prévio
+      descricao = "Demissão sem justa causa: FGTS liberado + 40% multa + aviso prévio";
+      total = saldoFGTS + multa + aviso + ferias + decimoTerceiro;
+      break;
+    case "pedido":
+      aviso = -sal; // desconto aviso prévio se não cumprir
+      descricao = "Pedido de demissão: sem multa, FGTS fica bloqueado";
+      total = ferias + decimoTerceiro + aviso;
+      break;
+    case "acordo":
+      multa = saldoFGTS * 0.2; // 20% multa
+      aviso = sal * 0.5; // 50% aviso
+      descricao = "Acordo mútuo: 20% multa FGTS + metade do aviso prévio";
+      total = saldoFGTS * 0.5 + multa + aviso + ferias + decimoTerceiro;
+      break;
+    case "justa":
+      descricao = "Justa causa: sem FGTS, sem multa, apenas férias e 13º";
+      total = ferias + decimoTerceiro;
+      break;
+  }
+
   el.innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div style="background:#1e1e3a;border-radius:10px;padding:12px;text-align:center">
-        <p style="font-size:11px;color:#6060a0">Parcela mensal</p>
-        <p style="font-size:20px;font-weight:800;color:#E8B84B">${fmt(parcela)}</p>
+    <div style="background:#0d1a0d;border:1px solid #6DBE8C33;border-radius:12px;padding:14px;margin-bottom:10px">
+      <p style="font-size:12px;color:#6DBE8C;margin-bottom:12px">💼 ${descricao}</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        ${tipo!=="justa"?`<div style="background:#1e1e3a;border-radius:8px;padding:10px"><p style="font-size:11px;color:#6060a0">Saldo FGTS</p><p style="font-size:15px;font-weight:700;color:#6DBE8C">${fmt(saldoFGTS)}</p></div>`:""}
+        ${multa?`<div style="background:#1e1e3a;border-radius:8px;padding:10px"><p style="font-size:11px;color:#6060a0">Multa FGTS</p><p style="font-size:15px;font-weight:700;color:#E8B84B">${fmt(multa)}</p></div>`:""}
+        ${aviso>0?`<div style="background:#1e1e3a;border-radius:8px;padding:10px"><p style="font-size:11px;color:#6060a0">Aviso Prévio</p><p style="font-size:15px;font-weight:700;color:#5B8DB8">${fmt(aviso)}</p></div>`:""}
+        <div style="background:#1e1e3a;border-radius:8px;padding:10px"><p style="font-size:11px;color:#6060a0">Férias Prop.</p><p style="font-size:15px;font-weight:700;color:#4FBDBA">${fmt(ferias)}</p></div>
+        <div style="background:#1e1e3a;border-radius:8px;padding:10px"><p style="font-size:11px;color:#6060a0">13º Prop.</p><p style="font-size:15px;font-weight:700;color:#4FBDBA">${fmt(decimoTerceiro)}</p></div>
+        <div style="background:#E8B84B22;border:1px solid #E8B84B44;border-radius:8px;padding:10px;grid-column:1/-1;text-align:center">
+          <p style="font-size:11px;color:#E8B84B">Total estimado a receber</p>
+          <p style="font-size:24px;font-weight:800;color:#E8B84B">${fmt(Math.abs(total))}</p>
+        </div>
       </div>
-      <div style="background:#1e1e3a;border-radius:10px;padding:12px;text-align:center">
-        <p style="font-size:11px;color:#6060a0">Total de juros</p>
-        <p style="font-size:20px;font-weight:800;color:#F28C8C">${fmt(juros)}</p>
-      </div>
-      <div style="background:#1e1e3a;border-radius:10px;padding:12px;text-align:center">
-        <p style="font-size:11px;color:#6060a0">Total pago</p>
-        <p style="font-size:16px;font-weight:700;color:#e8e8f0">${fmt(totalPago)}</p>
-      </div>
-      <div style="background:#1e1e3a;border-radius:10px;padding:12px;text-align:center">
-        <p style="font-size:11px;color:#6060a0">Custo real</p>
-        <p style="font-size:16px;font-weight:700;color:#a0a0c0">${((juros/val)*100).toFixed(0)}% do valor</p>
-      </div>
-    </div>
-    <p style="font-size:11px;color:#4060a0;margin-top:8px;text-align:center">Sistema Price · ${prazo} parcelas de ${fmt(parcela)}</p>`;
-}
-
-// ══════════════════════════════════════════════
-// RESERVA DE EMERGÊNCIA
-// ══════════════════════════════════════════════
-function renderReservaEmergencia() {
-  const el = document.getElementById("reserva-content");
-  if (!el) return;
-  const ra = resumoAtivo();
-  const totalGastoMed = (() => {
-    const r = calcResumo().filter(x=>!x.projecao && x.gasto>0);
-    return r.length ? r.reduce((s,x)=>s+x.gasto,0)/r.length : ra.gasto;
-  })();
-  const meta6meses = totalGastoMed * 6;
-  const totalPoupado = state.poupancas?.reduce((s,p)=>s+p.valor,0)||0;
-  const pct = meta6meses>0 ? Math.min((totalPoupado/meta6meses)*100,100) : 0;
-  const falta = Math.max(meta6meses-totalPoupado,0);
-  const mesesParaMeta = ra.saldoMes>0 && falta>0 ? Math.ceil(falta/ra.saldoMes) : null;
-  const cor = pct>=100?"#6DBE8C":pct>=50?"#E8B84B":"#F28C8C";
-  el.innerHTML = `
-    <div style="text-align:center;margin-bottom:14px">
-      <p style="font-size:32px;font-weight:800;color:${cor}">${pct.toFixed(0)}%</p>
-      <p style="font-size:13px;color:#a0a0c0">da reserva completa</p>
-    </div>
-    <div style="height:12px;background:#1e1e3a;border-radius:6px;margin-bottom:12px">
-      <div style="height:12px;border-radius:6px;background:${cor};width:${pct.toFixed(0)}%;transition:width .6s"></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-      <div style="background:#1e1e3a;border-radius:10px;padding:12px">
-        <p style="font-size:11px;color:#6060a0">Guardado</p>
-        <p style="font-size:16px;font-weight:700;color:#6DBE8C">${fmt(totalPoupado)}</p>
-      </div>
-      <div style="background:#1e1e3a;border-radius:10px;padding:12px">
-        <p style="font-size:11px;color:#6060a0">Meta (6 meses)</p>
-        <p style="font-size:16px;font-weight:700;color:#E8B84B">${fmt(meta6meses)}</p>
-      </div>
-    </div>
-    ${falta>0 ? `<p style="font-size:12px;color:#a0a0c0;text-align:center">Faltam <strong style="color:${cor}">${fmt(falta)}</strong>${mesesParaMeta?` · ~${mesesParaMeta} meses no ritmo atual`:""}</p>` : `<p style="font-size:14px;color:#6DBE8C;text-align:center;font-weight:700">🛡️ Reserva completa! Parabéns!</p>`}
-    <p style="font-size:11px;color:#4060a0;margin-top:8px;text-align:center">Baseado na média de gastos mensais de ${fmt(totalGastoMed)}</p>`;
-}
-
-// ══════════════════════════════════════════════
-// SCORE HISTÓRICO
-// ══════════════════════════════════════════════
-function calcScoreMes(mes) {
-  const r = calcResumo().find(x=>x.mes===mes);
-  if (!r || r.renda===0) return null;
-  let s = 50;
-  const pct = r.gasto/r.renda;
-  if (pct<.5) s+=25; else if (pct<.7) s+=15; else if (pct<.9) s+=5; else if (pct>1) s-=20;
-  if (r.saldoMes>0) s+=10; else s-=10;
-  const poupou = r.renda*0.2;
-  if (r.saldoMes>=poupou) s+=15; else if (r.saldoMes>=poupou*0.5) s+=7;
-  return Math.max(0,Math.min(100,Math.round(s)));
-}
-
-function renderScoreHistorico() {
-  const chart = document.getElementById("score-historico-chart");
-  const labels = document.getElementById("score-historico-labels");
-  if (!chart || !labels) return;
-  const meses = allMeses().slice(-8);
-  const scores = meses.map(m=>({mes:m,score:calcScoreMes(m)})).filter(x=>x.score!==null);
-  if (scores.length < 2) { chart.innerHTML='<p style="color:#6060a0;font-size:12px;padding:8px">Precisa de mais meses para mostrar evolução.</p>'; return; }
-  const max = Math.max(...scores.map(s=>s.score),1);
-  chart.innerHTML = scores.map(s=>{
-    const h = Math.max((s.score/max)*72,3);
-    const cor = s.score>=80?"#6DBE8C":s.score>=60?"#E8B84B":"#F28C8C";
-    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
-      <span style="font-size:9px;color:${cor};font-weight:700">${s.score}</span>
-      <div style="width:100%;height:${h}px;background:${cor};border-radius:4px 4px 0 0;min-height:3px"></div>
+      <p style="font-size:10px;color:#4060a0;margin-top:8px">Estimativa simplificada · Consulte um especialista para cálculo exato</p>
     </div>`;
-  }).join("");
-  labels.innerHTML = `<div style="display:flex;gap:4px;width:100%">${scores.map(s=>`<div style="flex:1;text-align:center;font-size:9px;color:#6060a0">${mesLabel(s.mes)}</div>`).join("")}</div>`;
 }
 
 // ══════════════════════════════════════════════
-// CONFIGURAÇÕES: TEMA PERSONALIZADO
+// 5. TREEMAP DE GASTOS
 // ══════════════════════════════════════════════
-function abrirConfig() {
-  document.getElementById("modal-config").style.display = "flex";
-  // Marcar cor ativa
-  const corAtual = localStorage.getItem("cor_tema")||"#5B8DB8";
-  document.querySelectorAll(".btn-cor-tema").forEach(btn=>{
-    btn.style.borderColor = btn.dataset.cor===corAtual ? "#fff" : "transparent";
-  });
-  // Checkboxes alertas
-  const alertas = JSON.parse(localStorage.getItem("config_alertas")||"{}");
-  const alertaRenda = document.getElementById("alerta-renda");
-  const alertaVenc  = document.getElementById("alerta-venc");
-  const alertaMeta  = document.getElementById("alerta-meta");
-  const relSem      = document.getElementById("rel-semanal-ativo");
-  if (alertaRenda) alertaRenda.checked = alertas.renda||false;
-  if (alertaVenc)  alertaVenc.checked  = alertas.venc!==false;
-  if (alertaMeta)  alertaMeta.checked  = alertas.meta||false;
-  if (relSem)      relSem.checked      = localStorage.getItem("rel_semanal")==="1";
-}
-function fecharConfig() { document.getElementById("modal-config").style.display="none"; }
-
-function setCorTema(cor) {
-  localStorage.setItem("cor_tema", cor);
-  aplicarCorTema(cor);
-  document.querySelectorAll(".btn-cor-tema").forEach(btn=>{
-    btn.style.borderColor = btn.dataset.cor===cor ? "#fff" : "transparent";
-  });
-}
-
-function aplicarCorTema(cor) {
-  if (!cor) return;
-  const cor2 = ajustarCor(cor, -25);
-  const corClara = ajustarCor(cor, 40);
-
-  // 1. Injetar/atualizar <style> com a nova cor
-  let styleEl = document.getElementById("style-tema-cor");
-  if (!styleEl) {
-    styleEl = document.createElement("style");
-    styleEl.id = "style-tema-cor";
-    document.head.appendChild(styleEl);
-  }
-  styleEl.textContent = `
-    .btn-primary { background: linear-gradient(135deg, ${cor}, ${cor2}) !important; }
-    .tab.on { border-color: ${cor} !important; color: ${cor} !important; }
-    .txt-primary, .kpi-val.primary { color: ${cor} !important; }
-    input:focus, select:focus { border-color: ${cor} !important; outline-color: ${cor}; }
-    #score-circle { border-color: ${cor}44 !important; }
-    .pbar-fill { background: ${cor} !important; }
-    a { color: ${cor}; }
-  `;
-
-  // 2. Botões primários — inline override
-  document.querySelectorAll(".btn-primary").forEach(btn=>{
-    btn.style.background = `linear-gradient(135deg,${cor},${cor2})`;
-  });
-
-  // 3. Avatar do usuário
-  const avatar = document.getElementById("user-avatar");
-  if (avatar && !isAdmin()) {
-    avatar.style.background = `linear-gradient(135deg,${cor},${cor2})`;
-  }
-
-  // 4. FABs principais
-  const fabMain = document.getElementById("fab-main");
-  if (fabMain) fabMain.style.background = `linear-gradient(135deg,${cor},${cor2})`;
-
-  // 5. Tabs ativas
-  document.querySelectorAll(".tab.on").forEach(t=>{
-    t.style.borderColor = cor;
-    t.style.color = cor;
-  });
-
-  // 6. Barra de progresso do orçamento
-  document.querySelectorAll(".pbar-fill, [id$='-bar']").forEach(el=>{
-    el.style.background = cor;
-  });
-}
-
-function ajustarCor(hex, pct) {
-  try {
-    const n = parseInt(hex.slice(1),16);
-    const r = Math.min(255,Math.max(0,((n>>16)&255)+pct));
-    const g = Math.min(255,Math.max(0,((n>>8)&255)+pct));
-    const b = Math.min(255,Math.max(0,(n&255)+pct));
-    return "#"+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
-  } catch(_) { return hex; }
-}
-
-function salvarAlertas() {
-  const alertas = {
-    renda: document.getElementById("alerta-renda")?.checked||false,
-    venc:  document.getElementById("alerta-venc")?.checked!==false,
-    meta:  document.getElementById("alerta-meta")?.checked||false
-  };
-  localStorage.setItem("config_alertas", JSON.stringify(alertas));
-}
-
-// ══════════════════════════════════════════════
-// LEMBRETE INTELIGENTE
-// ══════════════════════════════════════════════
-function verificarLembretesInteligentes() {
-  const alertas = JSON.parse(localStorage.getItem("config_alertas")||"{}");
-  const hoje = new Date();
-  const mesAtivoParcial = nowM();
-  const rendasMesAtual = state.rendas.filter(r=>mesStr(r.data)===mesAtivoParcial);
-  // Lembrete de renda: depois do dia 5 sem registrar renda
-  if (alertas.renda && hoje.getDate()>=5 && rendasMesAtual.length===0) {
-    const lembreteKey = "lembrete_renda_"+mesAtivoParcial;
-    if (!localStorage.getItem(lembreteKey)) {
-      localStorage.setItem(lembreteKey,"1");
-      setTimeout(()=>{
-        const wrap = document.getElementById("alertas-wrap");
-        if (!wrap) return;
-        const alerta = document.createElement("div");
-        alerta.style.cssText = "background:#1a1a2a;border:1px solid #E8B84B44;border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center";
-        alerta.innerHTML = `<p style="font-size:13px;color:#E8B84B">💡 Você ainda não registrou sua renda de ${mesNome(mesAtivoParcial)}. Adicione para manter o controle!</p><button onclick="this.closest('div').remove()" style="background:none;border:none;color:#6060a0;font-size:16px;cursor:pointer;padding:0 4px">×</button>`;
-        wrap.insertBefore(alerta, wrap.firstChild);
-      }, 2000);
-    }
-  }
-  // Lembrete de metas (dia 25)
-  if (alertas.meta && hoje.getDate()===25) {
-    const metas = state.metas||[];
-    const metasAtraso = metas.filter(m=>(m.aportado||0)<m.valor && m.prazo<=mesAtivoParcial);
-    if (metasAtraso.length) {
-      enviarNotificacao(`⏰ *Alerta de Metas*\n${metasAtraso.length} meta(s) vencem em breve:\n${metasAtraso.map(m=>`• ${m.icone} ${m.desc}: ${fmt(m.aportado||0)}/${fmt(m.valor)}`).join("\n")}`);
-    }
-  }
-}
-
-// ══════════════════════════════════════════════
-// RELATÓRIO SEMANAL TELEGRAM
-// ══════════════════════════════════════════════
-function toggleRelatorioSemanal() {
-  const ativo = document.getElementById("rel-semanal-ativo")?.checked;
-  localStorage.setItem("rel_semanal", ativo?"1":"0");
-  if (ativo) {
-    toast("Relatório semanal ativado! Envio toda segunda-feira.","#4FBDBA");
-    // Enviar teste imediato
-    gerarRelatorioSemanal(true);
-  } else {
-    toast("Relatório semanal desativado","#6060a0");
-  }
-}
-
-async function gerarRelatorioSemanal(teste=false) {
-  const ra = resumoAtivo();
+function renderTreemap() {
+  const el = document.getElementById("treemap-container");
+  if (!el) return;
   const gm = gastosMes();
+  if (!gm.length) { el.innerHTML=`<p style="color:#6060a0;text-align:center;padding:20px;font-size:13px;width:100%">Sem gastos no mês ativo.</p>`; return; }
+
   const porCat = {};
-  gm.forEach(g=>{ porCat[g.cat]=(porCat[g.cat]||0)+g.valor; });
-  const catTop = Object.entries(porCat).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([c,v])=>`• ${c}: ${fmt(v)}`).join("\n");
-  const prev = calcPrevisaoFechamento();
-  const msg = `📊 *Relatório Semanal — ${mesNome(mesAtivo)}*${teste?" (teste)":""}\n\n`+
-    `💰 Renda: ${fmt(ra.renda)}\n`+
-    `💸 Gastos: ${fmt(ra.gasto)}\n`+
-    `✅ Saldo: ${fmt(ra.saldoMes)}\n\n`+
-    `*Top categorias:*\n${catTop||"Nenhum gasto"}\n\n`+
-    (prev?`*Previsão de fechamento:* ${fmt(prev.saldoProjetado)}\n`:"");
-  await enviarNotificacao(msg);
-}
+  gm.forEach(g => { porCat[g.cat] = (porCat[g.cat]||0) + g.valor; });
+  const total = Object.values(porCat).reduce((s,v)=>s+v,0);
+  const sorted = Object.entries(porCat).sort((a,b)=>b[1]-a[1]);
 
-function agendarRelatorioSemanal() {
-  // Verificar toda hora se é segunda-feira de manhã
-  setInterval(()=>{
-    if (localStorage.getItem("rel_semanal")!=="1") return;
-    const agora = new Date();
-    if (agora.getDay()===1 && agora.getHours()===8) { // Segunda às 8h
-      const key = "rel_enviado_"+agora.toDateString();
-      if (!localStorage.getItem(key)) {
-        localStorage.setItem(key,"1");
-        gerarRelatorioSemanal();
-      }
-    }
-  }, 3600000); // cada hora
-}
+  const cores = {
+    "Moradia":"#5B8DB8","Alimentação":"#6DBE8C","Transporte":"#E07B54",
+    "Saúde":"#F28C8C","Lazer":"#A87BC9","Educação":"#4FBDBA",
+    "Vestuário":"#E8B84B","Outros":"#6060a0"
+  };
 
-// ══════════════════════════════════════════════
-// ONBOARDING
-// ══════════════════════════════════════════════
-const OB_STEPS = [
-  {icone:"💰", titulo:"Bem-vindo!", desc:"Este app te ajuda a controlar suas finanças pessoais de forma simples e inteligente. Vamos fazer um tour rápido!"},
-  {icone:"💳", titulo:"Lance seus gastos", desc:"Vá em Lançamentos e adicione seus gastos e rendas. Você pode cadastrar fixos, recorrentes e parcelados."},
-  {icone:"🎯", titulo:"Defina suas metas", desc:"No Plano, configure quanto você quer poupar por mês. A regra 50-30-20 te ajuda a distribuir sua renda."},
-  {icone:"📊", titulo:"Acompanhe a evolução", desc:"Em Evolução você vê o histórico do seu patrimônio mês a mês e compara categorias."},
-  {icone:"🤖", titulo:"IA Conselheira", desc:"Acesse a aba IA para análises personalizadas e um chat financeiro. Configure o Telegram para notificações!"},
-  {icone:"🚀", titulo:"Pronto para começar!", desc:"Agora é só lançar sua primeira renda e seus gastos. Boa sorte na jornada financeira! 💪"}
-];
-let obStep = 0;
-
-function iniciarOnboarding() {
-  if (localStorage.getItem("onboarding_done")) return;
-  obStep = 0;
-  document.getElementById("onboarding").style.display = "flex";
-  renderOnboardingStep();
-}
-function renderOnboardingStep() {
-  const step = OB_STEPS[obStep];
-  document.getElementById("ob-icon").textContent = step.icone;
-  document.getElementById("ob-titulo").textContent = step.titulo;
-  document.getElementById("ob-desc").textContent = step.desc;
-  document.getElementById("ob-btn-proximo").textContent = obStep===OB_STEPS.length-1 ? "Começar! 🚀" : "Próximo →";
-  document.getElementById("ob-step-dots").innerHTML = OB_STEPS.map((_,i)=>`<div style="width:${i===obStep?24:8}px;height:8px;border-radius:4px;background:${i===obStep?"#5B8DB8":"#2d2d4e"};transition:width .3s"></div>`).join("");
-}
-function proximoOnboarding() {
-  obStep++;
-  if (obStep>=OB_STEPS.length) { pularOnboarding(); return; }
-  renderOnboardingStep();
-}
-function pularOnboarding() {
-  localStorage.setItem("onboarding_done","1");
-  document.getElementById("onboarding").style.display = "none";
+  el.style.minHeight = "200px";
+  el.innerHTML = sorted.map(([cat, val]) => {
+    const pct = (val/total*100).toFixed(1);
+    const w = Math.max(parseFloat(pct), 8);
+    const cor = cores[cat]||"#6060a0";
+    const tamFonte = w > 20 ? "13px" : w > 12 ? "11px" : "9px";
+    return `
+      <div onclick="showAba_silencioso('lancamentos')" title="${cat}: ${fmt(val)} (${pct}%)"
+        style="background:${cor}22;border:1px solid ${cor}66;border-radius:6px;padding:8px;cursor:pointer;
+               display:flex;flex-direction:column;justify-content:center;align-items:center;
+               width:calc(${w}% - 4px);min-width:40px;min-height:60px;transition:all .2s;flex-grow:${w}"
+        onmouseover="this.style.background='${cor}44'" onmouseout="this.style.background='${cor}22'">
+        <p style="font-size:${tamFonte};font-weight:700;color:${cor};text-align:center;line-height:1.3;word-break:break-word">${cat}</p>
+        ${w>12?`<p style="font-size:10px;color:${cor}aa;margin-top:2px">${pct}%</p>`:""}
+      </div>`;
+  }).join("");
 }
 
 // ══════════════════════════════════════════════
-// RENDER CALENDÁRIO (chamado ao abrir aba)
+// 6. GERADOR DE PIX
 // ══════════════════════════════════════════════
-function renderCalendario() {
-  renderMapaCalor();
-  renderReservaEmergencia();
-  calcFinanciamento();
-  // Atualizar cotações se passaram mais de 30 min
-  const ts = parseInt(localStorage.getItem("cotacoes_ts")||"0");
-  if (Date.now()-ts > 1800000) atualizarCotacoes();
+function gerarPix() {
+  const chave = (document.getElementById("pix-chave")?.value||"").trim();
+  const valor = parseFloat(document.getElementById("pix-valor")?.value)||0;
+  const nome  = (document.getElementById("pix-nome")?.value||"").trim().slice(0,25)||"Sem nome";
+  const desc  = (document.getElementById("pix-desc")?.value||"").trim().slice(0,25);
+  const el = document.getElementById("pix-resultado");
+  if (!el) return;
+  if (!chave) { el.innerHTML=""; return; }
+
+  // Gerar EMV Pix (formato simplificado)
+  function pixField(id, val) {
+    const len = String(val.length).padStart(2,"0");
+    return `${id}${len}${val}`;
+  }
+  function pixStr(chaveP, valorP, nomeP, descP) {
+    const merchantAccount = pixField("00","BR.GOV.BCB.PIX") + pixField("01", chaveP);
+    const ma = pixField("26", merchantAccount);
+    const txId = pixField("05", "***");
+    const ai = pixField("62", txId);
+    const valorFmt = valorP > 0 ? pixField("54", valorP.toFixed(2)) : "";
+    const str = pixField("00","01") + ma + pixField("52","0000") + pixField("53","986") +
+      valorFmt + pixField("58","BR") + pixField("59", nomeP) + pixField("60","Brasil") +
+      (descP?pixField("62",pixField("05",descP)):"") + "6304";
+    // CRC16
+    let crc = 0xFFFF;
+    for (const c of str) { crc ^= c.charCodeAt(0)<<8; for(let i=0;i<8;i++) crc=(crc&0x8000)?(crc<<1)^0x1021:(crc<<1); crc&=0xFFFF; }
+    return str + crc.toString(16).toUpperCase().padStart(4,"0");
+  }
+
+  const emv = pixStr(chave, valor, nome, desc);
+
+  // Gerar QR Code como URL (via API externa)
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(emv)}`;
+
+  el.innerHTML = `
+    <div style="background:#0d1a0d;border:1px solid #25D36633;border-radius:12px;padding:14px;text-align:center">
+      <p style="font-size:13px;font-weight:700;color:#25D366;margin-bottom:12px">💚 Cobrança Pix gerada!</p>
+      <img src="${qrUrl}" style="width:160px;height:160px;border-radius:10px;margin-bottom:12px;background:#fff;padding:8px">
+      <p style="font-size:12px;color:#a0a0c0;margin-bottom:6px">Chave: <strong style="color:#e8e8f0">${chave}</strong></p>
+      ${valor>0?`<p style="font-size:18px;font-weight:800;color:#25D366;margin-bottom:10px">${fmt(valor)}</p>`:""}
+      <div style="display:flex;gap:8px;justify-content:center">
+        <button onclick="copiarEMV('${emv.replace(/'/g,"\\'")}')" class="btn btn-gray" style="font-size:12px;padding:7px 14px">📋 Copiar código</button>
+        <button onclick="compartilharPix('${chave}','${valor}','${desc}')" class="btn btn-primary" style="font-size:12px;padding:7px 14px">📤 Compartilhar</button>
+      </div>
+      <p style="font-size:10px;color:#4060a0;margin-top:10px">⚠️ QR Code gerado localmente · Verifique os dados antes de usar</p>
+    </div>`;
+}
+
+function copiarEMV(emv) {
+  navigator.clipboard?.writeText(emv).then(()=>toast("Código Pix copiado! Cole no app do banco.","#25D366"));
+}
+function compartilharPix(chave, valor, desc) {
+  const txt = `💚 Cobrança Pix\nChave: ${chave}${valor?"\nValor: R$"+valor:""}${desc?"\nDesc: "+desc:""}`;
+  if (navigator.share) navigator.share({title:"Cobrança Pix", text:txt});
+  else navigator.clipboard?.writeText(txt).then(()=>toast("Dados copiados!","#25D366"));
 }
 
 // ══════════════════════════════════════════════
@@ -6557,15 +5683,267 @@ function atualizarDataPadraoGasto() {
   el.value = val;
 }
 
+// ══════════════════════════════════════════════
+// COTAÇÕES AO VIVO
+// ══════════════════════════════════════════════
+async function atualizarCotacoes() {
+  const btn = document.getElementById("btn-cotacoes");
+  if (btn) { btn.textContent="⏳"; btn.disabled=true; }
+  try {
+    const [c,s] = await Promise.allSettled([
+      fetch("https://economia.awesomeapi.com.br/json/last/USD-BRL,EUR-BRL").then(r=>r.json()),
+      fetch("https://brasilapi.com.br/api/taxa/v1").then(r=>r.json())
+    ]);
+    if (c.status==="fulfilled") {
+      const d=c.value;
+      const eu=document.getElementById("cot-usd"); if(eu) eu.textContent="R$"+parseFloat(d.USDBRL?.bid||0).toFixed(2);
+      const ee=document.getElementById("cot-eur"); if(ee) ee.textContent="R$"+parseFloat(d.EURBRL?.bid||0).toFixed(2);
+    }
+    if (s.status==="fulfilled") {
+      const t=s.value;
+      const sl=t.find(x=>x.nome==="Selic"); const es=document.getElementById("cot-selic"); if(es&&sl) es.textContent=sl.valor+"%a.a.";
+      const cd=t.find(x=>x.nome==="CDI");   const ec=document.getElementById("cot-cdi");   if(ec&&cd) ec.textContent=cd.valor+"%a.a.";
+      const ip=t.find(x=>x.nome==="IPCA");  const ei=document.getElementById("cot-ipca");  if(ei&&ip) ei.textContent=ip.valor+"%a.a.";
+    }
+    try {
+      const br=await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=brl");
+      const bd=await br.json(); const eb=document.getElementById("cot-btc");
+      if(eb&&bd.bitcoin) { const v=bd.bitcoin.brl; eb.textContent=v>1000?"R$"+(v/1000).toFixed(0)+"k":"R$"+v.toFixed(0); }
+    } catch(_){}
+    const h=document.getElementById("cotacoes-hora"); if(h) h.textContent="Atualizado: "+new Date().toLocaleTimeString("pt-BR");
+    localStorage.setItem("cotacoes_ts",Date.now());
+  } catch(e){} finally { if(btn){btn.textContent="🔄 Atualizar";btn.disabled=false;} }
+}
+
+// ══════════════════════════════════════════════
+// MAPA DE CALOR
+// ══════════════════════════════════════════════
+function renderMapaCalor() {
+  const el=document.getElementById("mapa-calor"); if(!el) return;
+  const [ano,mes]=mesAtivo.split("-").map(Number);
+  const dias=new Date(ano,mes,0).getDate(); const pri=new Date(ano,mes-1,1).getDay();
+  const pd={}; gastosMes().forEach(g=>{ const d=parseInt(g.data.slice(8,10)); if(!isNaN(d)) pd[d]=(pd[d]||0)+g.valor; });
+  const mx=Math.max(...Object.values(pd),1);
+  const DS=["D","S","T","Q","Q","S","S"];
+  let h=`<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:3px">${DS.map(d=>`<div style="text-align:center;font-size:10px;color:#6060a0">${d}</div>`).join("")}</div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px">`;
+  for(let i=0;i<pri;i++) h+=`<div></div>`;
+  const hj=new Date(); for(let d=1;d<=dias;d++){const v=pd[d]||0;const p=v/mx;const bg=p===0?"#1e1e3a":p<.25?"#1a3a2a":p<.5?"#2a5a3a":p<.75?"#3a8a4a":"#6DBE8C";const isH=ano===hj.getFullYear()&&mes===hj.getMonth()+1&&d===hj.getDate();h+=`<div title="${d}: ${v>0?fmt(v):"sem gastos"}" style="aspect-ratio:1;border-radius:3px;background:${bg};cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;color:${p>.5?"#fff":"#4060a0"};border:${isH?"2px solid #E8B84B":"none"}" onclick="mostrarDiaCalendario(${d})">${d}</div>`;}
+  el.innerHTML=h+"</div>";
+}
+function mostrarDiaCalendario(d){const [a,m]=mesAtivo.split("-").map(Number);const ds=a+"-"+String(m).padStart(2,"0")+"-"+String(d).padStart(2,"0");const gd=gastosMes().filter(g=>g.data===ds);if(!gd.length){toast(`Dia ${d}: sem gastos`,"#6060a0");return;}toast(`Dia ${d}: ${gd.length} gasto(s) — ${fmt(gd.reduce((s,g)=>s+g.valor,0))}`,"#E8B84B");}
+
+// ══════════════════════════════════════════════
+// SIMULADOR DE FINANCIAMENTO
+// ══════════════════════════════════════════════
+function calcFinanciamento(){
+  const v=parseFloat(document.getElementById("fin-valor")?.value)||0,t=parseFloat(document.getElementById("fin-taxa")?.value)||0,p=parseInt(document.getElementById("fin-prazo")?.value)||0,e=parseFloat(document.getElementById("fin-entrada")?.value)||0;
+  const el=document.getElementById("fin-resultado"); if(!el) return;
+  if(!v||!t||!p){el.innerHTML="";return;}
+  const pr=v-e; if(pr<=0){el.innerHTML=`<p style="color:#6DBE8C;text-align:center">✅ Entrada cobre o total!</p>`;return;}
+  const tm=t/100,parc=pr*(tm*Math.pow(1+tm,p))/(Math.pow(1+tm,p)-1),tot=parc*p+e,jur=tot-v;
+  el.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div style="background:#1e1e3a;border-radius:10px;padding:12px;text-align:center"><p style="font-size:11px;color:#6060a0">Parcela</p><p style="font-size:20px;font-weight:800;color:#E8B84B">${fmt(parc)}</p></div><div style="background:#1e1e3a;border-radius:10px;padding:12px;text-align:center"><p style="font-size:11px;color:#6060a0">Juros total</p><p style="font-size:20px;font-weight:800;color:#F28C8C">${fmt(jur)}</p></div><div style="background:#1e1e3a;border-radius:10px;padding:12px;text-align:center;grid-column:1/-1"><p style="font-size:11px;color:#6060a0">Total pago</p><p style="font-size:18px;font-weight:700;color:#e8e8f0">${fmt(tot)}</p></div></div>`;
+}
+
+// ══════════════════════════════════════════════
+// RESERVA DE EMERGÊNCIA
+// ══════════════════════════════════════════════
+function renderReservaEmergencia(){
+  const el=document.getElementById("reserva-content"); if(!el) return;
+  const ra=resumoAtivo(),r=calcResumo().filter(x=>!x.projecao&&x.gasto>0),med=r.length?r.reduce((s,x)=>s+x.gasto,0)/r.length:ra.gasto;
+  const meta=med*6,poup=state.poupancas?.reduce((s,p)=>s+p.valor,0)||0,pct=meta>0?Math.min((poup/meta)*100,100):0,falta=Math.max(meta-poup,0);
+  const cor=pct>=100?"#6DBE8C":pct>=50?"#E8B84B":"#F28C8C";
+  el.innerHTML=`<div style="text-align:center;margin-bottom:14px"><p style="font-size:32px;font-weight:800;color:${cor}">${pct.toFixed(0)}%</p><p style="font-size:13px;color:#a0a0c0">da reserva completa</p></div><div style="height:12px;background:#1e1e3a;border-radius:6px;margin-bottom:12px"><div style="height:12px;border-radius:6px;background:${cor};width:${pct.toFixed(0)}%"></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div style="background:#1e1e3a;border-radius:10px;padding:12px"><p style="font-size:11px;color:#6060a0">Guardado</p><p style="font-size:16px;font-weight:700;color:#6DBE8C">${fmt(poup)}</p></div><div style="background:#1e1e3a;border-radius:10px;padding:12px"><p style="font-size:11px;color:#6060a0">Meta (6 meses)</p><p style="font-size:16px;font-weight:700;color:#E8B84B">${fmt(meta)}</p></div></div>${falta>0?`<p style="font-size:12px;color:#a0a0c0;text-align:center;margin-top:10px">Faltam <strong style="color:${cor}">${fmt(falta)}</strong></p>`:`<p style="font-size:14px;color:#6DBE8C;text-align:center;margin-top:10px;font-weight:700">🛡️ Reserva completa!</p>`}`;
+}
+
+// ══════════════════════════════════════════════
+// SCORE HISTÓRICO
+// ══════════════════════════════════════════════
+function calcScoreMes(mes){const r=calcResumo().find(x=>x.mes===mes);if(!r||r.renda===0)return null;let s=50;const p=r.gasto/r.renda;if(p<.5)s+=25;else if(p<.7)s+=15;else if(p<.9)s+=5;else if(p>1)s-=20;if(r.saldoMes>0)s+=10;else s-=10;const pm=r.renda*.2;if(r.saldoMes>=pm)s+=15;else if(r.saldoMes>=pm*.5)s+=7;return Math.max(0,Math.min(100,Math.round(s)));}
+function renderScoreHistorico(){
+  const ch=document.getElementById("score-historico-chart"),lb=document.getElementById("score-historico-labels");if(!ch||!lb)return;
+  const meses=allMeses().slice(-8),sc=meses.map(m=>({mes:m,score:calcScoreMes(m)})).filter(x=>x.score!==null);
+  if(sc.length<2){ch.innerHTML='<p style="color:#6060a0;font-size:12px;padding:8px">Precisa de mais meses.</p>';return;}
+  const mx=Math.max(...sc.map(s=>s.score),1);
+  ch.innerHTML=sc.map(s=>{const h=Math.max((s.score/mx)*72,3);const c=s.score>=80?"#6DBE8C":s.score>=60?"#E8B84B":"#F28C8C";return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font-size:9px;color:${c};font-weight:700">${s.score}</span><div style="width:100%;height:${h}px;background:${c};border-radius:4px 4px 0 0"></div></div>`;}).join("");
+  lb.innerHTML=`<div style="display:flex;gap:4px;width:100%">${sc.map(s=>`<div style="flex:1;text-align:center;font-size:9px;color:#6060a0">${mesLabel(s.mes)}</div>`).join("")}</div>`;
+}
+
+// ══════════════════════════════════════════════
+// RENDER CALENDÁRIO
+// ══════════════════════════════════════════════
+function renderCalendario(){
+  renderMapaCalor(); renderReservaEmergencia(); calcFinanciamento(); renderTreemap();
+  const ts=parseInt(localStorage.getItem("cotacoes_ts")||"0");
+  if(Date.now()-ts>1800000) atualizarCotacoes();
+}
+
+// ══════════════════════════════════════════════
+// TEMA PERSONALIZADO
+// ══════════════════════════════════════════════
+function abrirConfig(){
+  document.getElementById("modal-config").style.display="flex";
+  const cor=localStorage.getItem("cor_tema")||"#5B8DB8";
+  document.querySelectorAll(".btn-cor-tema").forEach(b=>{ b.style.borderColor=b.dataset.cor===cor?"#fff":"transparent"; });
+  const rs=document.getElementById("rel-semanal-ativo"); if(rs) rs.checked=localStorage.getItem("rel_semanal")==="1";
+}
+function fecharConfig(){ document.getElementById("modal-config").style.display="none"; }
+function setCorTema(cor){
+  localStorage.setItem("cor_tema",cor); aplicarCorTema(cor);
+  document.querySelectorAll(".btn-cor-tema").forEach(b=>{ b.style.borderColor=b.dataset.cor===cor?"#fff":"transparent"; });
+}
+function ajustarCor(hex,p){try{const n=parseInt(hex.slice(1),16);const r=Math.min(255,Math.max(0,((n>>16)&255)+p));const g=Math.min(255,Math.max(0,((n>>8)&255)+p));const b=Math.min(255,Math.max(0,(n&255)+p));return"#"+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);}catch(_){return hex;}}
+function aplicarCorTema(cor){
+  if(!cor) return;
+  const c2=ajustarCor(cor,-25);
+  let st=document.getElementById("style-tema-cor");
+  if(!st){st=document.createElement("style");st.id="style-tema-cor";document.head.appendChild(st);}
+  st.textContent=`.btn-primary{background:linear-gradient(135deg,${cor},${c2})!important;} .tab.on{border-color:${cor}!important;color:${cor}!important;} input:focus,select:focus{border-color:${cor}!important;}`;
+  document.querySelectorAll(".btn-primary").forEach(b=>{b.style.background=`linear-gradient(135deg,${cor},${c2})`;});
+  const av=document.getElementById("user-avatar");if(av&&!isAdmin())av.style.background=`linear-gradient(135deg,${cor},${c2})`;
+}
+
+// ══════════════════════════════════════════════
+// TELEGRAM BOT
+// ══════════════════════════════════════════════
+let _tgPollingTimer=null,_tgPollingAtivo=false;
+function abrirWhatsApp(){
+  document.getElementById("modal-whatsapp").style.display="flex";
+  const tk=localStorage.getItem("tg_token"),ch=localStorage.getItem("tg_chatid");
+  if(tk){const e=document.getElementById("tg-token");if(e)e.value=tk;}
+  if(ch){const e=document.getElementById("tg-chatid");if(e)e.value=ch;}
+}
+async function salvarTelegram(){
+  const token=(document.getElementById("tg-token")?.value||"").trim(),chatId=(document.getElementById("tg-chatid")?.value||"").trim();
+  const st=document.getElementById("tg-status");
+  if(!token||!chatId){toast("Preencha Token e Chat ID","#F28C8C");return;}
+  if(st) st.textContent="⏳ Testando...";
+  localStorage.setItem("tg_token",token);localStorage.setItem("tg_chatid",chatId);
+  const ra=resumoAtivo(),msg=`✅ *Finanças Pessoais conectado!*\n\n📊 *${mesNome(mesAtivo)}*\nRenda: ${fmt(ra.renda)}\nGastos: ${fmt(ra.gasto)}\nSaldo: ${fmt(ra.saldoMes)}\n\n_Comandos: gastei 50 almoço • saldo • resumo • metas_`;
+  const ok=await enviarTelegram(msg);
+  if(ok){if(st){st.textContent="✅ Conectado!";st.style.color="#6DBE8C";}iniciarPollingTelegram();setTimeout(()=>{document.getElementById("modal-whatsapp").style.display="none";},1500);toast("✅ Telegram configurado!","#2496ED");}
+  else{if(st){st.textContent="❌ Erro. Verifique Token e Chat ID.";st.style.color="#F28C8C";}toast("Erro. Verifique os dados.","#F28C8C");}
+}
+async function enviarTelegram(msg){
+  const t=localStorage.getItem("tg_token"),c=localStorage.getItem("tg_chatid");if(!t||!c)return false;
+  try{const r=await fetch(`https://api.telegram.org/bot${t}/sendMessage`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({chat_id:c,text:msg,parse_mode:"Markdown"})});const d=await r.json();return d.ok===true;}catch(e){return false;}
+}
+async function enviarNotificacao(msg){return await enviarTelegram(msg);}
+function iniciarPollingTelegram(){
+  const t=localStorage.getItem("tg_token"),c=localStorage.getItem("tg_chatid");if(!t||!c)return;
+  if(_tgPollingAtivo)return;_tgPollingAtivo=true;
+  const ind=document.getElementById("tg-indicador");if(ind){ind.textContent="🟢 Bot ativo";ind.style.color="#6DBE8C";}
+  _executarPoll();_tgPollingTimer=setInterval(_executarPoll,30000);
+}
+async function _executarPoll(){
+  const t=localStorage.getItem("tg_token"),c=localStorage.getItem("tg_chatid");if(!t||!c){_tgPollingAtivo=false;return;}
+  const offset=parseInt(localStorage.getItem("tg_last_update")||"0")+1;
+  try{const r=await fetch(`https://api.telegram.org/bot${t}/getUpdates?offset=${offset}&limit=10&timeout=0`);if(!r.ok)return;const d=await r.json();if(!d.ok)return;
+  for(const u of d.result){localStorage.setItem("tg_last_update",String(u.update_id));const m=u.message;if(!m?.text)continue;if(String(m.chat.id)!==String(c))continue;await processarComandoTelegram(m.text.trim());}}catch(e){}
+}
+async function processarComandoTelegram(texto){
+  const t=texto.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  const ra=resumoAtivo(),gm=gastosMes();
+  if(t==="/start"||t==="start"){await enviarTelegram(`👋 Olá! Comandos:\n\n💰 *saldo* • 📊 *resumo* • ⏰ *avencer* • 📅 *hoje* • 🎯 *metas*\n\nRegistrar: *gastei 50 almoço*`);return;}
+  if(t==="saldo"){const prev=calcPrevisaoFechamento();await enviarTelegram(`💰 *${mesNome(mesAtivo)}*\n📈 Renda: *${fmt(ra.renda)}*\n📉 Gastos: *${fmt(ra.gasto)}*\n✅ Saldo: *${fmt(ra.saldoMes)}*${prev&&mesAtivo===nowM()?"\n🔮 Previsão: *"+fmt(prev.saldoProjetado)+"*":""}`);return;}
+  if(t==="resumo"){const p={};gm.forEach(g=>{p[g.cat]=(p[g.cat]||0)+g.valor;});const cats=Object.entries(p).sort((a,b)=>b[1]-a[1]).map(([c,v])=>`  • ${c}: ${fmt(v)}`).join("\n");await enviarTelegram(`📊 *Resumo ${mesNome(mesAtivo)}*\n\n${cats||"Sem gastos"}\n\n💸 Total: *${fmt(ra.gasto)}*`);return;}
+  if(t==="metas"){const ms=state.metas||[];if(!ms.length){await enviarTelegram("Nenhuma meta cadastrada.");return;}await enviarTelegram(`🎯 *Metas*\n\n${ms.map(m=>`${m.icone} *${m.desc}*\n${"█".repeat(Math.floor(Math.min((m.aportado||0)/m.valor,1)*10))}${"░".repeat(10-Math.floor(Math.min((m.aportado||0)/m.valor,1)*10))} ${((m.aportado||0)/m.valor*100).toFixed(0)}%`).join("\n\n")}`);return;}
+  if(t==="avencer"){const pd=gm.filter(g=>!isPagoMes(g.id,mesAtivo)).sort((a,b)=>new Date(a.data)-new Date(b.data));if(!pd.length){await enviarTelegram("✅ Nenhuma conta pendente!");return;}await enviarTelegram(`⏰ *A Pagar*\n\n${pd.slice(0,8).map(g=>`• ${g.desc} — *${fmt(g.valor)}*`).join("\n")}\n\n💰 Total: *${fmt(pd.reduce((s,g)=>s+g.valor,0))}*`);return;}
+  if(t==="hoje"){const hs=todayS(),gh=gm.filter(g=>g.data===hs);if(!gh.length){await enviarTelegram("📅 Sem gastos hoje.");return;}await enviarTelegram(`📅 *Hoje*\n\n${gh.map(g=>`• ${g.desc} — *${fmt(g.valor)}*`).join("\n")}\n\n💸 *${fmt(gh.reduce((s,g)=>s+g.valor,0))}*`);return;}
+  const match=t.match(/^(?:gastei|paguei|comprei)?\s*([\d]+[,.]?[\d]*)\s+(?:no\s|na\s|nos\s|nas\s)?(.+)$/);
+  if(match){const valor=parseFloat(match[1].replace(",","."));let desc=texto.replace(/^(gastei|paguei|comprei)\s+/i,"").replace(/[\d]+[,.]?[\d]*\s*/,"").replace(/^(no|na|nos|nas)\s+/i,"").trim()||"Gasto via Telegram";const cm={"almoç|jant|lanch|mercado|supermerc|ifood|restaur|padaria":"Alimentação","uber|taxi|gasolina|combustiv|onibus|metro":"Transporte","aluguel|condomin|luz|agua|internet|tim|claro":"Moradia","farmacia|medico|saude|remedio|plano":"Saúde","cinema|netflix|spotify|academia|lazer":"Lazer","escola|curso|faculdade|livro":"Educação"};let cat="Outros";for(const[k,c]of Object.entries(cm)){if(new RegExp(k,"i").test(desc)){cat=c;break;}}const[a,m]=mesAtivo.split("-").map(Number),hj=new Date(),dg=(a===hj.getFullYear()&&m===hj.getMonth()+1)?todayS():mesAtivo+"-"+String(new Date(a,m,0).getDate()).padStart(2,"0");state.gastos.push({id:mkId(),desc,valor,cat,tipo:"variavel",data:dg,notas:"Via Telegram"});persist();render();await enviarTelegram(`✅ *Registrado!*\n\n📦 ${desc}\n💸 *${fmt(valor)}*\n📁 ${cat}\n\n📊 Total do mês: *${fmt(resumoAtivo().gasto)}*`);return;}
+  await enviarTelegram(`❓ Não entendi "*${texto}*"\n\nEnvie *saldo*, *resumo*, *metas*, *avencer*, *hoje* ou *gastei 50 almoço*`);
+}
+function processarComandoWhatsApp(t){processarComandoTelegram(t);}
+
+// ══════════════════════════════════════════════
+// CONTAS COMPARTILHADAS
+// ══════════════════════════════════════════════
+let grupoAtivo=null,grupoSyncInterval=null;
+function abrirCompartilhar(){document.getElementById("modal-compartilhar").style.display="flex";atualizarStatusCompartilhar();}
+function fecharCompartilhar(){document.getElementById("modal-compartilhar").style.display="none";}
+function compTab(tab){document.getElementById("comp-panel-criar").style.display=tab==="criar"?"block":"none";document.getElementById("comp-panel-entrar").style.display=tab==="entrar"?"block":"none";document.getElementById("comp-tab-criar").className="btn "+(tab==="criar"?"btn-primary":"btn-gray");document.getElementById("comp-tab-entrar").className="btn "+(tab==="entrar"?"btn-primary":"btn-gray");}
+function gerarCodigoGrupo(){const c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";return Array.from({length:6},()=>c[Math.floor(Math.random()*c.length)]).join("");}
+async function criarGrupo(){if(!fbUserId||!fbToken){toast("Faça login primeiro","#F28C8C");return;}const cod=gerarCodigoGrupo();try{await fbSetGrupo(cod,{codigo:cod,owner:fbUserId,ownerEmail:fbUserEmail,members:[{uid:fbUserId,email:fbUserEmail,nome:fbUserName||fbUserEmail,joined:Date.now()}],criadoEm:Date.now(),dados:JSON.stringify(state)});localStorage.setItem("grupo_codigo",cod);grupoAtivo=cod;document.getElementById("comp-codigo-gerado").style.display="block";document.getElementById("comp-codigo-txt").textContent=cod;atualizarStatusCompartilhar();iniciarSyncGrupo();toast("Grupo criado! 👫","#4FBDBA");}catch(e){toast("Erro: "+e.message,"#F28C8C");}}
+async function entrarGrupo(){const cod=(document.getElementById("comp-codigo-input").value||"").trim().toUpperCase();if(cod.length!==6){toast("Código deve ter 6 caracteres","#F28C8C");return;}try{let g=await fbGetGrupo(cod);if(!g){toast("Código inválido","#F28C8C");return;}if(!(g.members||[]).some(m=>m.uid===fbUserId)){g.members=[...(g.members||[]),{uid:fbUserId,email:fbUserEmail,nome:fbUserName||fbUserEmail,joined:Date.now()}];await fbSetGrupo(cod,g);}if(g.dados){try{state=sanitizeState(JSON.parse(g.dados));localStorage.setItem(STORE,JSON.stringify(state));render();}catch(_){}}localStorage.setItem("grupo_codigo",cod);grupoAtivo=cod;atualizarStatusCompartilhar();iniciarSyncGrupo();toast("Entrou no grupo! ✅","#6DBE8C");}catch(e){toast("Erro: "+e.message,"#F28C8C");}}
+async function atualizarStatusCompartilhar(){const st=document.getElementById("comp-status-txt"),mb=document.getElementById("comp-membros"),sw=document.getElementById("comp-sair-wrap");const cod=grupoAtivo||localStorage.getItem("grupo_codigo");if(!cod){if(st)st.innerHTML='<span style="color:#6060a0">Conta individual</span>';if(sw)sw.style.display="none";return;}try{const g=await fbGetGrupo(cod);if(!g){localStorage.removeItem("grupo_codigo");grupoAtivo=null;if(st)st.innerHTML='<span style="color:#F28C8C">Grupo não encontrado</span>';return;}const ms=g.members||[];if(st)st.innerHTML=`<span style="color:#4FBDBA">👫 Grupo: <strong>${cod}</strong> · ${ms.length} membro(s)</span>`;if(mb)mb.innerHTML=`<div style="display:flex;flex-direction:column;gap:6px">${ms.map(m=>`<div style="display:flex;align-items:center;gap:10px;background:#1e1e3a;border-radius:8px;padding:8px 12px"><div style="width:28px;height:28px;border-radius:50%;background:${m.uid===fbUserId?"#4FBDBA":"#E8B84B"};display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff">${(m.nome||m.email).slice(0,1).toUpperCase()}</div><p style="font-size:13px">${m.nome||m.email} ${m.uid===fbUserId?"(você)":""}</p></div>`).join("")}</div>`;if(sw)sw.style.display="block";}catch(e){}}
+async function sairDoGrupo(){if(!confirm("Sair do grupo?"))return;localStorage.removeItem("grupo_codigo");grupoAtivo=null;if(grupoSyncInterval){clearInterval(grupoSyncInterval);grupoSyncInterval=null;}atualizarStatusCompartilhar();toast("Saiu do grupo","#E8B84B");}
+function copiarCodigo(){const c=document.getElementById("comp-codigo-txt")?.textContent;if(c)navigator.clipboard?.writeText(c).then(()=>toast("Código copiado!","#4FBDBA"));}
+function iniciarSyncGrupo(){if(grupoSyncInterval)clearInterval(grupoSyncInterval);grupoSyncInterval=setInterval(async()=>{const cod=grupoAtivo||localStorage.getItem("grupo_codigo");if(!cod||!fbUserId)return;try{const g=await fbGetGrupo(cod);if(!g)return;const cd=g.dados?JSON.parse(g.dados):null;const tg=cd?._savedAt||0;if((state._savedAt||0)>=tg){g.dados=JSON.stringify(state);await fbSetGrupo(cod,g);}else{state=sanitizeState({...cd,gastos:mergeById(state.gastos,cd.gastos),rendas:mergeById(state.rendas,cd.rendas),pagamentos:Object.assign({},cd.pagamentos||{},state.pagamentos||{}),antecipados:Object.assign({},cd.antecipados||{},state.antecipados||{}),_savedAt:Date.now()});localStorage.setItem(STORE,JSON.stringify(state));render();toast("🔄 Dados atualizados","#4FBDBA");}}catch(e){}},15000);}
+async function fbSetGrupo(cod,d){if(!fbToken)fbToken=localStorage.getItem("fb_token");const f={dados:{stringValue:JSON.stringify(d)}};await fetch(FB_DB_URL+"/grupos/"+cod+"?updateMask.fieldPaths=dados",{method:"PATCH",headers:{"Content-Type":"application/json","Authorization":"Bearer "+fbToken},body:JSON.stringify({fields:f})});}
+async function fbGetGrupo(cod){if(!fbToken)fbToken=localStorage.getItem("fb_token");const r=await fetch(FB_DB_URL+"/grupos/"+cod,{headers:{"Authorization":"Bearer "+fbToken}});if(r.status===404)return null;const d=await r.json();return d.fields?.dados?JSON.parse(d.fields.dados.stringValue):null;}
+
+// ══════════════════════════════════════════════
+// NOTIFICAÇÕES PUSH
+// ══════════════════════════════════════════════
+async function ativarNotificacoesPush(){
+  const btn=document.getElementById("btn-push-ativar");
+  if(!("Notification"in window)){toast("Push não suportado","#F28C8C");return;}
+  const p=await Notification.requestPermission();
+  if(p!=="granted"){toast("Permissão negada","#F28C8C");return;}
+  localStorage.setItem("push_ativo","1");
+  if(btn){btn.textContent="✅ Push ativo";btn.style.background="#1a2a1a";btn.style.color="#6DBE8C";}
+  toast("Notificações ativadas! 🔔","#6DBE8C");
+  verificarPushVencimentos();
+}
+function verificarPushVencimentos(){
+  if(localStorage.getItem("push_ativo")!=="1"||Notification.permission!=="granted")return;
+  const h=new Date(),hs=h.getFullYear()+"-"+String(h.getMonth()+1).padStart(2,"0")+"-"+String(h.getDate()).padStart(2,"0");
+  const am=new Date(h);am.setDate(am.getDate()+1);const as=am.getFullYear()+"-"+String(am.getMonth()+1).padStart(2,"0")+"-"+String(am.getDate()).padStart(2,"0");
+  const gm=gastosMes();
+  const vh=gm.filter(g=>g.data===hs&&!isPagoMes(g.id,mesAtivo));
+  const va=gm.filter(g=>g.data===as&&!isPagoMes(g.id,mesAtivo));
+  if(vh.length)new Notification("🔔 Finanças Pessoais",{body:`${vh.length} conta(s) vencem HOJE: ${vh.map(g=>g.desc).join(", ")}`,tag:"venc-hoje"});
+  if(va.length)new Notification("⏰ Finanças Pessoais",{body:`${va.length} conta(s) vencem amanhã: ${va.map(g=>g.desc).join(", ")}`,tag:"venc-amanha"});
+}
+
+// ══════════════════════════════════════════════
+// ONBOARDING
+// ══════════════════════════════════════════════
+const OB_STEPS=[{icone:"💰",titulo:"Bem-vindo!",desc:"Controle suas finanças de forma simples e inteligente. Vamos fazer um tour rápido!"},{icone:"💳",titulo:"Lance seus gastos",desc:"Em Lançamentos, adicione gastos e rendas. Suporta fixo, recorrente e parcelado."},{icone:"🎯",titulo:"Defina suas metas",desc:"No Plano, configure quanto quer poupar. A regra 50-30-20 te guia na distribuição."},{icone:"📊",titulo:"Acompanhe a evolução",desc:"Em Evolução veja o histórico patrimonial e compare categorias mês a mês."},{icone:"🤖",titulo:"IA e Telegram",desc:"A aba IA tem análises personalizadas e chat. Configure o Telegram para notificações!"},{icone:"🚀",titulo:"Pronto!",desc:"Lance sua primeira renda e seus gastos. Boa sorte na jornada financeira! 💪"}];
+let obStep=0;
+function iniciarOnboarding(){if(localStorage.getItem("onboarding_done"))return;obStep=0;document.getElementById("onboarding").style.display="flex";renderOnboardingStep();}
+function renderOnboardingStep(){const s=OB_STEPS[obStep];document.getElementById("ob-icon").textContent=s.icone;document.getElementById("ob-titulo").textContent=s.titulo;document.getElementById("ob-desc").textContent=s.desc;document.getElementById("ob-btn-proximo").textContent=obStep===OB_STEPS.length-1?"Começar! 🚀":"Próximo →";document.getElementById("ob-step-dots").innerHTML=OB_STEPS.map((_,i)=>`<div style="width:${i===obStep?24:8}px;height:8px;border-radius:4px;background:${i===obStep?"#5B8DB8":"#2d2d4e"};transition:width .3s"></div>`).join("");}
+function proximoOnboarding(){obStep++;if(obStep>=OB_STEPS.length){pularOnboarding();return;}renderOnboardingStep();}
+function pularOnboarding(){localStorage.setItem("onboarding_done","1");document.getElementById("onboarding").style.display="none";}
+
+// ══════════════════════════════════════════════
+// RELATÓRIO SEMANAL
+// ══════════════════════════════════════════════
+function toggleRelatorioSemanal(){const a=document.getElementById("rel-semanal-ativo")?.checked;localStorage.setItem("rel_semanal",a?"1":"0");if(a){toast("Relatório semanal ativado! Toda segunda-feira.","#4FBDBA");gerarRelatorioSemanal(true);}else toast("Relatório desativado","#6060a0");}
+async function gerarRelatorioSemanal(teste=false){const ra=resumoAtivo(),gm=gastosMes(),p={};gm.forEach(g=>{p[g.cat]=(p[g.cat]||0)+g.valor;});const cats=Object.entries(p).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([c,v])=>`• ${c}: ${fmt(v)}`).join("\n");const prev=calcPrevisaoFechamento();await enviarNotificacao(`📊 *Relatório Semanal${teste?" (teste)":""}*\n\n💰 Renda: ${fmt(ra.renda)}\n💸 Gastos: ${fmt(ra.gasto)}\n✅ Saldo: ${fmt(ra.saldoMes)}\n\n*Top:*\n${cats||"Sem gastos"}${prev?"\n\n🔮 Previsão: "+fmt(prev.saldoProjetado):""}`);}
+function agendarRelatorioSemanal(){setInterval(()=>{if(localStorage.getItem("rel_semanal")!=="1")return;const a=new Date();if(a.getDay()===1&&a.getHours()===8){const k="rel_"+a.toDateString();if(!localStorage.getItem(k)){localStorage.setItem(k,"1");gerarRelatorioSemanal();}}},3600000);}
+
+// ══════════════════════════════════════════════
+// LEMBRETE INTELIGENTE
+// ══════════════════════════════════════════════
+function verificarLembretesInteligentes(){
+  const al=JSON.parse(localStorage.getItem("config_alertas")||"{}"),hj=new Date(),ma=nowM();
+  const rm=state.rendas.filter(r=>mesStr(r.data)===ma);
+  if(al.renda&&hj.getDate()>=5&&rm.length===0){const k="lembrete_renda_"+ma;if(!localStorage.getItem(k)){localStorage.setItem(k,"1");setTimeout(()=>{const w=document.getElementById("alertas-wrap");if(!w)return;const d=document.createElement("div");d.style.cssText="background:#1a1a2a;border:1px solid #E8B84B44;border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center";d.innerHTML=`<p style="font-size:13px;color:#E8B84B">💡 Você ainda não registrou sua renda de ${mesNome(ma)}. Adicione para manter o controle!</p><button onclick="this.closest('div').remove()" style="background:none;border:none;color:#6060a0;font-size:18px;cursor:pointer;padding:0 4px">×</button>`;w.insertBefore(d,w.firstChild);},2000);}}
+}
+
+// ══════════════════════════════════════════════
+// INIT: todos os recursos extras
+// ══════════════════════════════════════════════
+function initRecursosExtras(){
+  const cod=localStorage.getItem("grupo_codigo");
+  if(cod){grupoAtivo=cod;iniciarSyncGrupo();atualizarStatusCompartilhar();}
+  setTimeout(verificarPushVencimentos,3000);
+  setTimeout(verificarLembretesInteligentes,4000);
+  setTimeout(iniciarPollingTelegram,5000);
+  setInterval(verificarPushVencimentos,3600000);
+  const ps=new URLSearchParams(location.search),wc=ps.get("wa_cmd");
+  if(wc)setTimeout(()=>processarComandoWhatsApp(decodeURIComponent(wc)),2000);
+  setTimeout(()=>{if(fbUserId)iniciarOnboarding();},1500);
+}
+
 // INIT
 // ══════════════════════════════════════════════
 load();
 inicializarGestos();
 initRecursosExtras();
-// Aplicar cor de tema salva
-const corSalva = localStorage.getItem("cor_tema");
-if (corSalva) setTimeout(()=>aplicarCorTema(corSalva), 500);
-// Agendar relatório semanal
+const corSalva=localStorage.getItem("cor_tema");
+if(corSalva)setTimeout(()=>aplicarCorTema(corSalva),500);
 agendarRelatorioSemanal();
 document.getElementById("g-data").value = todayS();
 document.getElementById("r-data").value = todayS();
@@ -7018,111 +6396,29 @@ if (fbToken && fbUserId) {
 <!-- ═══ EXTRAS ═══ -->
 
 <!-- ═══ IA CONSELHEIRO ═══ -->
-
-<!-- ═══ CALENDÁRIO / MAPA DE CALOR ═══ -->
-<div id="sec-calendario" class="section">
-
-  <!-- Cotações ao vivo -->
-  <div class="card" style="margin-bottom:14px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <div>
-        <h2 style="font-size:14px">📡 Cotações ao Vivo</h2>
-        <p class="txt-muted" style="font-size:12px">Dólar, Euro, IPCA, Selic, CDI</p>
-      </div>
-      <button onclick="atualizarCotacoes()" id="btn-cotacoes" class="btn btn-gray" style="font-size:11px;padding:5px 10px">🔄 Atualizar</button>
-    </div>
-    <div id="cotacoes-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
-      <div class="cotacao-card" style="background:#1e1e3a;border-radius:10px;padding:10px;text-align:center">
-        <p style="font-size:11px;color:#6060a0">USD</p>
-        <p id="cot-usd" style="font-size:16px;font-weight:700;color:#E8B84B">--</p>
-      </div>
-      <div class="cotacao-card" style="background:#1e1e3a;border-radius:10px;padding:10px;text-align:center">
-        <p style="font-size:11px;color:#6060a0">EUR</p>
-        <p id="cot-eur" style="font-size:16px;font-weight:700;color:#5B8DB8">--</p>
-      </div>
-      <div class="cotacao-card" style="background:#1e1e3a;border-radius:10px;padding:10px;text-align:center">
-        <p style="font-size:11px;color:#6060a0">SELIC</p>
-        <p id="cot-selic" style="font-size:16px;font-weight:700;color:#6DBE8C">--</p>
-      </div>
-      <div class="cotacao-card" style="background:#1e1e3a;border-radius:10px;padding:10px;text-align:center">
-        <p style="font-size:11px;color:#6060a0">CDI</p>
-        <p id="cot-cdi" style="font-size:16px;font-weight:700;color:#4FBDBA">--</p>
-      </div>
-      <div class="cotacao-card" style="background:#1e1e3a;border-radius:10px;padding:10px;text-align:center">
-        <p style="font-size:11px;color:#6060a0">IPCA/ano</p>
-        <p id="cot-ipca" style="font-size:16px;font-weight:700;color:#E07B54">--</p>
-      </div>
-      <div class="cotacao-card" style="background:#1e1e3a;border-radius:10px;padding:10px;text-align:center">
-        <p style="font-size:11px;color:#6060a0">BTC</p>
-        <p id="cot-btc" style="font-size:14px;font-weight:700;color:#F28C8C">--</p>
-      </div>
-    </div>
-    <p id="cotacoes-hora" style="font-size:10px;color:#4060a0;margin-top:8px;text-align:right"></p>
-  </div>
-
-  <!-- Mapa de calor -->
-  <div class="card" style="margin-bottom:14px">
-    <h2 style="font-size:14px;margin-bottom:4px">🗓️ Mapa de Gastos</h2>
-    <p class="txt-muted" style="font-size:12px;margin-bottom:14px">Dias com mais gastos ficam mais escuros</p>
-    <div id="mapa-calor" style="display:flex;flex-direction:column;gap:4px"></div>
-    <div style="display:flex;gap:6px;align-items:center;margin-top:10px;justify-content:flex-end">
-      <span style="font-size:11px;color:#6060a0">Menos</span>
-      <div style="display:flex;gap:3px">
-        <div style="width:12px;height:12px;border-radius:2px;background:#1e1e3a"></div>
-        <div style="width:12px;height:12px;border-radius:2px;background:#1a3a2a"></div>
-        <div style="width:12px;height:12px;border-radius:2px;background:#2a5a3a"></div>
-        <div style="width:12px;height:12px;border-radius:2px;background:#3a8a4a"></div>
-        <div style="width:12px;height:12px;border-radius:2px;background:#6DBE8C"></div>
-      </div>
-      <span style="font-size:11px;color:#6060a0">Mais</span>
-    </div>
-  </div>
-
-  <!-- Simulador de Financiamento -->
-  <div class="card" style="margin-bottom:14px">
-    <h2 style="font-size:14px;margin-bottom:4px">🏠 Simulador de Financiamento</h2>
-    <p class="txt-muted" style="font-size:12px;margin-bottom:14px">Calcule parcelas de carro, imóvel ou empréstimo</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-      <div><p class="txt-muted" style="margin-bottom:4px">Valor financiado (R$)</p><input id="fin-valor" type="number" placeholder="Ex: 50000" oninput="calcFinanciamento()"/></div>
-      <div><p class="txt-muted" style="margin-bottom:4px">Taxa mensal (%)</p><input id="fin-taxa" type="number" placeholder="Ex: 1.5" step="0.01" value="1.5" oninput="calcFinanciamento()"/></div>
-      <div><p class="txt-muted" style="margin-bottom:4px">Prazo (meses)</p><input id="fin-prazo" type="number" placeholder="Ex: 60" value="60" oninput="calcFinanciamento()"/></div>
-      <div><p class="txt-muted" style="margin-bottom:4px">Entrada (R$)</p><input id="fin-entrada" type="number" placeholder="Ex: 10000" value="0" oninput="calcFinanciamento()"/></div>
-    </div>
-    <div id="fin-resultado"></div>
-  </div>
-
-  <!-- Reserva de Emergência -->
-  <div class="card">
-    <h2 style="font-size:14px;margin-bottom:4px">🛡️ Reserva de Emergência</h2>
-    <p class="txt-muted" style="font-size:12px;margin-bottom:14px">Meta: 6 meses de despesas fixas guardadas</p>
-    <div id="reserva-content"></div>
-  </div>
-
-</div>
-
 <div id="sec-ia" class="section">
 
   <!-- Config API Key -->
   <div class="card" style="margin-bottom:14px" id="ia-config-card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <h2 style="font-size:14px">🤖 Conselheiro Financeiro IA</h2>
-      <div style="display:flex;gap:8px;align-items:center">
+      <div>
+        <h2 style="font-size:14px">🤖 Conselheiro Financeiro IA</h2>
         <span id="tg-indicador" style="font-size:11px;color:#6060a0">⚫ Bot inativo</span>
-        <button class="btn btn-gray" onclick="toggleIaConfig()" style="font-size:11px;padding:4px 10px">⚙️ Config</button>
       </div>
+      <button class="btn btn-gray" onclick="toggleIaConfig()" style="font-size:11px;padding:4px 10px">⚙️ Config</button>
     </div>
     <div id="ia-config-panel" style="display:none;margin-bottom:12px;padding:12px;background:#0d0d1a;border-radius:10px;border:1px solid #1e1e3a">
-      <p class="txt-muted" style="font-size:12px;margin-bottom:8px">Cole sua chave da API Claude (Anthropic) para ativar respostas reais. <a href="https://console.anthropic.com" target="_blank" style="color:#5B8DB8">Obter chave →</a></p>
-      <div style="display:flex;gap:8px">
+      <p class="txt-muted" style="font-size:12px;margin-bottom:8px">Cole sua chave da API Claude para ativar respostas reais. <a href="https://console.anthropic.com" target="_blank" style="color:#5B8DB8">Obter →</a></p>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
         <input id="ia-api-key" type="password" placeholder="sk-ant-..." style="flex:1;font-size:12px"/>
         <button class="btn btn-primary" onclick="salvarApiKey()" style="font-size:12px;padding:6px 12px">Salvar</button>
       </div>
-      <p id="ia-api-status" style="font-size:11px;margin-top:6px;color:#6060a0"></p>
-    </div>
-    <div style="display:flex;gap:8px;margin-top:12px">
-      <button onclick="abrirWhatsApp()" style="flex:1;padding:9px;background:linear-gradient(135deg,#2496ED,#1a7bbf);border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer">✈️ Bot</button>
-      <button id="btn-push-ativar" onclick="ativarNotificacoesPush()" style="flex:1;padding:9px;background:#1e1e3a;border:1px solid #E8B84B44;border-radius:10px;color:#E8B84B;font-size:13px;cursor:pointer">🔔 Ativar Push</button>
-      <button onclick="abrirCompartilhar()" style="flex:1;padding:9px;background:#1e1e3a;border:1px solid #4FBDBA44;border-radius:10px;color:#4FBDBA;font-size:13px;cursor:pointer">👫 Compartilhar</button>
+      <p id="ia-api-status" style="font-size:11px;margin-bottom:10px;color:#6060a0"></p>
+      <div style="display:flex;gap:8px">
+        <button onclick="abrirWhatsApp()" style="flex:1;padding:9px;background:linear-gradient(135deg,#2496ED,#1a7bbf);border:none;border-radius:10px;color:#fff;font-size:12px;font-weight:700;cursor:pointer">✈️ Telegram Bot</button>
+        <button id="btn-push-ativar" onclick="ativarNotificacoesPush()" style="flex:1;padding:9px;background:#1e1e3a;border:1px solid #E8B84B44;border-radius:10px;color:#E8B84B;font-size:12px;cursor:pointer">🔔 Push</button>
+        <button onclick="abrirCompartilhar()" style="flex:1;padding:9px;background:#1e1e3a;border:1px solid #4FBDBA44;border-radius:10px;color:#4FBDBA;font-size:12px;cursor:pointer">👫 Grupo</button>
+      </div>
     </div>
   </div>
 
@@ -7168,6 +6464,73 @@ if (fbToken && fbUserId) {
   <div id="wrapped-content"></div>
 </div>
 
+<!-- ═══ CALENDÁRIO / COTAÇÕES / SIMULADORES ═══ -->
+<div id="sec-calendario" class="section">
+  <div class="card" style="margin-bottom:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div><h2 style="font-size:14px">📡 Cotações ao Vivo</h2><p class="txt-muted" style="font-size:12px">USD, EUR, Selic, CDI, IPCA, BTC</p></div>
+      <button onclick="atualizarCotacoes()" id="btn-cotacoes" class="btn btn-gray" style="font-size:11px;padding:5px 10px">🔄 Atualizar</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+      <div style="background:#1e1e3a;border-radius:10px;padding:10px;text-align:center"><p style="font-size:11px;color:#6060a0">USD</p><p id="cot-usd" style="font-size:16px;font-weight:700;color:#E8B84B">--</p></div>
+      <div style="background:#1e1e3a;border-radius:10px;padding:10px;text-align:center"><p style="font-size:11px;color:#6060a0">EUR</p><p id="cot-eur" style="font-size:16px;font-weight:700;color:#5B8DB8">--</p></div>
+      <div style="background:#1e1e3a;border-radius:10px;padding:10px;text-align:center"><p style="font-size:11px;color:#6060a0">SELIC</p><p id="cot-selic" style="font-size:16px;font-weight:700;color:#6DBE8C">--</p></div>
+      <div style="background:#1e1e3a;border-radius:10px;padding:10px;text-align:center"><p style="font-size:11px;color:#6060a0">CDI</p><p id="cot-cdi" style="font-size:16px;font-weight:700;color:#4FBDBA">--</p></div>
+      <div style="background:#1e1e3a;border-radius:10px;padding:10px;text-align:center"><p style="font-size:11px;color:#6060a0">IPCA</p><p id="cot-ipca" style="font-size:16px;font-weight:700;color:#E07B54">--</p></div>
+      <div style="background:#1e1e3a;border-radius:10px;padding:10px;text-align:center"><p style="font-size:11px;color:#6060a0">BTC</p><p id="cot-btc" style="font-size:14px;font-weight:700;color:#F28C8C">--</p></div>
+    </div>
+    <p id="cotacoes-hora" style="font-size:10px;color:#4060a0;margin-top:8px;text-align:right"></p>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <h2 style="font-size:14px;margin-bottom:4px">🗓️ Mapa de Gastos</h2>
+    <p class="txt-muted" style="font-size:12px;margin-bottom:14px">Dias com mais gastos ficam mais escuros</p>
+    <div id="mapa-calor"></div>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <h2 style="font-size:14px;margin-bottom:4px">🏠 Simulador de Financiamento</h2>
+    <p class="txt-muted" style="font-size:12px;margin-bottom:14px">Calcule parcelas com Sistema Price</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div><p class="txt-muted" style="margin-bottom:4px">Valor financiado (R$)</p><input id="fin-valor" type="number" placeholder="Ex: 50000" oninput="calcFinanciamento()"/></div>
+      <div><p class="txt-muted" style="margin-bottom:4px">Taxa mensal (%)</p><input id="fin-taxa" type="number" placeholder="Ex: 1.5" step="0.01" value="1.5" oninput="calcFinanciamento()"/></div>
+      <div><p class="txt-muted" style="margin-bottom:4px">Prazo (meses)</p><input id="fin-prazo" type="number" placeholder="Ex: 60" value="60" oninput="calcFinanciamento()"/></div>
+      <div><p class="txt-muted" style="margin-bottom:4px">Entrada (R$)</p><input id="fin-entrada" type="number" placeholder="Ex: 0" value="0" oninput="calcFinanciamento()"/></div>
+    </div>
+    <div id="fin-resultado"></div>
+  </div>
+  <!-- TREEMAP DE GASTOS -->
+  <div class="card" style="margin-bottom:14px">
+    <h2 style="font-size:14px;margin-bottom:4px">🗃️ Treemap de Gastos</h2>
+    <p class="txt-muted" style="font-size:12px;margin-bottom:12px">Blocos proporcionais por categoria</p>
+    <div id="treemap-container" style="width:100%;min-height:180px;border-radius:10px;overflow:hidden;display:flex;flex-wrap:wrap;gap:2px"></div>
+  </div>
+
+  <!-- CALCULADORA FGTS -->
+  <div class="card" style="margin-bottom:14px">
+    <h2 style="font-size:14px;margin-bottom:4px">💼 Calculadora FGTS</h2>
+    <p class="txt-muted" style="font-size:12px;margin-bottom:14px">Simule seu saldo e rescisão trabalhista</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div><p class="txt-muted" style="margin-bottom:4px">Salário bruto (R$)</p><input id="fgts-salario" type="number" placeholder="Ex: 3000" oninput="calcFGTS()"/></div>
+      <div><p class="txt-muted" style="margin-bottom:4px">Meses trabalhados</p><input id="fgts-meses" type="number" placeholder="Ex: 24" oninput="calcFGTS()"/></div>
+      <div><p class="txt-muted" style="margin-bottom:4px">Tipo de saída</p>
+        <select id="fgts-tipo" onchange="calcFGTS()">
+          <option value="sem_justa">Sem justa causa (demissão)</option>
+          <option value="pedido">Pedido de demissão</option>
+          <option value="acordo">Acordo mútuo</option>
+          <option value="justa">Justa causa</option>
+        </select>
+      </div>
+      <div><p class="txt-muted" style="margin-bottom:4px">Saldo atual FGTS (R$)</p><input id="fgts-saldo" type="number" placeholder="Ex: 5000" value="0" oninput="calcFGTS()"/></div>
+    </div>
+    <div id="fgts-resultado"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:14px;margin-bottom:4px">🛡️ Reserva de Emergência</h2>
+    <p class="txt-muted" style="font-size:12px;margin-bottom:14px">Meta: 6 meses de despesas guardadas</p>
+    <div id="reserva-content"></div>
+  </div>
+</div>
+
 <div id="sec-extras" class="section">
 
   <!-- BENCHMARK NACIONAL -->
@@ -7182,6 +6545,18 @@ if (fbToken && fbUserId) {
     <h2 style="font-size:14px;margin-bottom:4px">🏆 Desafios Financeiros</h2>
     <p class="txt-muted" style="font-size:12px;margin-bottom:12px">Complete desafios e melhore seus hábitos</p>
     <div id="desafios-content"></div>
+  </div>
+
+  <!-- DETECÇÃO DE GASTOS REPETIDOS -->
+  <div class="card" style="margin-bottom:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div>
+        <h2 style="font-size:14px">🔍 Gastos Repetidos</h2>
+        <p class="txt-muted" style="font-size:12px">Assinaturas e padrões detectados</p>
+      </div>
+      <button onclick="renderDeteccaoRepetidos()" class="btn btn-gray" style="font-size:11px;padding:5px 10px">🔄 Analisar</button>
+    </div>
+    <div id="gastos-repetidos-content"><p style="color:#6060a0;text-align:center;padding:16px;font-size:13px">Clique em Analisar para detectar padrões.</p></div>
   </div>
 
   <!-- METAS DE ECONOMIA -->
@@ -7244,198 +6619,6 @@ if (fbToken && fbUserId) {
   </div>
 </div>
 
-
-<!-- ═══ MODAL CONTAS COMPARTILHADAS ═══ -->
-<div id="modal-compartilhar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:3000;align-items:center;justify-content:center">
-  <div style="background:#13132b;border:1px solid #4FBDBA44;border-radius:20px;padding:24px;max-width:360px;width:94%;max-height:90vh;overflow-y:auto">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
-      <h3 style="font-size:16px;font-weight:700">👫 Conta Compartilhada</h3>
-      <button onclick="fecharCompartilhar()" class="btn-fechar-modal" style="border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;line-height:1;border:1px solid">×</button>
-    </div>
-    <!-- Status atual -->
-    <div id="comp-status-card" style="background:#1e1e3a;border-radius:12px;padding:14px;margin-bottom:16px;text-align:center">
-      <p id="comp-status-txt" style="color:#a0a0c0;font-size:13px">Carregando...</p>
-    </div>
-    <!-- Tabs -->
-    <div style="display:flex;gap:8px;margin-bottom:16px">
-      <button id="comp-tab-criar" onclick="compTab('criar')" class="btn btn-primary" style="flex:1;font-size:12px">✨ Criar grupo</button>
-      <button id="comp-tab-entrar" onclick="compTab('entrar')" class="btn btn-gray" style="flex:1;font-size:12px">🔗 Entrar com código</button>
-    </div>
-    <!-- Criar grupo -->
-    <div id="comp-panel-criar">
-      <p style="font-size:13px;color:#a0a0c0;margin-bottom:12px">Crie um grupo e compartilhe o código com seu parceiro(a).</p>
-      <button class="btn btn-primary" onclick="criarGrupo()" style="width:100%;margin-bottom:10px">🚀 Criar novo grupo</button>
-      <div id="comp-codigo-gerado" style="display:none">
-        <p style="font-size:12px;color:#a0a0c0;margin-bottom:6px">Código do grupo (compartilhe):</p>
-        <div style="background:#0d0d1a;border:2px dashed #4FBDBA;border-radius:10px;padding:14px;text-align:center">
-          <p id="comp-codigo-txt" style="font-size:28px;font-weight:800;letter-spacing:6px;color:#4FBDBA"></p>
-          <button onclick="copiarCodigo()" class="btn btn-gray" style="font-size:11px;margin-top:8px;padding:4px 12px">📋 Copiar</button>
-        </div>
-      </div>
-    </div>
-    <!-- Entrar com código -->
-    <div id="comp-panel-entrar" style="display:none">
-      <p style="font-size:13px;color:#a0a0c0;margin-bottom:12px">Digite o código recebido do seu parceiro(a).</p>
-      <input id="comp-codigo-input" placeholder="Ex: ABC123" maxlength="6" style="text-align:center;font-size:22px;letter-spacing:6px;text-transform:uppercase;font-weight:700;margin-bottom:10px"/>
-      <button class="btn btn-primary" onclick="entrarGrupo()" style="width:100%">🔗 Entrar no grupo</button>
-    </div>
-    <!-- Membros -->
-    <div id="comp-membros" style="margin-top:16px"></div>
-    <!-- Sair do grupo -->
-    <div id="comp-sair-wrap" style="display:none;margin-top:12px">
-      <button onclick="sairDoGrupo()" class="btn btn-gray" style="width:100%;color:#F28C8C;border-color:#F28C8C44;font-size:12px">🚪 Sair do grupo</button>
-    </div>
-  </div>
-</div>
-
-<!-- ═══ MODAL WHATSAPP BOT ═══ -->
-<div id="modal-whatsapp" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:3000;align-items:center;justify-content:center">
-  <div style="background:#13132b;border:1px solid #2496ED44;border-radius:20px;padding:24px;max-width:380px;width:94%;max-height:92vh;overflow-y:auto">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <h3 style="font-size:16px;font-weight:700">✈️ Bot de Notificações</h3>
-      <button onclick="document.getElementById('modal-whatsapp').style.display='none'" class="btn-fechar-modal" style="border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;line-height:1;border:1px solid">×</button>
-    </div>
-
-    <!-- Tabs Telegram / WhatsApp -->
-    <div style="display:flex;gap:8px;margin-bottom:16px">
-      <button id="bot-tab-tg"  onclick="botTab('telegram')"  style="flex:1;padding:8px;border-radius:10px;border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700;background:linear-gradient(135deg,#2496ED,#1a7bbf);color:#fff">✈️ Telegram</button>
-      <button id="bot-tab-wa"  onclick="botTab('whatsapp')"  style="flex:1;padding:8px;border-radius:10px;border:1px solid #2d2d4e;cursor:pointer;font-family:inherit;font-size:13px;background:transparent;color:#a0a0c0">🟢 WhatsApp</button>
-    </div>
-
-    <!-- PAINEL TELEGRAM -->
-    <div id="bot-panel-telegram">
-      <div style="background:#0d1520;border:1px solid #2496ED33;border-radius:12px;padding:14px;margin-bottom:14px">
-        <p style="font-size:13px;font-weight:700;color:#2496ED;margin-bottom:10px">✈️ Configuração Telegram (grátis)</p>
-        <ol style="font-size:12px;color:#a0a0c0;padding-left:16px;line-height:2.2">
-          <li>Abra o Telegram e procure <a href="https://t.me/BotFather" target="_blank" style="color:#2496ED">@BotFather</a></li>
-          <li>Envie <strong style="color:#e8e8f0">/newbot</strong> e siga as instruções</li>
-          <li>Copie o <strong style="color:#e8e8f0">Token</strong> recebido e cole abaixo</li>
-          <li>Procure <a href="https://t.me/userinfobot" target="_blank" style="color:#2496ED">@userinfobot</a> e envie qualquer mensagem para obter seu <strong style="color:#e8e8f0">Chat ID</strong></li>
-        </ol>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
-        <div><p class="txt-muted" style="margin-bottom:4px">Bot Token</p><input id="tg-token" placeholder="Ex: 7123456789:AAH..." style="font-size:12px"/></div>
-        <div><p class="txt-muted" style="margin-bottom:4px">Seu Chat ID</p><input id="tg-chatid" placeholder="Ex: 123456789" type="number"/></div>
-      </div>
-      <button onclick="salvarTelegram()" style="width:100%;padding:11px;background:linear-gradient(135deg,#2496ED,#1a7bbf);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px">💾 Salvar e testar</button>
-      <div id="tg-status" style="font-size:12px;text-align:center;color:#6060a0;min-height:18px"></div>
-    </div>
-
-    <!-- PAINEL WHATSAPP -->
-    <div id="bot-panel-whatsapp" style="display:none">
-      <div style="background:#0d1a0d;border:1px solid #25D36633;border-radius:12px;padding:14px;margin-bottom:14px">
-        <p style="font-size:13px;font-weight:700;color:#25D366;margin-bottom:8px">🟢 WhatsApp via CallMeBot</p>
-        <p style="font-size:12px;color:#F28C8C;margin-bottom:8px">⚠️ O número do CallMeBot pode estar instável. Recomendamos usar o Telegram.</p>
-        <ol style="font-size:12px;color:#a0a0c0;padding-left:16px;line-height:2">
-          <li>Salve o número <strong style="color:#25D366">+34 644 59 71 26</strong> como contato</li>
-          <li>Envie via WhatsApp: <strong style="color:#e8e8f0">I allow callmebot to send me messages</strong></li>
-          <li>Aguarde a API Key chegar por mensagem</li>
-        </ol>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
-        <div><p class="txt-muted" style="margin-bottom:4px">Número (com DDI, sem espaços)</p><input id="wa-numero" placeholder="Ex: 5511999999999" type="tel"/></div>
-        <div><p class="txt-muted" style="margin-bottom:4px">API Key CallMeBot</p><input id="wa-apikey" placeholder="Ex: 1234567"/></div>
-      </div>
-      <button onclick="salvarWhatsApp()" style="width:100%;padding:11px;background:linear-gradient(135deg,#25D366,#128C7E);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">💾 Salvar e testar</button>
-    </div>
-
-    <!-- Comandos (comum para os dois) -->
-    <div style="background:#1e1e3a;border-radius:12px;padding:12px;margin-top:14px">
-      <p style="font-size:12px;font-weight:700;margin-bottom:8px">📋 Comandos disponíveis</p>
-      <div style="display:flex;flex-direction:column;gap:5px;font-size:12px;color:#a0a0c0">
-        <p><strong style="color:#4FBDBA">gastei 50 almoço</strong> → registra R$50 em Alimentação</p>
-        <p><strong style="color:#4FBDBA">uber 35</strong> → registra R$35 em Transporte</p>
-        <p><strong style="color:#4FBDBA">saldo</strong> → resumo do mês atual</p>
-        <p><strong style="color:#4FBDBA">resumo</strong> → relatório por categoria</p>
-        <p><strong style="color:#4FBDBA">metas</strong> → status das suas metas</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-<!-- ═══ MODAL CONFIG ═══ -->
-<div id="modal-config" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:3000;align-items:center;justify-content:center">
-  <div style="background:#13132b;border:1px solid #2d2d4e;border-radius:20px;padding:24px;max-width:380px;width:94%;max-height:90vh;overflow-y:auto">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
-      <h3 style="font-size:16px;font-weight:700">⚙️ Configurações</h3>
-      <button onclick="fecharConfig()" class="btn-fechar-modal" style="border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;line-height:1;border:1px solid">×</button>
-    </div>
-
-    <!-- Tema -->
-    <div style="margin-bottom:20px">
-      <p style="font-size:13px;font-weight:700;margin-bottom:10px">🎨 Aparência</p>
-      <div style="display:flex;gap:8px;margin-bottom:12px">
-        <button onclick="toggleTema()" id="config-tema-btn" class="btn btn-gray" style="flex:1;font-size:13px">🌙 Alternar tema</button>
-      </div>
-      <p style="font-size:12px;color:#a0a0c0;margin-bottom:8px">Cor de destaque:</p>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button onclick="setCorTema('#5B8DB8')" class="btn-cor-tema" style="width:32px;height:32px;border-radius:50%;background:#5B8DB8;border:3px solid transparent;cursor:pointer" data-cor="#5B8DB8"></button>
-        <button onclick="setCorTema('#6DBE8C')" class="btn-cor-tema" style="width:32px;height:32px;border-radius:50%;background:#6DBE8C;border:3px solid transparent;cursor:pointer" data-cor="#6DBE8C"></button>
-        <button onclick="setCorTema('#E8B84B')" class="btn-cor-tema" style="width:32px;height:32px;border-radius:50%;background:#E8B84B;border:3px solid transparent;cursor:pointer" data-cor="#E8B84B"></button>
-        <button onclick="setCorTema('#E07B54')" class="btn-cor-tema" style="width:32px;height:32px;border-radius:50%;background:#E07B54;border:3px solid transparent;cursor:pointer" data-cor="#E07B54"></button>
-        <button onclick="setCorTema('#A87BC9')" class="btn-cor-tema" style="width:32px;height:32px;border-radius:50%;background:#A87BC9;border:3px solid transparent;cursor:pointer" data-cor="#A87BC9"></button>
-        <button onclick="setCorTema('#4FBDBA')" class="btn-cor-tema" style="width:32px;height:32px;border-radius:50%;background:#4FBDBA;border:3px solid transparent;cursor:pointer" data-cor="#4FBDBA"></button>
-        <button onclick="setCorTema('#F28C8C')" class="btn-cor-tema" style="width:32px;height:32px;border-radius:50%;background:#F28C8C;border:3px solid transparent;cursor:pointer" data-cor="#F28C8C"></button>
-        <input type="color" id="cor-custom" value="#5B8DB8" onchange="setCorTema(this.value)" style="width:32px;height:32px;border-radius:50%;border:3px solid #2d2d4e;cursor:pointer;padding:0" title="Cor personalizada">
-      </div>
-    </div>
-
-    <!-- Relatório semanal -->
-    <div style="margin-bottom:20px;padding:14px;background:#1e1e3a;border-radius:12px">
-      <p style="font-size:13px;font-weight:700;margin-bottom:4px">📊 Relatório Semanal</p>
-      <p style="font-size:12px;color:#a0a0c0;margin-bottom:10px">Receba todo domingo um resumo da semana no Telegram</p>
-      <div style="display:flex;gap:10px;align-items:center">
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
-          <input type="checkbox" id="rel-semanal-ativo" onchange="toggleRelatorioSemanal()" style="width:18px;height:18px;cursor:pointer">
-          Ativar relatório semanal
-        </label>
-      </div>
-    </div>
-
-    <!-- Notificações -->
-    <div style="margin-bottom:20px;padding:14px;background:#1e1e3a;border-radius:12px">
-      <p style="font-size:13px;font-weight:700;margin-bottom:4px">🔔 Alertas Inteligentes</p>
-      <p style="font-size:12px;color:#a0a0c0;margin-bottom:10px">Lembretes automáticos para você não esquecer</p>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
-          <input type="checkbox" id="alerta-renda" onchange="salvarAlertas()" style="width:16px;height:16px">
-          Lembrar de registrar renda (todo dia 5)
-        </label>
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
-          <input type="checkbox" id="alerta-venc" onchange="salvarAlertas()" style="width:16px;height:16px" checked>
-          Alertar vencimentos próximos
-        </label>
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
-          <input type="checkbox" id="alerta-meta" onchange="salvarAlertas()" style="width:16px;height:16px">
-          Lembrar de verificar metas
-        </label>
-      </div>
-    </div>
-
-    <!-- Sobre -->
-    <div style="text-align:center;padding-top:8px;border-top:1px solid #1e1e3a">
-      <p style="font-size:11px;color:#4060a0">💰 Finanças Pessoais · versão 3.0</p>
-      <p style="font-size:11px;color:#4060a0">by fransoares8849</p>
-    </div>
-  </div>
-</div>
-
-
-<!-- ═══ ONBOARDING ═══ -->
-<div id="onboarding" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9000;align-items:center;justify-content:center">
-  <div style="max-width:360px;width:94%;text-align:center;padding:32px 24px">
-    <div id="ob-step-dots" style="display:flex;gap:8px;justify-content:center;margin-bottom:24px"></div>
-    <div id="ob-icon" style="font-size:56px;margin-bottom:16px"></div>
-    <h2 id="ob-titulo" style="font-size:22px;font-weight:800;margin-bottom:10px;color:#fff"></h2>
-    <p id="ob-desc" style="font-size:14px;color:#a0a0c0;line-height:1.7;margin-bottom:28px"></p>
-    <div style="display:flex;gap:10px;justify-content:center">
-      <button id="ob-btn-pular" onclick="pularOnboarding()" class="btn btn-gray" style="padding:10px 20px">Pular</button>
-      <button id="ob-btn-proximo" onclick="proximoOnboarding()" class="btn btn-primary" style="padding:10px 24px;font-size:15px">Próximo →</button>
-    </div>
-  </div>
-</div>
-
 <!-- Modal Importar Extrato -->
 <div id="modal-importar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:2000;align-items:flex-end;justify-content:center">
   <div style="background:#13132b;border-radius:20px 20px 0 0;border-top:1px solid #2d2d4e;padding:20px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto">
@@ -7490,6 +6673,184 @@ if (fbToken && fbUserId) {
     <div style="display:flex;gap:10px;margin-top:16px">
       <button class="btn btn-gray" onclick="fecharModalCartao()" style="flex:1">Cancelar</button>
       <button class="btn btn-primary" onclick="salvarCartao()" style="flex:1">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL CONFIG ═══ -->
+<div id="modal-config" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:3000;align-items:center;justify-content:center">
+  <div style="background:#13132b;border:1px solid #2d2d4e;border-radius:20px;padding:24px;max-width:380px;width:94%;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <h3 style="font-size:16px;font-weight:700">⚙️ Configurações</h3>
+      <button onclick="fecharConfig()" class="btn-fechar-modal" style="border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;line-height:1;border:1px solid">×</button>
+    </div>
+    <div style="margin-bottom:20px">
+      <p style="font-size:13px;font-weight:700;margin-bottom:10px">🎨 Aparência</p>
+      <button onclick="toggleTema()" class="btn btn-gray" style="width:100%;font-size:13px;margin-bottom:12px">🌙 Alternar tema claro/escuro</button>
+      <p style="font-size:12px;color:#a0a0c0;margin-bottom:8px">Cor de destaque:</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="setCorTema('#5B8DB8')" class="btn-cor-tema" data-cor="#5B8DB8" style="width:32px;height:32px;border-radius:50%;background:#5B8DB8;border:3px solid transparent;cursor:pointer"></button>
+        <button onclick="setCorTema('#6DBE8C')" class="btn-cor-tema" data-cor="#6DBE8C" style="width:32px;height:32px;border-radius:50%;background:#6DBE8C;border:3px solid transparent;cursor:pointer"></button>
+        <button onclick="setCorTema('#E8B84B')" class="btn-cor-tema" data-cor="#E8B84B" style="width:32px;height:32px;border-radius:50%;background:#E8B84B;border:3px solid transparent;cursor:pointer"></button>
+        <button onclick="setCorTema('#E07B54')" class="btn-cor-tema" data-cor="#E07B54" style="width:32px;height:32px;border-radius:50%;background:#E07B54;border:3px solid transparent;cursor:pointer"></button>
+        <button onclick="setCorTema('#A87BC9')" class="btn-cor-tema" data-cor="#A87BC9" style="width:32px;height:32px;border-radius:50%;background:#A87BC9;border:3px solid transparent;cursor:pointer"></button>
+        <button onclick="setCorTema('#4FBDBA')" class="btn-cor-tema" data-cor="#4FBDBA" style="width:32px;height:32px;border-radius:50%;background:#4FBDBA;border:3px solid transparent;cursor:pointer"></button>
+        <button onclick="setCorTema('#F28C8C')" class="btn-cor-tema" data-cor="#F28C8C" style="width:32px;height:32px;border-radius:50%;background:#F28C8C;border:3px solid transparent;cursor:pointer"></button>
+        <input type="color" id="cor-custom" value="#5B8DB8" onchange="setCorTema(this.value)" style="width:32px;height:32px;border-radius:50%;border:3px solid #2d2d4e;cursor:pointer;padding:0">
+      </div>
+    </div>
+    <div style="margin-bottom:20px;padding:14px;background:#1e1e3a;border-radius:12px">
+      <p style="font-size:13px;font-weight:700;margin-bottom:4px">📊 Relatório Semanal Telegram</p>
+      <p style="font-size:12px;color:#a0a0c0;margin-bottom:10px">Receba todo domingo um resumo no Telegram</p>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+        <input type="checkbox" id="rel-semanal-ativo" onchange="toggleRelatorioSemanal()" style="width:18px;height:18px">
+        Ativar relatório semanal
+      </label>
+    </div>
+    <div style="text-align:center;padding-top:8px;border-top:1px solid #1e1e3a">
+      <p style="font-size:11px;color:#4060a0">💰 Finanças Pessoais · v3.0</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL TELEGRAM BOT ═══ -->
+<div id="modal-whatsapp" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:3000;align-items:center;justify-content:center">
+  <div style="background:#13132b;border:1px solid #2496ED44;border-radius:20px;padding:24px;max-width:380px;width:94%;max-height:92vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h3 style="font-size:16px;font-weight:700">✈️ Bot de Notificações</h3>
+      <button onclick="document.getElementById('modal-whatsapp').style.display='none'" class="btn-fechar-modal" style="border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;line-height:1;border:1px solid">×</button>
+    </div>
+    <div id="bot-panel-telegram">
+      <div style="background:#0d1520;border:1px solid #2496ED33;border-radius:12px;padding:14px;margin-bottom:14px">
+        <p style="font-size:13px;font-weight:700;color:#2496ED;margin-bottom:10px">✈️ Configuração Telegram (grátis)</p>
+        <ol style="font-size:12px;color:#a0a0c0;padding-left:16px;line-height:2.2">
+          <li>Abra Telegram → procure <strong style="color:#2496ED">@BotFather</strong></li>
+          <li>Envie <strong style="color:#e8e8f0">/newbot</strong> e siga as instruções</li>
+          <li>Copie o <strong style="color:#e8e8f0">Token</strong> recebido</li>
+          <li>Procure <strong style="color:#2496ED">@userinfobot</strong> para obter seu <strong style="color:#e8e8f0">Chat ID</strong></li>
+        </ol>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+        <div><p class="txt-muted" style="margin-bottom:4px">Bot Token</p><input id="tg-token" placeholder="Ex: 7123456789:AAH..." style="font-size:12px"/></div>
+        <div><p class="txt-muted" style="margin-bottom:4px">Seu Chat ID</p><input id="tg-chatid" placeholder="Ex: 123456789" type="number"/></div>
+      </div>
+      <button onclick="salvarTelegram()" style="width:100%;padding:11px;background:linear-gradient(135deg,#2496ED,#1a7bbf);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">💾 Salvar e testar</button>
+      <div id="tg-status" style="font-size:12px;text-align:center;color:#6060a0;min-height:18px"></div>
+    </div>
+    <div style="background:#1e1e3a;border-radius:12px;padding:12px;margin-top:14px">
+      <p style="font-size:12px;font-weight:700;margin-bottom:8px">📋 Comandos</p>
+      <div style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:#a0a0c0">
+        <p><strong style="color:#4FBDBA">saldo</strong> → resumo do mês</p>
+        <p><strong style="color:#4FBDBA">resumo</strong> → gastos por categoria</p>
+        <p><strong style="color:#4FBDBA">avencer</strong> → contas pendentes</p>
+        <p><strong style="color:#4FBDBA">gastei 50 almoço</strong> → registra gasto</p>
+        <p><strong style="color:#4FBDBA">metas</strong> → status das metas</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL COMPARTILHAR ═══ -->
+<div id="modal-compartilhar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:3000;align-items:center;justify-content:center">
+  <div style="background:#13132b;border:1px solid #4FBDBA44;border-radius:20px;padding:24px;max-width:360px;width:94%;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <h3 style="font-size:16px;font-weight:700">👫 Conta Compartilhada</h3>
+      <button onclick="fecharCompartilhar()" class="btn-fechar-modal" style="border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;line-height:1;border:1px solid">×</button>
+    </div>
+    <div id="comp-status-card" style="background:#1e1e3a;border-radius:12px;padding:14px;margin-bottom:16px;text-align:center">
+      <p id="comp-status-txt" style="color:#a0a0c0;font-size:13px">Carregando...</p>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button id="comp-tab-criar" onclick="compTab('criar')" class="btn btn-primary" style="flex:1;font-size:12px">✨ Criar grupo</button>
+      <button id="comp-tab-entrar" onclick="compTab('entrar')" class="btn btn-gray" style="flex:1;font-size:12px">🔗 Entrar com código</button>
+    </div>
+    <div id="comp-panel-criar">
+      <button class="btn btn-primary" onclick="criarGrupo()" style="width:100%;margin-bottom:10px">🚀 Criar novo grupo</button>
+      <div id="comp-codigo-gerado" style="display:none">
+        <p style="font-size:12px;color:#a0a0c0;margin-bottom:6px">Código do grupo:</p>
+        <div style="background:#0d0d1a;border:2px dashed #4FBDBA;border-radius:10px;padding:14px;text-align:center">
+          <p id="comp-codigo-txt" style="font-size:28px;font-weight:800;letter-spacing:6px;color:#4FBDBA"></p>
+          <button onclick="copiarCodigo()" class="btn btn-gray" style="font-size:11px;margin-top:8px;padding:4px 12px">📋 Copiar</button>
+        </div>
+      </div>
+    </div>
+    <div id="comp-panel-entrar" style="display:none">
+      <input id="comp-codigo-input" placeholder="Ex: ABC123" maxlength="6" style="text-align:center;font-size:22px;letter-spacing:6px;text-transform:uppercase;font-weight:700;margin-bottom:10px"/>
+      <button class="btn btn-primary" onclick="entrarGrupo()" style="width:100%">🔗 Entrar no grupo</button>
+    </div>
+    <div id="comp-membros" style="margin-top:16px"></div>
+    <div id="comp-sair-wrap" style="display:none;margin-top:12px">
+      <button onclick="sairDoGrupo()" class="btn btn-gray" style="width:100%;color:#F28C8C;border-color:#F28C8C44;font-size:12px">🚪 Sair do grupo</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ONBOARDING ═══ -->
+<div id="onboarding" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9000;align-items:center;justify-content:center">
+  <div style="max-width:360px;width:94%;text-align:center;padding:32px 24px">
+    <div id="ob-step-dots" style="display:flex;gap:8px;justify-content:center;margin-bottom:24px"></div>
+    <div id="ob-icon" style="font-size:56px;margin-bottom:16px"></div>
+    <h2 id="ob-titulo" style="font-size:22px;font-weight:800;margin-bottom:10px;color:#fff"></h2>
+    <p id="ob-desc" style="font-size:14px;color:#a0a0c0;line-height:1.7;margin-bottom:28px"></p>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button id="ob-btn-pular" onclick="pularOnboarding()" class="btn btn-gray" style="padding:10px 20px">Pular</button>
+      <button id="ob-btn-proximo" onclick="proximoOnboarding()" class="btn btn-primary" style="padding:10px 24px;font-size:15px">Próximo →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL OCR COMPROVANTE ═══ -->
+<div id="modal-ocr" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:3000;align-items:flex-end;justify-content:center">
+  <div style="background:#13132b;border-radius:20px 20px 0 0;border-top:1px solid #2d2d4e;padding:20px;width:100%;max-width:600px;max-height:92vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h3 style="font-size:15px;font-weight:700">📸 Foto do Comprovante</h3>
+      <button onclick="fecharModalOCR()" class="btn-fechar-modal" style="border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;line-height:1;border:1px solid">×</button>
+    </div>
+    <p style="font-size:13px;color:#a0a0c0;margin-bottom:14px">Tire ou selecione uma foto do comprovante e a IA extrai os dados automaticamente.</p>
+
+    <!-- Upload área -->
+    <div id="ocr-upload-area" style="border:2px dashed #2d2d4e;border-radius:12px;padding:28px;text-align:center;cursor:pointer;margin-bottom:14px" onclick="document.getElementById('ocr-file').click()">
+      <div style="font-size:36px;margin-bottom:8px">📷</div>
+      <p style="font-size:13px;color:#a0a0c0">Toque para tirar foto ou selecionar da galeria</p>
+      <p style="font-size:11px;color:#4060a0;margin-top:4px">Suporta JPG, PNG e PDF</p>
+      <input type="file" id="ocr-file" accept="image/*,application/pdf" capture="environment" style="display:none" onchange="processarOCR(event)">
+    </div>
+
+    <!-- Preview da imagem -->
+    <div id="ocr-preview" style="display:none;margin-bottom:14px">
+      <img id="ocr-img" style="width:100%;border-radius:10px;max-height:200px;object-fit:cover">
+    </div>
+
+    <!-- Status/loading -->
+    <div id="ocr-status" style="display:none;text-align:center;padding:16px;color:#a0a0c0">
+      <div style="font-size:24px;margin-bottom:8px">🤖</div>
+      <p style="font-size:13px">Analisando comprovante com IA...</p>
+    </div>
+
+    <!-- Resultado -->
+    <div id="ocr-resultado" style="display:none">
+      <p style="font-size:12px;color:#6DBE8C;margin-bottom:10px">✅ Dados extraídos! Confirme e ajuste se necessário:</p>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div><p class="txt-muted" style="margin-bottom:4px">Descrição</p><input id="ocr-desc" style="font-size:13px"/></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><p class="txt-muted" style="margin-bottom:4px">Valor (R$)</p><input id="ocr-valor" type="number" style="font-size:13px"/></div>
+          <div><p class="txt-muted" style="margin-bottom:4px">Categoria</p>
+            <select id="ocr-cat" style="font-size:13px">
+              <option>Alimentação</option><option>Moradia</option><option>Transporte</option>
+              <option>Saúde</option><option>Lazer</option><option>Educação</option><option>Vestuário</option><option>Outros</option>
+            </select>
+          </div>
+        </div>
+        <div><p class="txt-muted" style="margin-bottom:4px">Data</p><input id="ocr-data" type="date" style="font-size:13px"/></div>
+      </div>
+      <button onclick="confirmarOCR()" class="btn btn-primary" style="width:100%;margin-top:12px;padding:12px">✅ Adicionar Gasto</button>
+    </div>
+
+    <!-- Sem API key -->
+    <div id="ocr-sem-key" style="display:none;background:#1a1a2a;border:1px solid #E8B84B33;border-radius:10px;padding:14px;text-align:center">
+      <p style="font-size:13px;color:#E8B84B;margin-bottom:8px">🔑 Configure a API Key Claude na aba 🤖 IA para usar o OCR</p>
+      <p style="font-size:12px;color:#a0a0c0">Sem a API Key, você pode tirar a foto e preencher manualmente</p>
+      <button onclick="usarSemOCR()" class="btn btn-gray" style="margin-top:10px;font-size:12px">Preencher manualmente</button>
     </div>
   </div>
 </div>
