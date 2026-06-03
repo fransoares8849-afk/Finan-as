@@ -1295,15 +1295,19 @@ async function loadFromCloud(uid) {
 
         const merged = sanitizeState({
           ...baseConfig,
-          gastos:       mergeById(state.gastos,       data.gastos),
-          rendas:       mergeById(state.rendas,        data.rendas),
-          poupancas:    mergeById(state.poupancas,     data.poupancas),
-          investimentos:mergeById(state.investimentos, data.investimentos),
-          aportes:      mergeById(state.aportes,       data.aportes),
-          pagamentos:   Object.assign({}, data.pagamentos||{}, state.pagamentos||{}),
-          recebimentos: Object.assign({}, data.recebimentos||{}, state.recebimentos||{}),
-          antecipados:  Object.assign({}, data.antecipados||{},  state.antecipados||{}),
-          _savedAt:     Math.max(localTs, nuvemTs) || Date.now(),
+          gastos:        mergeById(state.gastos,        data.gastos),
+          rendas:        mergeById(state.rendas,         data.rendas),
+          poupancas:     mergeById(state.poupancas,      data.poupancas),
+          investimentos: mergeById(state.investimentos,  data.investimentos),
+          aportes:       mergeById(state.aportes,        data.aportes),
+          metas:         mergeById(state.metas||[],      data.metas||[]),
+          templates:     mergeById(state.templates||[],  data.templates||[]),
+          cartoes:       mergeById(state.cartoes||[],    data.cartoes||[]),
+          pagamentos:    Object.assign({}, data.pagamentos||{},   state.pagamentos||{}),
+          recebimentos:  Object.assign({}, data.recebimentos||{}, state.recebimentos||{}),
+          antecipados:   Object.assign({}, data.antecipados||{},  state.antecipados||{}),
+          desafios:      Object.assign({}, data.desafios||{},     state.desafios||{}),
+          _savedAt:      Math.max(localTs, nuvemTs) || Date.now(),
         });
 
         state = merged;
@@ -1873,14 +1877,18 @@ function renderPoupanca() {
   state.poupancas.forEach(p => { porMes[p.mes] = (porMes[p.mes]||0) + p.valor; });
   const mesesG = Object.keys(porMes).sort().slice(-8);
   const maxV = Math.max(...mesesG.map(m=>porMes[m]),1);
-  document.getElementById("poup-chart-wrap").style.display = "block";
-  document.getElementById("poup-chart").innerHTML = mesesG.map(m=>`
+  const chartEl = document.getElementById("poup-chart");
+  // Altura adaptativa: mínimo 80px, máximo 130px
+  const alturaChart = Math.min(Math.max(mesesG.length * 25 + 50, 80), 130);
+  chartEl.style.height = alturaChart + "px";
+  const altBarra = alturaChart - 40; // deixar espaço para labels
+  chartEl.innerHTML = mesesG.map(m=>`
     <div class="chart-bar-col">
       <div style="flex:1;display:flex;align-items:flex-end;width:100%">
-        <div class="chart-bar" style="background:linear-gradient(180deg,#6DBE8C,#4FBDBA);height:${(porMes[m]/maxV)*110}px;width:100%"></div>
+        <div class="chart-bar" style="background:linear-gradient(180deg,#6DBE8C,#4FBDBA);height:${Math.max((porMes[m]/maxV)*altBarra,4)}px;width:100%"></div>
       </div>
       <span class="chart-lbl">${mesLabel(m)}</span>
-      <span class="chart-lbl" style="color:#6DBE8C">${(porMes[m]/1000).toFixed(1)}k</span>
+      <span class="chart-lbl" style="color:#6DBE8C">${fmt(porMes[m])}</span>
     </div>`).join("");
 }
 
@@ -3792,18 +3800,25 @@ function calcPrevisaoFechamento() {
   const ra = resumoAtivo();
   if (diaAtual <= 0 || ra.renda === 0) return null;
 
-  // Gastos já pagos + variáveis lançados
   const gm = gastosMes();
   const gastoFixo = gm.filter(g=>g.tipo==="fixo").reduce((s,g)=>s+g.valor,0);
   const gastoVar  = gm.filter(g=>g.tipo==="variavel").reduce((s,g)=>s+g.valor,0);
+  const diasRestantes = diasNoMes - diaAtual;
 
-  // Projetar variável pelo ritmo diário
-  const ritmo = diaAtual > 0 ? gastoVar / diaAtual : 0;
-  const projecaoVar = ritmo * diasNoMes;
-  const gastoProjetado = gastoFixo + projecaoVar;
+  let gastoProjetado;
+  if (mesAtivo !== nowM() || diaAtual >= diasNoMes - 1) {
+    gastoProjetado = gastoFixo + gastoVar;
+  } else if (diaAtual < 5) {
+    // Início do mês: sem dados suficientes para projetar variável
+    gastoProjetado = gastoFixo + gastoVar;
+  } else {
+    const ritmoVar = gastoVar / diaAtual;
+    gastoProjetado = gastoFixo + gastoVar + (ritmoVar * diasRestantes);
+  }
+
+  const ritmo = diaAtual >= 5 ? gastoVar / diaAtual : 0;
   const saldoProjetado = ra.renda - gastoProjetado;
-
-  return {gastoFixo, gastoVar, gastoProjetado, saldoProjetado, ritmo, diasNoMes, diaAtual};
+  return {gastoFixo, gastoVar, gastoProjetado, saldoProjetado, ritmo, diasNoMes, diaAtual, diasRestantes};
 }
 
 // ══════════════════════════════════════════════
@@ -3918,7 +3933,7 @@ function salvarMeta() {
     const idx = state.metas.findIndex(x=>x.id===editId);
     if (idx>=0) state.metas[idx] = {...state.metas[idx], desc, valor, prazo, icone};
   } else {
-    if (!state.metas) state.metas = [];
+    if (!Array.isArray(state.metas)) state.metas = [];
     state.metas.push({id:mkId(), desc, valor, prazo, icone, aportado:0, criadoEm:nowM()});
   }
   persist(); fecharModalMeta(); renderExtras();
@@ -4324,11 +4339,11 @@ function analiseLocal() {
       if (falta > 0 && ra.saldoMes > 0) pontos.push({tipo:"info", msg:`🎯 Meta "${m.desc}": faltam ${fmt(falta)}. Com seu saldo atual, consegue em ~${Math.ceil(falta/ra.saldoMes)} meses.`});
     });
   }
-  // Previsão
+  // Previsão — só mostrar após dia 5 (dados suficientes)
   const prev = calcPrevisaoFechamento();
-  if (prev && mesAtivo===nowM()) {
-    if (prev.saldoProjetado < 0) pontos.push({tipo:"danger", msg:`🔴 Previsão: você vai fechar o mês ${fmt(Math.abs(prev.saldoProjetado))} no negativo se mantiver o ritmo atual.`});
-    else pontos.push({tipo:"ok", msg:`🟢 Previsão: você vai fechar o mês com ${fmt(prev.saldoProjetado)} positivo.`});
+  if (prev && mesAtivo===nowM() && prev.diaAtual >= 5) {
+    if (prev.saldoProjetado < 0) pontos.push({tipo:"danger", msg:`🔴 Previsão: no ritmo atual, você fecha o mês ${fmt(Math.abs(prev.saldoProjetado))} no negativo. Corte gastos variáveis!`});
+    else pontos.push({tipo:"ok", msg:`🟢 Previsão: você deve fechar o mês com ${fmt(prev.saldoProjetado)} positivo.`});
   }
   // Gastos a pagar
   const apagar = gm.filter(g=>!isPagoMes(g.id,mesAtivo)).reduce((s,g)=>s+g.valor,0);
