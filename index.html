@@ -260,6 +260,20 @@ body.tema-claro [style*="background: #0a0a18"] {
   background: #edf2f7 !important;
   border-color: #cbd5e0 !important;
 }
+/* Conquistas Wrapped modo claro */
+body.tema-claro [style*="border:1px solid #6DBE8C44"][style*="border-radius:10px"],
+body.tema-claro [style*="border:1px solid #5B8DB844"][style*="border-radius:10px"],
+body.tema-claro [style*="border:1px solid #4FBDBA44"][style*="border-radius:10px"],
+body.tema-claro [style*="border:1px solid #E8B84B44"][style*="border-radius:10px"] {
+  background: #f7faff !important;
+  color: #1a202c !important;
+}
+body.tema-claro [style*="border:1px solid #6DBE8C44"] span,
+body.tema-claro [style*="border:1px solid #5B8DB844"] span,
+body.tema-claro [style*="border:1px solid #4FBDBA44"] span,
+body.tema-claro [style*="border:1px solid #E8B84B44"] span {
+  color: inherit !important;
+}
 /* Scrollbar */
 body.tema-claro ::-webkit-scrollbar-track { background: #f0f4f8; }
 body.tema-claro ::-webkit-scrollbar-thumb { background: #cbd5e0; }
@@ -1859,7 +1873,10 @@ function renderLancamentos() {
 function renderEvolucao() {
   renderComparativo();
   document.getElementById("saldo-ini-val").textContent = fmt(state.saldoInicial);
-  const resumo = calcResumo();
+  const resumoTodos = calcResumo();
+  // Filtrar apenas meses com dados reais (não projeções)
+  const hojeM = nowM();
+  const resumo = resumoTodos.filter(r => !r.projecao && r.mes <= hojeM);
 
   // Verificar se há dados reais (não só mês atual vazio)
   const temDadosReais = resumo.some(r => r.renda > 0 || r.gasto > 0);
@@ -4650,10 +4667,10 @@ function renderWrapped() {
     <div class="card">
       <h3 style="font-size:13px;margin-bottom:12px;font-weight:700">🏅 Conquistas de ${ano}</h3>
       <div style="display:flex;flex-direction:column;gap:8px">
-        ${pctPoupado>=20?'<div style="background:#1a2a1a;border:1px solid #6DBE8C44;border-radius:10px;padding:10px 14px"><span style="color:#6DBE8C">✅ Poupador Disciplinado</span> <span style="font-size:12px;color:#a0a0c0">— Poupou mais de 20% da renda</span></div>':""}
-        ${totalLanc>=50?'<div style="background:#1a1a2a;border:1px solid #5B8DB844;border-radius:10px;padding:10px 14px"><span style="color:#5B8DB8">📋 Registrador Fiel</span> <span style="font-size:12px;color:#a0a0c0">— Mais de 50 lançamentos no ano</span></div>':""}
-        ${stats.filter(s=>s.renda>s.gasto).length>=10?'<div style="background:#1a2a1a;border:1px solid #4FBDBA44;border-radius:10px;padding:10px 14px"><span style="color:#4FBDBA">🔥 Streak Master</span> <span style="font-size:12px;color:#a0a0c0">— 10+ meses no positivo</span></div>':""}
-        ${totalRenda>=totalGasto?'<div style="background:#1a1a0a;border:1px solid #E8B84B44;border-radius:10px;padding:10px 14px"><span style="color:#E8B84B">💪 Ano Positivo</span> <span style="font-size:12px;color:#a0a0c0">— Renda maior que gastos no ano</span></div>':""}
+        ${pctPoupado>=20?'<div style="border:1px solid #6DBE8C44;border-radius:10px;padding:10px 14px"><span style="color:#6DBE8C">✅ Poupador Disciplinado</span> <span style="font-size:12px;color:#a0a0c0">— Poupou mais de 20% da renda</span></div>':""}
+        ${totalLanc>=50?'<div style="border:1px solid #5B8DB844;border-radius:10px;padding:10px 14px"><span style="color:#5B8DB8">📋 Registrador Fiel</span> <span style="font-size:12px;color:#a0a0c0">— Mais de 50 lançamentos no ano</span></div>':""}
+        ${stats.filter(s=>s.renda>s.gasto).length>=10?'<div style="border:1px solid #4FBDBA44;border-radius:10px;padding:10px 14px"><span style="color:#4FBDBA">🔥 Streak Master</span> <span style="font-size:12px;color:#a0a0c0">— 10+ meses no positivo</span></div>':""}
+        ${totalRenda>=totalGasto?'<div style="border:1px solid #E8B84B44;border-radius:10px;padding:10px 14px"><span style="color:#E8B84B">💪 Ano Positivo</span> <span style="font-size:12px;color:#a0a0c0">— Renda maior que gastos no ano</span></div>':""}
         ${!pctPoupado&&!totalLanc?'<div style="background:#1a1a1a;border-radius:10px;padding:10px 14px;color:#6060a0;font-size:13px">Adicione mais lançamentos para desbloquear conquistas!</div>':""}
       </div>
     </div>`;
@@ -4947,7 +4964,7 @@ function renderDeteccaoRepetidos() {
   // Gastos recorrentes suspeitos
   const semSubscriptions = suspeitos.filter(s => !/netflix|spotify|amazon|prime|disney|hbo|youtube|apple/i.test(s.chave));
   if (semSubscriptions.length) {
-    html += `<div style="background:#1a1a0a;border:1px solid #E8B84B44;border-radius:12px;padding:14px;margin-bottom:12px">
+    html += `<div style="border:1px solid #E8B84B44;border-radius:12px;padding:14px;margin-bottom:12px">
       <p style="font-size:13px;font-weight:700;color:#E8B84B;margin-bottom:10px">🔁 Gastos que se repetem (últimos 3 meses)</p>
       <div style="display:flex;flex-direction:column;gap:8px">
       ${semSubscriptions.slice(0,6).map(s=>`<div style="display:flex;justify-content:space-between;align-items:center;background:#13132b;border-radius:8px;padding:8px 12px">
