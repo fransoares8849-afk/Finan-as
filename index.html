@@ -264,6 +264,64 @@ body.tema-claro [style*="background: #0a0a18"] {
 body.tema-claro ::-webkit-scrollbar-track { background: #f0f4f8; }
 body.tema-claro ::-webkit-scrollbar-thumb { background: #cbd5e0; }
 
+/* ══ MODO CLARO: coberturas adicionais ══ */
+/* Wrapped hero card */
+body.tema-claro .wrapped-hero-card {
+  background: linear-gradient(135deg,#4a4a7a,#2a2a5a) !important;
+}
+/* Cards com bg inline escuro (Wrapped, IA, etc) */
+body.tema-claro [style*="background:#1a2a1a"],
+body.tema-claro [style*="background:#1a1020"],
+body.tema-claro [style*="background:#0d1a0d"],
+body.tema-claro [style*="background:#1a1010"],
+body.tema-claro [style*="background:#1a1a0a"],
+body.tema-claro [style*="background:#0f1a0f"],
+body.tema-claro [style*="background:#1e1e3a"] { 
+  background: #f0f4f8 !important; 
+  color: #1a202c !important; 
+}
+/* Chat IA: bolhas */
+body.tema-claro .chat-bubble-ia {
+  background: #edf2f7 !important;
+  color: #1a202c !important;
+  border: 1px solid #d0d9e8 !important;
+}
+body.tema-claro .chat-bubble-user {
+  background: #dbeafe !important;
+  color: #1e3a5f !important;
+}
+body.tema-claro #chat-ia-msgs > div > div:last-child {
+  background: #edf2f7 !important;
+  color: #1a202c !important;
+  border: 1px solid #d0d9e8 !important;
+}
+/* Análise IA */
+body.tema-claro #analise-ia-result > div {
+  background: #f0f4f8 !important;
+  color: #1a202c !important;
+}
+body.tema-claro #analise-ia-result > div > p {
+  color: inherit !important;
+}
+/* Cotações ao vivo */
+body.tema-claro .cotacao-card,
+body.tema-claro [id^="cot-"] {
+  background: #f0f4f8 !important;
+}
+/* Previsão de fechamento */
+body.tema-claro [style*="background:#0d1a0d;border:1px solid #6DBE8C"],
+body.tema-claro [style*="background:#1a0808"] {
+  background: #f7faff !important;
+}
+/* Mapa calor */
+body.tema-claro #mapa-calor > div > div[style*="background:#1e1e3a"] {
+  background: #e8edf5 !important;
+}
+/* Desafios ativos */
+body.tema-claro [style*="background:#0d1a0d;border:1px solid #4FBDBA"] {
+  background: #f0f9ff !important;
+}
+
 </style>
 </head>
 <body>
@@ -1693,7 +1751,10 @@ function renderDashboard() {
     </div>`).join("");
 
   // Gráfico barras
-  const ultimos = resumo.slice(-6);
+  // Filtrar apenas meses com dados reais (não projeções do futuro)
+  const hojeM = nowM();
+  const resumoReal = resumo.filter(r => r.mes <= hojeM && !r.projecao);
+  const ultimos = resumoReal.length ? resumoReal.slice(-6) : resumo.filter(r=>!r.projecao).slice(-6);
   const maxVal = Math.max(...ultimos.map(r=>Math.max(r.renda,r.gasto)),1);
   document.getElementById("bar-chart").innerHTML = ultimos.map(r=>`
     <div class="chart-bar-col">
@@ -3937,6 +3998,17 @@ function abrirModalMeta(id) {
   }
 }
 function fecharModalMeta() { document.getElementById("modal-meta").style.display="none"; }
+// Helpers: metas em storage separado (imune ao sync da nuvem)
+function getMetas() {
+  try { return JSON.parse(localStorage.getItem("fp_metas_v1")||"[]"); } catch(_) { return []; }
+}
+function setMetas(arr) {
+  try { localStorage.setItem("fp_metas_v1", JSON.stringify(arr)); } catch(_) {}
+  // Sincronizar com state também
+  state.metas = arr;
+  persist();
+}
+
 function salvarMeta() {
   const desc  = document.getElementById("meta-desc").value.trim();
   const valor = parseFloat(document.getElementById("meta-valor").value)||0;
@@ -3945,34 +4017,30 @@ function salvarMeta() {
   if (!desc || !valor || !prazo) { toast("Preencha todos os campos","#F28C8C"); return; }
   const m = document.getElementById("modal-meta");
   const editId = m.dataset.editId ? parseInt(m.dataset.editId) : null;
+  let metas = getMetas();
   if (editId) {
-    const idx = state.metas.findIndex(x=>x.id===editId);
-    if (idx>=0) state.metas[idx] = {...state.metas[idx], desc, valor, prazo, icone};
+    const idx = metas.findIndex(x=>x.id===editId);
+    if (idx>=0) metas[idx] = {...metas[idx], desc, valor, prazo, icone};
   } else {
-    if (!Array.isArray(state.metas)) state.metas = [];
-    state.metas.push({id:mkId(), desc, valor, prazo, icone, aportado:0, criadoEm:nowM()});
+    metas.push({id:mkId(), desc, valor, prazo, icone, aportado:0, criadoEm:nowM()});
   }
-  // Salvar e garantir que localStorage está atualizado
-  if (!Array.isArray(state.metas)) state.metas = [];
-  try { localStorage.setItem(STORE, JSON.stringify(state)); } catch(_) {}
-  persist();
+  setMetas(metas);
   fecharModalMeta();
-  // Re-renderizar com pequeno delay para garantir que DOM está pronto
-  setTimeout(() => {
-    renderExtras();
-    toast("Meta \""+desc+"\" salva! 🎯","#6DBE8C");
-  }, 50);
+  renderExtras();
+  toast("Meta \""+desc+"\" salva! 🎯","#6DBE8C");
 }
 function delMeta(id) {
-  state.metas = state.metas.filter(x=>x.id!==id);
-  persist(); renderExtras();
+  setMetas(getMetas().filter(x=>x.id!==id));
+  renderExtras();
 }
 function aportarMeta(id, val) {
-  const m = state.metas.find(x=>x.id===id);
+  const metas = getMetas();
+  const m = metas.find(x=>x.id===id);
   if (!m) return;
   m.aportado = (m.aportado||0) + val;
-  persist(); renderExtras();
-  toast(`+${fmt(val)} aportado na meta!`,"#6DBE8C");
+  setMetas(metas);
+  renderExtras();
+  toast("+"+fmt(val)+" aportado na meta!","#6DBE8C");
 }
 
 // ── Templates de Gasto ────────────────────────
@@ -4110,7 +4178,7 @@ function renderExtras() {
   // Metas
   const listaMetas = document.getElementById("lista-metas");
   if (listaMetas) {
-    const metas = state.metas||[];
+    const metas = getMetas();
     if (!metas.length) { listaMetas.innerHTML='<p style="color:#6060a0;text-align:center;padding:20px;font-size:13px">Nenhuma meta cadastrada ainda.</p>'; }
     else listaMetas.innerHTML = metas.map(m=>{
       const pct = Math.min(((m.aportado||0)/m.valor)*100,100);
@@ -4356,7 +4424,7 @@ function analiseLocal() {
     if (lim && pctCat > lim) pontos.push({tipo:"warn", msg:`📌 ${catMax} representa ${(pctCat*100).toFixed(0)}% da renda — acima do ideal (${(lim*100).toFixed(0)}%). Tente reduzir ${fmt(valMax - lim*ra.renda)}.`});
   }
   // Metas
-  const metas = state.metas||[];
+  const metas = getMetas();
   if (metas.length) {
     metas.forEach(m=>{
       const falta = m.valor-(m.aportado||0);
@@ -4447,9 +4515,12 @@ function respostaLocal(pergunta, ctx) {
     const [catMax,valMax] = Object.entries(porCat).sort((a,b)=>b[1]-a[1])[0]||["nenhuma",0];
     return `💡 Seu maior gasto é **${catMax}** (${fmt(valMax)}). Aqui vão 3 sugestões:\n1. Revise gastos variáveis em ${catMax}\n2. Negocie contas fixas (internet, planos)\n3. Use a regra 50-30-20 como guia`;
   }
-  if (p.includes("como estou") || p.includes("situação") || p.includes("situacao")) {
+  if (p.includes("como estou") || p.includes("como estao") || p.includes("meus gastos") || p.includes("gastos este") || p.includes("gastos do mes") || p.includes("situação") || p.includes("situacao") || p.includes("como estao")) {
     const pct = ra.renda>0?(ra.gasto/ra.renda*100).toFixed(0):0;
-    return `📊 Em ${mesNome(mesAtivo)}:\n- Renda: ${fmt(ra.renda)}\n- Gastos: ${fmt(ra.gasto)} (${pct}% da renda)\n- Saldo: ${fmt(ra.saldoMes)}\n${ra.saldoMes>=0?"✅ Você está no positivo!":"⚠️ Gastos maiores que a renda."}`;
+    const porCat3 = {};
+    gm.forEach(g=>{ porCat3[g.cat]=(porCat3[g.cat]||0)+g.valor; });
+    const topCats = Object.entries(porCat3).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([c,v])=>`- ${c}: ${fmt(v)}`).join("\n");
+    return `📊 **${mesNome(mesAtivo)}**:\n- Renda: ${fmt(ra.renda)}\n- Gastos: ${fmt(ra.gasto)} (${pct}% da renda)\n- Saldo: ${fmt(ra.saldoMes)}\n${ra.saldoMes>=0?"✅ Positivo!":"⚠️ Gastos > renda"}\n\nTop categorias:\n${topCats||"Sem gastos registrados"}`;
   }
   if (p.includes("meta") || p.includes("objetivo") || p.includes("poupar")) {
     const metaMensal = ra.renda*(state.meta||20)/100;
@@ -4467,6 +4538,12 @@ function respostaLocal(pergunta, ctx) {
   return "Adicione lançamentos e rendas para que eu possa te ajudar! 💡";
 }
 
+function mdParaHtml(t) {
+  if (!t) return "";
+  return t.replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>")
+          .replace(/\*([^*]+)\*/g,"<em>$1</em>")
+          .replace(/\n/g,"<br>");
+}
 function adicionarMensagemChat(tipo, texto, temp=false) {
   const el = document.getElementById("chat-ia-msgs");
   const isIA = tipo==="ia";
@@ -4475,7 +4552,7 @@ function adicionarMensagemChat(tipo, texto, temp=false) {
   if (temp) div.id = "chat-msg-temp";
   div.innerHTML = `
     <div style="width:28px;height:28px;border-radius:50%;background:${isIA?"#5B8DB8":"#E8B84B"};display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0">${isIA?"🤖":"👤"}</div>
-    <div style="max-width:80%;background:${isIA?"#1e1e3a":"#1a2a1a"};border-radius:${isIA?"4px 12px 12px 12px":"12px 4px 12px 12px"};padding:10px 14px;font-size:13px;line-height:1.6;white-space:pre-wrap">${texto}</div>`;
+    <div style="max-width:80%;background:${isIA?"#1e1e3a":"#1a2a1a"};border-radius:${isIA?"4px 12px 12px 12px":"12px 4px 12px 12px"};padding:10px 14px;font-size:13px;line-height:1.6;white-space:pre-wrap" class="${isIA?"chat-bubble-ia":"chat-bubble-user"}">${mdParaHtml(texto)}</div>`;
   el.appendChild(div);
   el.scrollTop = el.scrollHeight;
 }
@@ -5902,7 +5979,7 @@ async function processarComandoTelegram(texto){
   if(t==="/start"||t==="start"){await enviarTelegram(`👋 Olá! Comandos:\n\n💰 *saldo* • 📊 *resumo* • ⏰ *avencer* • 📅 *hoje* • 🎯 *metas*\n\nRegistrar: *gastei 50 almoço*`);return;}
   if(t==="saldo"){const prev=calcPrevisaoFechamento();await enviarTelegram(`💰 *${mesNome(mesAtivo)}*\n📈 Renda: *${fmt(ra.renda)}*\n📉 Gastos: *${fmt(ra.gasto)}*\n✅ Saldo: *${fmt(ra.saldoMes)}*${prev&&mesAtivo===nowM()?"\n🔮 Previsão: *"+fmt(prev.saldoProjetado)+"*":""}`);return;}
   if(t==="resumo"){const p={};gm.forEach(g=>{p[g.cat]=(p[g.cat]||0)+g.valor;});const cats=Object.entries(p).sort((a,b)=>b[1]-a[1]).map(([c,v])=>`  • ${c}: ${fmt(v)}`).join("\n");await enviarTelegram(`📊 *Resumo ${mesNome(mesAtivo)}*\n\n${cats||"Sem gastos"}\n\n💸 Total: *${fmt(ra.gasto)}*`);return;}
-  if(t==="metas"){const ms=state.metas||[];if(!ms.length){await enviarTelegram("Nenhuma meta cadastrada.");return;}await enviarTelegram(`🎯 *Metas*\n\n${ms.map(m=>`${m.icone} *${m.desc}*\n${"█".repeat(Math.floor(Math.min((m.aportado||0)/m.valor,1)*10))}${"░".repeat(10-Math.floor(Math.min((m.aportado||0)/m.valor,1)*10))} ${((m.aportado||0)/m.valor*100).toFixed(0)}%`).join("\n\n")}`);return;}
+  if(t==="metas"){const ms=getMetas();if(!ms.length){await enviarTelegram("Nenhuma meta cadastrada.");return;}await enviarTelegram(`🎯 *Metas*\n\n${ms.map(m=>`${m.icone} *${m.desc}*\n${"█".repeat(Math.floor(Math.min((m.aportado||0)/m.valor,1)*10))}${"░".repeat(10-Math.floor(Math.min((m.aportado||0)/m.valor,1)*10))} ${((m.aportado||0)/m.valor*100).toFixed(0)}%`).join("\n\n")}`);return;}
   if(t==="avencer"){const pd=gm.filter(g=>!isPagoMes(g.id,mesAtivo)).sort((a,b)=>new Date(a.data)-new Date(b.data));if(!pd.length){await enviarTelegram("✅ Nenhuma conta pendente!");return;}await enviarTelegram(`⏰ *A Pagar*\n\n${pd.slice(0,8).map(g=>`• ${g.desc} — *${fmt(g.valor)}*`).join("\n")}\n\n💰 Total: *${fmt(pd.reduce((s,g)=>s+g.valor,0))}*`);return;}
   if(t==="hoje"){const hs=todayS(),gh=gm.filter(g=>g.data===hs);if(!gh.length){await enviarTelegram("📅 Sem gastos hoje.");return;}await enviarTelegram(`📅 *Hoje*\n\n${gh.map(g=>`• ${g.desc} — *${fmt(g.valor)}*`).join("\n")}\n\n💸 *${fmt(gh.reduce((s,g)=>s+g.valor,0))}*`);return;}
   const match=t.match(/^(?:gastei|paguei|comprei)?\s*([\d]+[,.]?[\d]*)\s+(?:no\s|na\s|nos\s|nas\s)?(.+)$/);
@@ -5996,6 +6073,18 @@ function initRecursosExtras(){
 // INIT
 // ══════════════════════════════════════════════
 load();
+// Sincronizar metas do storage separado com state
+(function syncMetasOnLoad() {
+  const metasSalvas = getMetas();
+  if (metasSalvas.length > 0) {
+    state.metas = metasSalvas;
+    // Re-salvar state com metas
+    try { localStorage.setItem(STORE, JSON.stringify(state)); } catch(_) {}
+  } else if (state.metas && state.metas.length > 0) {
+    // Migrar metas antigas do state para storage separado
+    try { localStorage.setItem("fp_metas_v1", JSON.stringify(state.metas)); } catch(_) {}
+  }
+})();
 inicializarGestos();
 initRecursosExtras();
 const corSalva=localStorage.getItem("cor_tema");
