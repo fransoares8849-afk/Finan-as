@@ -235,6 +235,22 @@ body.tema-claro [style*="color: #a0a0c0"] { color: #2d3748 !important; }
 body.tema-claro [style*="color:#6060a0"],
 body.tema-claro [style*="color: #6060a0"] { color: #718096 !important; }
 body.tema-claro #app-title { color: #1a202c !important; }
+/* Chat IA modo claro */
+body.tema-claro #chat-ia-msgs > div > div:last-child {
+  background: #edf2f7 !important;
+  color: #1a202c !important;
+}
+body.tema-claro #chat-ia-msgs div[style*="background:#1e1e3a"],
+body.tema-claro #chat-ia-msgs div[style*="background:#1a2a1a"] {
+  background: #edf2f7 !important;
+  color: #1a202c !important;
+}
+body.tema-claro #analise-ia-result div[style*="background:#0d1a0d"],
+body.tema-claro #analise-ia-result div[style*="background:#1a0808"],
+body.tema-claro #analise-ia-result div[style*="background:#1a1800"],
+body.tema-claro #analise-ia-result div[style*="background:#0d0d1a"] {
+  background: #f0f4f8 !important;
+}
 body.tema-claro #row-parcelado {
   background: #edf2f7 !important;
   border-color: #cbd5e0 !important;
@@ -3936,8 +3952,16 @@ function salvarMeta() {
     if (!Array.isArray(state.metas)) state.metas = [];
     state.metas.push({id:mkId(), desc, valor, prazo, icone, aportado:0, criadoEm:nowM()});
   }
-  persist(); fecharModalMeta(); renderExtras();
-  toast("Meta salva! 🎯","#6DBE8C");
+  // Salvar e garantir que localStorage está atualizado
+  if (!Array.isArray(state.metas)) state.metas = [];
+  try { localStorage.setItem(STORE, JSON.stringify(state)); } catch(_) {}
+  persist();
+  fecharModalMeta();
+  // Re-renderizar com pequeno delay para garantir que DOM está pronto
+  setTimeout(() => {
+    renderExtras();
+    toast("Meta \""+desc+"\" salva! 🎯","#6DBE8C");
+  }, 50);
 }
 function delMeta(id) {
   state.metas = state.metas.filter(x=>x.id!==id);
@@ -4431,7 +4455,16 @@ function respostaLocal(pergunta, ctx) {
     const metaMensal = ra.renda*(state.meta||20)/100;
     return `🎯 Sua meta é poupar ${state.meta||20}% da renda = **${fmt(metaMensal)}/mês**.\nAtualmente você tem ${fmt(Math.max(ra.saldoMes,0))} disponível.\n${ra.saldoMes>=metaMensal?"✅ Você está atingindo a meta!":"💪 Ainda falta "+fmt(metaMensal-ra.saldoMes)+" para bater a meta."}`;
   }
-  return `Para uma análise detalhada, adicione sua API Key Claude no ⚙️ Config acima. Por enquanto, clique em ✨ Analisar para ver um diagnóstico do mês.`;
+  // Fallback: se tem dados, mostrar situação básica
+  if (ra.renda > 0 || gm.length > 0) {
+    const pct = ra.renda>0?(ra.gasto/ra.renda*100).toFixed(0):0;
+    const porCat2 = {};
+    gm.forEach(g=>{ porCat2[g.cat]=(porCat2[g.cat]||0)+g.valor; });
+    const catMaior2 = Object.entries(porCat2).sort((a,b)=>b[1]-a[1])[0];
+    const catTxt = catMaior2 ? "\n\n📦 Maior gasto: **"+catMaior2[0]+"** ("+fmt(catMaior2[1])+")" : "";
+    return "📊 **"+mesNome(mesAtivo)+"**: Renda "+fmt(ra.renda)+" · Gastos "+fmt(ra.gasto)+" ("+pct+"% da renda) · Saldo "+fmt(ra.saldoMes)+catTxt+"\n\nPrecisa de mais detalhes? Adicione sua API Key na aba IA → ⚙️ Config.";
+  }
+  return "Adicione lançamentos e rendas para que eu possa te ajudar! 💡";
 }
 
 function adicionarMensagemChat(tipo, texto, temp=false) {
@@ -4641,10 +4674,13 @@ const DESAFIOS_LISTA = [
 ];
 
 function renderDesafios() {
+  // Renderizar para ambos os elementos (Extras e Score)
   const el = document.getElementById("desafios-content");
-  if (!el) return;
+  const el2 = document.getElementById("desafios-list");
+  if (!el && !el2) return;
+  const targets = [el, el2].filter(Boolean);
   const ativos = state.desafios||{};
-  el.innerHTML = DESAFIOS_LISTA.map(d=>{
+  const desafiosHtml = DESAFIOS_LISTA.map(d=>{
     const ativo = ativos[d.id];
     const inicio = ativo ? new Date(ativo.inicio) : null;
     const hoje = new Date();
@@ -4670,6 +4706,7 @@ function renderDesafios() {
         `:`<p style="font-size:11px;color:#6060a0">🎯 Duração: ${d.dias} dias · Reduzir ${d.cat} em ${d.reducao}%</p>`}
       </div>`;
   }).join("");
+  targets.forEach(t => { t.innerHTML = desafiosHtml; });
 }
 
 function iniciarDesafio(id) {
@@ -4776,8 +4813,8 @@ function confirmarOCR() {
 // 2. DETECÇÃO DE GASTOS REPETIDOS/SUBSCRIPTIONS
 // ══════════════════════════════════════════════
 function detectarGastosRepetidos() {
-  // Buscar gastos dos últimos 3 meses
-  const ultimosMeses = allMeses().filter(m => !calcResumo().find(r=>r.mes===m)?.projecao).slice(-3);
+  // Buscar gastos dos últimos meses disponíveis
+  const ultimosMeses = allMeses().filter(m => !calcResumo().find(r=>r.mes===m)?.projecao).slice(-6);
   const todosMeses = ultimosMeses.flatMap(m => gastosDoMes(m));
 
   // Agrupar por descrição similar
@@ -4792,7 +4829,7 @@ function detectarGastosRepetidos() {
   const suspeitos = [];
   for (const [chave, gastos] of Object.entries(grupos)) {
     const mesesGasto = [...new Set(gastos.map(g=>mesStr(g.data)))];
-    if (mesesGasto.length >= 2) {
+    if (mesesGasto.length >= 1) { // detectar mesmo com 1 mês (assinaturas)
       const media = gastos.reduce((s,g)=>s+g.valor,0)/gastos.length;
       suspeitos.push({chave, gastos, mesesGasto, media, cat:gastos[0].cat});
     }
@@ -4800,7 +4837,9 @@ function detectarGastosRepetidos() {
 
   // Detectar "subscriptions" por palavras-chave
   const subKeywords = /netflix|spotify|amazon|prime|disney|hbo|youtube|apple|microsoft|adobe|canva|dropbox|icloud|google\s*one|deezer|globoplay|telecine/i;
-  const subscriptions = todosMeses.filter(g => subKeywords.test(g.desc));
+  // Buscar em todos os gastos (não só nos últimos meses)
+  const todosGastos = state.gastos || [];
+  const subscriptions = todosGastos.filter(g => subKeywords.test(g.desc));
   const subUnicas = [...new Map(subscriptions.map(g=>[g.desc.toLowerCase(), g])).values()];
 
   return { suspeitos, subscriptions: subUnicas };
@@ -5283,7 +5322,7 @@ function renderConquistas() {
   }).join("");
 }
 
-function renderDesafios() {
+function renderDesafiosScore() {
   const el = document.getElementById("desafios-list");
   if (!el) return;
   const ra = resumoAtivo();
@@ -5847,7 +5886,9 @@ function iniciarPollingTelegram(){
   const t=localStorage.getItem("tg_token"),c=localStorage.getItem("tg_chatid");if(!t||!c)return;
   if(_tgPollingAtivo)return;_tgPollingAtivo=true;
   const ind=document.getElementById("tg-indicador");if(ind){ind.textContent="🟢 Bot ativo";ind.style.color="#6DBE8C";}
-  _executarPoll();_tgPollingTimer=setInterval(_executarPoll,30000);
+  _executarPoll(); // imediato
+  // Poll a cada 15s (mais responsivo que 30s)
+  _tgPollingTimer = setInterval(_executarPoll, 15000);
 }
 async function _executarPoll(){
   const t=localStorage.getItem("tg_token"),c=localStorage.getItem("tg_chatid");if(!t||!c){_tgPollingAtivo=false;return;}
@@ -6280,7 +6321,7 @@ if (fbToken && fbUserId) {
   mostrarFab();
   render();
   // 2. Sincronizar com nuvem em segundo plano (atualiza sem apagar dados)
-  // Sync em segundo plano — só roda se não há edições pendentes
+  // Sync em segundo plano — aguardar 10s para dar tempo ao save local
   setTimeout(async () => {
     if (_syncPendente || _syncEmAndamento) return; // aguardar save local
     try {
@@ -6292,7 +6333,7 @@ if (fbToken && fbUserId) {
       _syncEmAndamento = false;
       console.warn("Sync nuvem falhou — usando dados locais");
     }
-  }, 2500);
+  }, 10000); // 10s para garantir que saves locais completaram
 } else {
   // Sem sessão — mostrar login
   mostrarLogin();
