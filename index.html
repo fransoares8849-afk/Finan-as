@@ -258,29 +258,49 @@ body { font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',
     <!-- ── INÍCIO ── -->
     <div class="section active" id="sec-inicio">
       <div class="hero-card" id="hero">
-        <div class="hero-label">Saldo Acumulado</div>
+      <div class="hero-label">Saldo Real (Acumulado)</div>
         <div class="hero-value" id="h-acum">R$ 0,00</div>
         <div class="hero-sub" id="h-sub">—</div>
         <div class="hero-grid">
           <div class="hero-kpi">
-            <div class="hero-kpi-label">Renda</div>
+            <div class="hero-kpi-label">💰 Recebido</div>
             <div class="hero-kpi-val pos" id="h-renda">R$ 0</div>
           </div>
           <div class="hero-kpi">
-            <div class="hero-kpi-label">Gastos</div>
+            <div class="hero-kpi-label">💸 Pago</div>
             <div class="hero-kpi-val neg" id="h-gastos">R$ 0</div>
+          </div>
+        </div>
+        <!-- Saldo Previsto -->
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.1)">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:4px">Saldo Previsto (mês completo)</div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div id="h-prev" style="font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;color:rgba(255,255,255,.85)">R$ 0</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.35)" id="h-prev-sub">Receitas - Gastos previstos</div>
           </div>
         </div>
       </div>
 
-      <!-- Saldo do mês -->
+      <!-- Saldo do mês real e previsto -->
       <div class="kpi-strip">
         <div class="kpi-box">
-          <div class="t-label">Saldo do mês</div>
+          <div class="t-label">Saldo Real</div>
+          <div class="t-caption" style="margin-bottom:2px">Só pagos/recebidos</div>
           <div class="kpi-v" id="k-saldo">R$ 0</div>
         </div>
         <div class="kpi-box">
-          <div class="t-label">A pagar</div>
+          <div class="t-label">Saldo Previsto</div>
+          <div class="t-caption" style="margin-bottom:2px">Com tudo lançado</div>
+          <div class="kpi-v" id="k-prev">R$ 0</div>
+        </div>
+      </div>
+      <div class="kpi-strip" style="margin-top:-4px">
+        <div class="kpi-box">
+          <div class="t-label">A Receber</div>
+          <div class="kpi-v" id="k-areceber" style="color:var(--green)">R$ 0</div>
+        </div>
+        <div class="kpi-box">
+          <div class="t-label">A Pagar</div>
           <div class="kpi-v" id="k-apagar" style="color:var(--red)">R$ 0</div>
         </div>
       </div>
@@ -735,25 +755,63 @@ function render() {
 
 // ── INICIO ──
 function renderInicio() {
-  const r = resumo(mesAtivo);
-  const acum = acumAte(mesAtivo);
+  const ls = lancsDoMes(mesAtivo);
 
-  // Hero
-  document.getElementById("h-acum").textContent = (acum<0?"-":"")+fmt(acum);
+  // ── Saldo REAL: só pagos/recebidos ──────────────────
+  const rendaReal   = ls.filter(l=>l.tipo==="renda"&&l.pago).reduce((s,l)=>s+l.valor,0);
+  const gastosReais = ls.filter(l=>l.tipo==="gasto"&&l.pago).reduce((s,l)=>s+l.valor,0);
+  const saldoRealMes = rendaReal - gastosReais;
+
+  // Acumulado real: soma dos saldos reais de todos os meses
+  const acumReal = (() => {
+    let a = state.saldoInicial||0;
+    mesesComDados().filter(m=>m<=mesAtivo).forEach(m=>{
+      const ml = lancsDoMes(m);
+      const r = ml.filter(l=>l.tipo==="renda"&&l.pago).reduce((s,l)=>s+l.valor,0);
+      const g = ml.filter(l=>l.tipo==="gasto"&&l.pago).reduce((s,l)=>s+l.valor,0);
+      a += r - g;
+    });
+    return a;
+  })();
+
+  // ── Saldo PREVISTO: tudo lançado ────────────────────
+  const rendaPrev   = ls.filter(l=>l.tipo==="renda").reduce((s,l)=>s+l.valor,0);
+  const gastosPrev  = ls.filter(l=>l.tipo==="gasto").reduce((s,l)=>s+l.valor,0);
+  const saldoPrevMes = rendaPrev - gastosPrev;
+
+  // A receber e a pagar
+  const aReceber = ls.filter(l=>l.tipo==="renda"&&!l.pago).reduce((s,l)=>s+l.valor,0);
+  const aPagar   = ls.filter(l=>l.tipo==="gasto"&&!l.pago).reduce((s,l)=>s+l.valor,0);
+
+  // ── Hero ─────────────────────────────────────────────
+  document.getElementById("h-acum").textContent = (acumReal<0?"-":"")+fmt(acumReal);
+  document.getElementById("h-acum").style.color = acumReal>=0?"#fff":"#F87171";
   document.getElementById("h-sub").textContent = "Saldo inicial "+fmt(state.saldoInicial||0)+" · "+fmtML(mesAtivo);
-  document.getElementById("hero").style.setProperty("--acum-color", acum>=0?"var(--green)":"var(--red)");
-  document.getElementById("h-renda").textContent  = fmt(r.renda);
-  document.getElementById("h-gastos").textContent = fmt(r.gastos);
+  document.getElementById("hero").style.background = acumReal>=0
+    ? "linear-gradient(135deg,#1A1040 0%,#0D1030 60%,#1A1040 100%)"
+    : "linear-gradient(135deg,#2A0A10 0%,#1A0510 60%,#2A0A10 100%)";
+  document.getElementById("h-renda").textContent  = fmt(rendaReal);
+  document.getElementById("h-gastos").textContent = fmt(gastosReais);
 
-  // KPIs
+  // Saldo previsto no hero
+  const prevEl = document.getElementById("h-prev");
+  prevEl.textContent = (saldoPrevMes<0?"-":"")+fmt(saldoPrevMes);
+  prevEl.style.color = saldoPrevMes>=0?"rgba(74,222,128,.9)":"rgba(248,113,113,.9)";
+  document.getElementById("h-prev-sub").textContent = fmt(rendaPrev)+" receitas − "+fmt(gastosPrev)+" gastos";
+
+  // ── KPIs ─────────────────────────────────────────────
   const saldoEl = document.getElementById("k-saldo");
-  saldoEl.textContent = (r.saldo<0?"-":"")+fmt(r.saldo);
-  saldoEl.style.color = r.saldo>=0 ? "var(--green)" : "var(--red)";
+  saldoEl.textContent = (saldoRealMes<0?"-":"")+fmt(saldoRealMes);
+  saldoEl.style.color = saldoRealMes>=0?"var(--green)":"var(--red)";
 
-  const pendentes = lancsDoMes(mesAtivo).filter(l=>l.tipo==="gasto"&&!l.pago);
-  document.getElementById("k-apagar").textContent = fmt(pendentes.reduce((s,l)=>s+l.valor,0));
+  const prevKpiEl = document.getElementById("k-prev");
+  prevKpiEl.textContent = (saldoPrevMes<0?"-":"")+fmt(saldoPrevMes);
+  prevKpiEl.style.color = saldoPrevMes>=0?"var(--green)":"var(--red)";
 
-  // Alertas
+  document.getElementById("k-areceber").textContent = fmt(aReceber);
+  document.getElementById("k-apagar").textContent   = fmt(aPagar);
+
+  // ── Alertas ───────────────────────────────────────────
   const hoje = nowS();
   const alertas = state.lancamentos.filter(l=>{
     if (l.tipo!=="gasto"||l.pago||!l.vencimento) return false;
@@ -770,10 +828,10 @@ function renderInicio() {
     </div>`;
   }).join("");
 
-  // Lista recentes
-  const ls = lancsDoMes(mesAtivo).sort((a,b)=>b.data.localeCompare(a.data)).slice(0,6);
-  document.getElementById("lista-inicio").innerHTML = ls.length
-    ? ls.map(l=>lancHTML(l,false)).join("")
+  // ── Recentes ──────────────────────────────────────────
+  const lista = ls.sort((a,b)=>b.data.localeCompare(a.data)).slice(0,6);
+  document.getElementById("lista-inicio").innerHTML = lista.length
+    ? lista.map(l=>lancHTML(l,false)).join("")
     : `<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">Nenhum lançamento em ${fmtML(mesAtivo)}</div></div>`;
 }
 
