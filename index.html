@@ -222,6 +222,22 @@ body { font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',
 .empty-text { font-size:14px; color:var(--muted); }
 
 /* ── RESPONSIVE ──────────────────────────────────────────── */
+
+/* BENEFÍCIOS (VR / Ticket) */
+.benef-strip { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+.benef-card { border-radius:var(--radius); padding:14px 16px; border:1px solid; position:relative; overflow:hidden; }
+.benef-card::before { content:""; position:absolute; top:-20px; right:-20px; width:80px; height:80px; border-radius:50%; opacity:.08; }
+.benef-vr   { background:color-mix(in srgb,#F97316 8%,var(--surface)); border-color:color-mix(in srgb,#F97316 30%,transparent); }
+.benef-vr::before   { background:#F97316; }
+.benef-tick { background:color-mix(in srgb,#8B5CF6 8%,var(--surface)); border-color:color-mix(in srgb,#8B5CF6 30%,transparent); }
+.benef-tick::before { background:#8B5CF6; }
+.benef-lbl  { font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; margin-bottom:4px; }
+.benef-vr   .benef-lbl  { color:#F97316; }
+.benef-tick .benef-lbl  { color:#8B5CF6; }
+.benef-val  { font-size:20px; font-weight:800; font-variant-numeric:tabular-nums; color:var(--text); }
+.benef-sub  { font-size:10px; color:var(--muted); margin-top:3px; }
+.benef-edit { position:absolute; top:10px; right:10px; background:none; border:1px solid var(--border); border-radius:6px; font-size:11px; padding:3px 7px; cursor:pointer; color:var(--muted); font-family:inherit; }
+
 @media (prefers-reduced-motion:reduce) { *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; } }
 </style>
 </head>
@@ -278,6 +294,22 @@ body { font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',
             <div id="h-prev" style="font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;color:rgba(255,255,255,.85)">R$ 0</div>
             <div style="font-size:11px;color:rgba(255,255,255,.35)" id="h-prev-sub">Receitas - Gastos previstos</div>
           </div>
+        </div>
+      </div>
+
+      <!-- Benefícios VR / Ticket -->
+      <div class="benef-strip" id="benef-strip">
+        <div class="benef-card benef-vr">
+          <div class="benef-lbl">🍽️ Vale Refeição</div>
+          <div class="benef-val" id="b-vr">R$ 0,00</div>
+          <div class="benef-sub" id="b-vr-sub">—</div>
+          <button class="benef-edit" onclick="editarBenef('vr')">✏️</button>
+        </div>
+        <div class="benef-card benef-tick">
+          <div class="benef-lbl">🛒 Ticket</div>
+          <div class="benef-val" id="b-tick">R$ 0,00</div>
+          <div class="benef-sub" id="b-tick-sub">—</div>
+          <button class="benef-edit" onclick="editarBenef('ticket')">✏️</button>
         </div>
       </div>
 
@@ -345,6 +377,32 @@ body { font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',
           <input id="cfg-saldo-ini" type="number" placeholder="Ex: 5000" step="0.01">
         </div>
         <button class="btn btn-primary" onclick="salvarSaldoIni()">Salvar saldo inicial</button>
+      </div>
+
+      <div class="card" style="margin-bottom:12px">
+        <div class="t-label" style="margin-bottom:14px">🍽️ Vale Refeição / 🛒 Ticket</div>
+        <p class="t-body" style="margin-bottom:12px">Saldo dos cartões de benefício (independente do saldo bancário)</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="field" style="margin-bottom:0">
+            <label>VR (R$)</label>
+            <input id="cfg-vr" type="number" placeholder="Ex: 350" step="0.01" min="0">
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label>Ticket (R$)</label>
+            <input id="cfg-ticket" type="number" placeholder="Ex: 200" step="0.01" min="0">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="field" style="margin-bottom:0">
+            <label>Desc VR (opcional)</label>
+            <input id="cfg-vr-desc" placeholder="Ex: Sodexo" type="text">
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label>Desc Ticket (opcional)</label>
+            <input id="cfg-ticket-desc" placeholder="Ex: Alelo" type="text">
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="salvarBeneficios()">💾 Salvar benefícios</button>
       </div>
 
       <div class="card" style="margin-bottom:12px">
@@ -460,6 +518,22 @@ body { font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',
   </div>
 </div>
 
+
+<!-- MODAL BENEFÍCIO -->
+<div class="overlay" id="overlay-benef" onclick="if(event.target===this)fecharBenef()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="benef-modal-title">Editar Saldo</div>
+    <input type="hidden" id="benef-tipo">
+    <div class="field"><label>Saldo atual (R$)</label><input id="benef-val-inp" type="number" step="0.01" min="0" placeholder="0,00" inputmode="decimal"></div>
+    <div class="field"><label>Descrição (opcional)</label><input id="benef-desc-inp" placeholder="Ex: Sodexo, Alelo..." type="text"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+      <button class="btn btn-ghost" onclick="fecharBenef()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarBenefModal()">Salvar</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -481,7 +555,7 @@ let refresh = localStorage.getItem("fp_ref") || "";
 
 // ── App state ──
 let state = load();
-let mesAtivo = localStorage.getItem("fp_mes") || nowM();
+let mesAtivo = localStorage.getItem("fp_mes") || "2026-07";
 let tipoForm = "gasto";
 
 // ══════════════════════════════════════════════
@@ -492,9 +566,17 @@ function load() {
     const s = JSON.parse(localStorage.getItem(STORE));
     if (s?.lancamentos?.length > 0) return s;
   } catch(_) {}
-  return vazio();
+  // Dados iniciais pré-carregados
+  return dadosIniciais();
 }
 function vazio() { return { saldoInicial:0, lancamentos:[], _ts:0 }; }
+function dadosIniciais() {
+  return {
+    saldoInicial: 0,
+    _ts: Date.now(),
+    lancamentos: [{"id":"u4xatmgb","tipo":"renda","desc":"Vale adrielly","valor":1500.0,"cat":"Renda","data":"2026-07-20","vencimento":null,"pago":true,"grupoId":"ghmz6au1s","recorrente":true},{"id":"odcwxke2","tipo":"renda","desc":"Vale adrielly","valor":1500.0,"cat":"Renda","data":"2026-08-20","vencimento":null,"pago":false,"grupoId":"ghmz6au1s","recorrente":true},{"id":"t42w7ukd","tipo":"renda","desc":"Vale adrielly","valor":1500.0,"cat":"Renda","data":"2026-09-20","vencimento":null,"pago":false,"grupoId":"ghmz6au1s","recorrente":true},{"id":"hxdhpfod","tipo":"renda","desc":"Vale adrielly","valor":1500.0,"cat":"Renda","data":"2026-10-20","vencimento":null,"pago":false,"grupoId":"ghmz6au1s","recorrente":true},{"id":"ncvyi62p","tipo":"renda","desc":"Vale adrielly","valor":1500.0,"cat":"Renda","data":"2026-11-20","vencimento":null,"pago":false,"grupoId":"ghmz6au1s","recorrente":true},{"id":"z5gedlq8","tipo":"renda","desc":"Vale adrielly","valor":1500.0,"cat":"Renda","data":"2026-12-20","vencimento":null,"pago":false,"grupoId":"ghmz6au1s","recorrente":true},{"id":"rm684037","tipo":"renda","desc":"Vale adrielly","valor":1500.0,"cat":"Renda","data":"2027-01-20","vencimento":null,"pago":false,"grupoId":"ghmz6au1s","recorrente":true},{"id":"59mp530b","tipo":"renda","desc":"Vale adrielly","valor":1500.0,"cat":"Renda","data":"2027-02-20","vencimento":null,"pago":false,"grupoId":"ghmz6au1s","recorrente":true},{"id":"m1wxitek","tipo":"renda","desc":"Vale adrielly","valor":1500.0,"cat":"Renda","data":"2027-03-20","vencimento":null,"pago":false,"grupoId":"ghmz6au1s","recorrente":true},{"id":"2lqmyeiu","tipo":"renda","desc":"Vale adrielly","valor":1500.0,"cat":"Renda","data":"2027-04-20","vencimento":null,"pago":false,"grupoId":"ghmz6au1s","recorrente":true},{"id":"tvkufewo","tipo":"renda","desc":"Vale adrielly","valor":1500.0,"cat":"Renda","data":"2027-05-20","vencimento":null,"pago":false,"grupoId":"ghmz6au1s","recorrente":true},{"id":"xt405hvm","tipo":"renda","desc":"Vale adrielly","valor":1500.0,"cat":"Renda","data":"2027-06-20","vencimento":null,"pago":false,"grupoId":"ghmz6au1s","recorrente":true},{"id":"p13bbjtg","tipo":"renda","desc":"Vale adrielly","valor":1500.0,"cat":"Renda","data":"2027-07-20","vencimento":null,"pago":false,"grupoId":"ghmz6au1s","recorrente":true},{"id":"kombzvad","tipo":"renda","desc":"Vale adrielly","valor":1500.0,"cat":"Renda","data":"2027-08-20","vencimento":null,"pago":false,"grupoId":"ghmz6au1s","recorrente":true},{"id":"3mavwb1e","tipo":"renda","desc":"Vale adrielly","valor":1500.0,"cat":"Renda","data":"2027-09-20","vencimento":null,"pago":false,"grupoId":"ghmz6au1s","recorrente":true},{"id":"ks0q7in4","tipo":"renda","desc":"Vale adrielly","valor":1500.0,"cat":"Renda","data":"2027-10-20","vencimento":null,"pago":false,"grupoId":"ghmz6au1s","recorrente":true},{"id":"vyzf3iu2","tipo":"renda","desc":"Vale adrielly","valor":1500.0,"cat":"Renda","data":"2027-11-20","vencimento":null,"pago":false,"grupoId":"ghmz6au1s","recorrente":true},{"id":"v1lsejj4","tipo":"renda","desc":"Vale adrielly","valor":1500.0,"cat":"Renda","data":"2027-12-20","vencimento":null,"pago":false,"grupoId":"ghmz6au1s","recorrente":true},{"id":"ykf7i7oj","tipo":"renda","desc":"Vale adrielly","valor":1500.0,"cat":"Renda","data":"2028-01-20","vencimento":null,"pago":false,"grupoId":"ghmz6au1s","recorrente":true},{"id":"4td13bs5","tipo":"renda","desc":"Vale adrielly","valor":1500.0,"cat":"Renda","data":"2028-02-20","vencimento":null,"pago":false,"grupoId":"ghmz6au1s","recorrente":true},{"id":"5z4080an","tipo":"renda","desc":"Vale adrielly","valor":1500.0,"cat":"Renda","data":"2028-03-20","vencimento":null,"pago":false,"grupoId":"ghmz6au1s","recorrente":true},{"id":"gjxmw9nf","tipo":"renda","desc":"Vale adrielly","valor":1500.0,"cat":"Renda","data":"2028-04-20","vencimento":null,"pago":false,"grupoId":"ghmz6au1s","recorrente":true},{"id":"qnr9i4hg","tipo":"renda","desc":"Vale adrielly","valor":1500.0,"cat":"Renda","data":"2028-05-20","vencimento":null,"pago":false,"grupoId":"ghmz6au1s","recorrente":true},{"id":"phwixjgl","tipo":"renda","desc":"Vale adrielly","valor":1500.0,"cat":"Renda","data":"2028-06-20","vencimento":null,"pago":false,"grupoId":"ghmz6au1s","recorrente":true},{"id":"yqgi6alh","tipo":"gasto","desc":"Claro internet","valor":199.0,"cat":"Moradia","data":"2026-07-19","vencimento":"2026-07-19","pago":true,"grupoId":"gn90mkwh7","recorrente":true},{"id":"l6kzfj2x","tipo":"gasto","desc":"Claro internet","valor":199.0,"cat":"Moradia","data":"2026-08-19","vencimento":"2026-08-19","pago":false,"grupoId":"gn90mkwh7","recorrente":true},{"id":"1uh1bfng","tipo":"gasto","desc":"Claro internet","valor":199.0,"cat":"Moradia","data":"2026-09-19","vencimento":"2026-09-19","pago":false,"grupoId":"gn90mkwh7","recorrente":true},{"id":"ft3fachw","tipo":"gasto","desc":"Claro internet","valor":199.0,"cat":"Moradia","data":"2026-10-19","vencimento":"2026-10-19","pago":false,"grupoId":"gn90mkwh7","recorrente":true},{"id":"h7b5hcqd","tipo":"gasto","desc":"Claro internet","valor":199.0,"cat":"Moradia","data":"2026-11-19","vencimento":"2026-11-19","pago":false,"grupoId":"gn90mkwh7","recorrente":true},{"id":"se2uz4k4","tipo":"gasto","desc":"Claro internet","valor":199.0,"cat":"Moradia","data":"2026-12-19","vencimento":"2026-12-19","pago":false,"grupoId":"gn90mkwh7","recorrente":true},{"id":"64mw518s","tipo":"gasto","desc":"Claro internet","valor":199.0,"cat":"Moradia","data":"2027-01-19","vencimento":"2027-01-19","pago":false,"grupoId":"gn90mkwh7","recorrente":true},{"id":"r9caalay","tipo":"gasto","desc":"Claro internet","valor":199.0,"cat":"Moradia","data":"2027-02-19","vencimento":"2027-02-19","pago":false,"grupoId":"gn90mkwh7","recorrente":true},{"id":"32jcxux9","tipo":"gasto","desc":"Claro internet","valor":199.0,"cat":"Moradia","data":"2027-03-19","vencimento":"2027-03-19","pago":false,"grupoId":"gn90mkwh7","recorrente":true},{"id":"hwwxseuh","tipo":"gasto","desc":"Claro internet","valor":199.0,"cat":"Moradia","data":"2027-04-19","vencimento":"2027-04-19","pago":false,"grupoId":"gn90mkwh7","recorrente":true},{"id":"dm2b8end","tipo":"gasto","desc":"Claro internet","valor":199.0,"cat":"Moradia","data":"2027-05-19","vencimento":"2027-05-19","pago":false,"grupoId":"gn90mkwh7","recorrente":true},{"id":"qu341agi","tipo":"gasto","desc":"Claro internet","valor":199.0,"cat":"Moradia","data":"2027-06-19","vencimento":"2027-06-19","pago":false,"grupoId":"gn90mkwh7","recorrente":true},{"id":"v03gtw56","tipo":"gasto","desc":"Claro internet","valor":199.0,"cat":"Moradia","data":"2027-07-19","vencimento":"2027-07-19","pago":false,"grupoId":"gn90mkwh7","recorrente":true},{"id":"pm9qdb7f","tipo":"gasto","desc":"Claro internet","valor":199.0,"cat":"Moradia","data":"2027-08-19","vencimento":"2027-08-19","pago":false,"grupoId":"gn90mkwh7","recorrente":true},{"id":"sbpkt6oa","tipo":"gasto","desc":"Claro internet","valor":199.0,"cat":"Moradia","data":"2027-09-19","vencimento":"2027-09-19","pago":false,"grupoId":"gn90mkwh7","recorrente":true},{"id":"12z6or5j","tipo":"gasto","desc":"Claro internet","valor":199.0,"cat":"Moradia","data":"2027-10-19","vencimento":"2027-10-19","pago":false,"grupoId":"gn90mkwh7","recorrente":true},{"id":"xc0b09za","tipo":"gasto","desc":"Claro internet","valor":199.0,"cat":"Moradia","data":"2027-11-19","vencimento":"2027-11-19","pago":false,"grupoId":"gn90mkwh7","recorrente":true},{"id":"qrt29ed0","tipo":"gasto","desc":"Claro internet","valor":199.0,"cat":"Moradia","data":"2027-12-19","vencimento":"2027-12-19","pago":false,"grupoId":"gn90mkwh7","recorrente":true},{"id":"hf2fzfv4","tipo":"gasto","desc":"Claro internet","valor":199.0,"cat":"Moradia","data":"2028-01-19","vencimento":"2028-01-19","pago":false,"grupoId":"gn90mkwh7","recorrente":true},{"id":"7vjpz5hd","tipo":"gasto","desc":"Claro internet","valor":199.0,"cat":"Moradia","data":"2028-02-19","vencimento":"2028-02-19","pago":false,"grupoId":"gn90mkwh7","recorrente":true},{"id":"kqz6sje2","tipo":"gasto","desc":"Claro internet","valor":199.0,"cat":"Moradia","data":"2028-03-19","vencimento":"2028-03-19","pago":false,"grupoId":"gn90mkwh7","recorrente":true},{"id":"9hh7y6ku","tipo":"gasto","desc":"Claro internet","valor":199.0,"cat":"Moradia","data":"2028-04-19","vencimento":"2028-04-19","pago":false,"grupoId":"gn90mkwh7","recorrente":true},{"id":"zdbcuhy1","tipo":"gasto","desc":"Claro internet","valor":199.0,"cat":"Moradia","data":"2028-05-19","vencimento":"2028-05-19","pago":false,"grupoId":"gn90mkwh7","recorrente":true},{"id":"d0qbjiz1","tipo":"gasto","desc":"Claro internet","valor":199.0,"cat":"Moradia","data":"2028-06-19","vencimento":"2028-06-19","pago":false,"grupoId":"gn90mkwh7","recorrente":true},{"id":"af3k6hsq","tipo":"gasto","desc":"Claro móvel","valor":135.0,"cat":"Moradia","data":"2026-07-19","vencimento":"2026-07-19","pago":true,"grupoId":"gu4y389rf","recorrente":true},{"id":"9zhqrgm5","tipo":"gasto","desc":"Claro móvel","valor":135.0,"cat":"Moradia","data":"2026-08-19","vencimento":"2026-08-19","pago":false,"grupoId":"gu4y389rf","recorrente":true},{"id":"77qiohps","tipo":"gasto","desc":"Claro móvel","valor":135.0,"cat":"Moradia","data":"2026-09-19","vencimento":"2026-09-19","pago":false,"grupoId":"gu4y389rf","recorrente":true},{"id":"9ny0is1i","tipo":"gasto","desc":"Claro móvel","valor":135.0,"cat":"Moradia","data":"2026-10-19","vencimento":"2026-10-19","pago":false,"grupoId":"gu4y389rf","recorrente":true},{"id":"9iqwlydp","tipo":"gasto","desc":"Claro móvel","valor":135.0,"cat":"Moradia","data":"2026-11-19","vencimento":"2026-11-19","pago":false,"grupoId":"gu4y389rf","recorrente":true},{"id":"cpktwekd","tipo":"gasto","desc":"Claro móvel","valor":135.0,"cat":"Moradia","data":"2026-12-19","vencimento":"2026-12-19","pago":false,"grupoId":"gu4y389rf","recorrente":true},{"id":"e3bhm07d","tipo":"gasto","desc":"Claro móvel","valor":135.0,"cat":"Moradia","data":"2027-01-19","vencimento":"2027-01-19","pago":false,"grupoId":"gu4y389rf","recorrente":true},{"id":"5hab4boi","tipo":"gasto","desc":"Claro móvel","valor":135.0,"cat":"Moradia","data":"2027-02-19","vencimento":"2027-02-19","pago":false,"grupoId":"gu4y389rf","recorrente":true},{"id":"fem06ox7","tipo":"gasto","desc":"Claro móvel","valor":135.0,"cat":"Moradia","data":"2027-03-19","vencimento":"2027-03-19","pago":false,"grupoId":"gu4y389rf","recorrente":true},{"id":"nne5rjr1","tipo":"gasto","desc":"Claro móvel","valor":135.0,"cat":"Moradia","data":"2027-04-19","vencimento":"2027-04-19","pago":false,"grupoId":"gu4y389rf","recorrente":true},{"id":"m729mfvl","tipo":"gasto","desc":"Claro móvel","valor":135.0,"cat":"Moradia","data":"2027-05-19","vencimento":"2027-05-19","pago":false,"grupoId":"gu4y389rf","recorrente":true},{"id":"r9jn1fns","tipo":"gasto","desc":"Claro móvel","valor":135.0,"cat":"Moradia","data":"2027-06-19","vencimento":"2027-06-19","pago":false,"grupoId":"gu4y389rf","recorrente":true},{"id":"awo6tsgg","tipo":"gasto","desc":"Claro móvel","valor":135.0,"cat":"Moradia","data":"2027-07-19","vencimento":"2027-07-19","pago":false,"grupoId":"gu4y389rf","recorrente":true},{"id":"zvmvpk46","tipo":"gasto","desc":"Claro móvel","valor":135.0,"cat":"Moradia","data":"2027-08-19","vencimento":"2027-08-19","pago":false,"grupoId":"gu4y389rf","recorrente":true},{"id":"z91gu6zw","tipo":"gasto","desc":"Claro móvel","valor":135.0,"cat":"Moradia","data":"2027-09-19","vencimento":"2027-09-19","pago":false,"grupoId":"gu4y389rf","recorrente":true},{"id":"jgu12m0b","tipo":"gasto","desc":"Claro móvel","valor":135.0,"cat":"Moradia","data":"2027-10-19","vencimento":"2027-10-19","pago":false,"grupoId":"gu4y389rf","recorrente":true},{"id":"bracbq93","tipo":"gasto","desc":"Claro móvel","valor":135.0,"cat":"Moradia","data":"2027-11-19","vencimento":"2027-11-19","pago":false,"grupoId":"gu4y389rf","recorrente":true},{"id":"1iyos7h4","tipo":"gasto","desc":"Claro móvel","valor":135.0,"cat":"Moradia","data":"2027-12-19","vencimento":"2027-12-19","pago":false,"grupoId":"gu4y389rf","recorrente":true},{"id":"8337ival","tipo":"gasto","desc":"Claro móvel","valor":135.0,"cat":"Moradia","data":"2028-01-19","vencimento":"2028-01-19","pago":false,"grupoId":"gu4y389rf","recorrente":true},{"id":"ps4235kv","tipo":"gasto","desc":"Claro móvel","valor":135.0,"cat":"Moradia","data":"2028-02-19","vencimento":"2028-02-19","pago":false,"grupoId":"gu4y389rf","recorrente":true},{"id":"28gz1xci","tipo":"gasto","desc":"Claro móvel","valor":135.0,"cat":"Moradia","data":"2028-03-19","vencimento":"2028-03-19","pago":false,"grupoId":"gu4y389rf","recorrente":true},{"id":"7wl2zrsz","tipo":"gasto","desc":"Claro móvel","valor":135.0,"cat":"Moradia","data":"2028-04-19","vencimento":"2028-04-19","pago":false,"grupoId":"gu4y389rf","recorrente":true},{"id":"hglnq7tc","tipo":"gasto","desc":"Claro móvel","valor":135.0,"cat":"Moradia","data":"2028-05-19","vencimento":"2028-05-19","pago":false,"grupoId":"gu4y389rf","recorrente":true},{"id":"l253qcdp","tipo":"gasto","desc":"Claro móvel","valor":135.0,"cat":"Moradia","data":"2028-06-19","vencimento":"2028-06-19","pago":false,"grupoId":"gu4y389rf","recorrente":true},{"id":"g7bcgi94","tipo":"renda","desc":"Salário adrielly","valor":4600.0,"cat":"Renda","data":"2026-07-05","vencimento":null,"pago":true,"grupoId":"gmdrplobf","recorrente":true},{"id":"ez0gf4qm","tipo":"renda","desc":"Salário adrielly","valor":4600.0,"cat":"Renda","data":"2026-08-05","vencimento":null,"pago":false,"grupoId":"gmdrplobf","recorrente":true},{"id":"qf4tq1jz","tipo":"renda","desc":"Salário adrielly","valor":4600.0,"cat":"Renda","data":"2026-09-05","vencimento":null,"pago":false,"grupoId":"gmdrplobf","recorrente":true},{"id":"8fy53rs4","tipo":"renda","desc":"Salário adrielly","valor":4600.0,"cat":"Renda","data":"2026-10-05","vencimento":null,"pago":false,"grupoId":"gmdrplobf","recorrente":true},{"id":"u29li3aw","tipo":"renda","desc":"Salário adrielly","valor":4600.0,"cat":"Renda","data":"2026-11-05","vencimento":null,"pago":false,"grupoId":"gmdrplobf","recorrente":true},{"id":"wwfiwfeq","tipo":"renda","desc":"Salário adrielly","valor":4600.0,"cat":"Renda","data":"2026-12-05","vencimento":null,"pago":false,"grupoId":"gmdrplobf","recorrente":true},{"id":"hnbsem3a","tipo":"renda","desc":"Salário adrielly","valor":4600.0,"cat":"Renda","data":"2027-01-05","vencimento":null,"pago":false,"grupoId":"gmdrplobf","recorrente":true},{"id":"f04i4b92","tipo":"renda","desc":"Salário adrielly","valor":4600.0,"cat":"Renda","data":"2027-02-05","vencimento":null,"pago":false,"grupoId":"gmdrplobf","recorrente":true},{"id":"102gq3rr","tipo":"renda","desc":"Salário adrielly","valor":4600.0,"cat":"Renda","data":"2027-03-05","vencimento":null,"pago":false,"grupoId":"gmdrplobf","recorrente":true},{"id":"ehrplzav","tipo":"renda","desc":"Salário adrielly","valor":4600.0,"cat":"Renda","data":"2027-04-05","vencimento":null,"pago":false,"grupoId":"gmdrplobf","recorrente":true},{"id":"26sf5367","tipo":"renda","desc":"Salário adrielly","valor":4600.0,"cat":"Renda","data":"2027-05-05","vencimento":null,"pago":false,"grupoId":"gmdrplobf","recorrente":true},{"id":"0wqia3eq","tipo":"renda","desc":"Salário adrielly","valor":4600.0,"cat":"Renda","data":"2027-06-05","vencimento":null,"pago":false,"grupoId":"gmdrplobf","recorrente":true},{"id":"or47cd1u","tipo":"renda","desc":"Salário adrielly","valor":4600.0,"cat":"Renda","data":"2027-07-05","vencimento":null,"pago":false,"grupoId":"gmdrplobf","recorrente":true},{"id":"ymap4x6x","tipo":"renda","desc":"Salário adrielly","valor":4600.0,"cat":"Renda","data":"2027-08-05","vencimento":null,"pago":false,"grupoId":"gmdrplobf","recorrente":true},{"id":"qhgqu7ya","tipo":"renda","desc":"Salário adrielly","valor":4600.0,"cat":"Renda","data":"2027-09-05","vencimento":null,"pago":false,"grupoId":"gmdrplobf","recorrente":true},{"id":"fvr1z2t6","tipo":"renda","desc":"Salário adrielly","valor":4600.0,"cat":"Renda","data":"2027-10-05","vencimento":null,"pago":false,"grupoId":"gmdrplobf","recorrente":true},{"id":"3mreqdv3","tipo":"renda","desc":"Salário adrielly","valor":4600.0,"cat":"Renda","data":"2027-11-05","vencimento":null,"pago":false,"grupoId":"gmdrplobf","recorrente":true},{"id":"mfq7b59s","tipo":"renda","desc":"Salário adrielly","valor":4600.0,"cat":"Renda","data":"2027-12-05","vencimento":null,"pago":false,"grupoId":"gmdrplobf","recorrente":true},{"id":"fytbh1x0","tipo":"renda","desc":"Salário adrielly","valor":4600.0,"cat":"Renda","data":"2028-01-05","vencimento":null,"pago":false,"grupoId":"gmdrplobf","recorrente":true},{"id":"2l3alky1","tipo":"renda","desc":"Salário adrielly","valor":4600.0,"cat":"Renda","data":"2028-02-05","vencimento":null,"pago":false,"grupoId":"gmdrplobf","recorrente":true},{"id":"sei8ex5y","tipo":"renda","desc":"Salário adrielly","valor":4600.0,"cat":"Renda","data":"2028-03-05","vencimento":null,"pago":false,"grupoId":"gmdrplobf","recorrente":true},{"id":"8x6m3ij2","tipo":"renda","desc":"Salário adrielly","valor":4600.0,"cat":"Renda","data":"2028-04-05","vencimento":null,"pago":false,"grupoId":"gmdrplobf","recorrente":true},{"id":"nu771uuf","tipo":"renda","desc":"Salário adrielly","valor":4600.0,"cat":"Renda","data":"2028-05-05","vencimento":null,"pago":false,"grupoId":"gmdrplobf","recorrente":true},{"id":"9ttr9qoq","tipo":"renda","desc":"Salário adrielly","valor":4600.0,"cat":"Renda","data":"2028-06-05","vencimento":null,"pago":false,"grupoId":"gmdrplobf","recorrente":true},{"id":"dyca9v16","tipo":"gasto","desc":"Aluguel","valor":1275.0,"cat":"Moradia","data":"2026-07-06","vencimento":"2026-07-06","pago":true,"grupoId":"g3vrfyvm0","recorrente":true},{"id":"jknjhx8b","tipo":"gasto","desc":"Aluguel","valor":1275.0,"cat":"Moradia","data":"2026-08-06","vencimento":"2026-08-06","pago":false,"grupoId":"g3vrfyvm0","recorrente":true},{"id":"emryvmj0","tipo":"gasto","desc":"Aluguel","valor":1275.0,"cat":"Moradia","data":"2026-09-06","vencimento":"2026-09-06","pago":false,"grupoId":"g3vrfyvm0","recorrente":true},{"id":"77k1rn6d","tipo":"gasto","desc":"Aluguel","valor":1275.0,"cat":"Moradia","data":"2026-10-06","vencimento":"2026-10-06","pago":false,"grupoId":"g3vrfyvm0","recorrente":true},{"id":"80c61uab","tipo":"gasto","desc":"Aluguel","valor":1275.0,"cat":"Moradia","data":"2026-11-06","vencimento":"2026-11-06","pago":false,"grupoId":"g3vrfyvm0","recorrente":true},{"id":"u6gu0zij","tipo":"gasto","desc":"Aluguel","valor":1275.0,"cat":"Moradia","data":"2026-12-06","vencimento":"2026-12-06","pago":false,"grupoId":"g3vrfyvm0","recorrente":true},{"id":"fd4u79wo","tipo":"gasto","desc":"Aluguel","valor":1275.0,"cat":"Moradia","data":"2027-01-06","vencimento":"2027-01-06","pago":false,"grupoId":"g3vrfyvm0","recorrente":true},{"id":"6imxfq2g","tipo":"gasto","desc":"Aluguel","valor":1275.0,"cat":"Moradia","data":"2027-02-06","vencimento":"2027-02-06","pago":false,"grupoId":"g3vrfyvm0","recorrente":true},{"id":"onf2m51m","tipo":"gasto","desc":"Aluguel","valor":1275.0,"cat":"Moradia","data":"2027-03-06","vencimento":"2027-03-06","pago":false,"grupoId":"g3vrfyvm0","recorrente":true},{"id":"pj0tnbg4","tipo":"gasto","desc":"Aluguel","valor":1275.0,"cat":"Moradia","data":"2027-04-06","vencimento":"2027-04-06","pago":false,"grupoId":"g3vrfyvm0","recorrente":true},{"id":"ysingc52","tipo":"gasto","desc":"Aluguel","valor":1275.0,"cat":"Moradia","data":"2027-05-06","vencimento":"2027-05-06","pago":false,"grupoId":"g3vrfyvm0","recorrente":true},{"id":"td7lyb1s","tipo":"gasto","desc":"Aluguel","valor":1275.0,"cat":"Moradia","data":"2027-06-06","vencimento":"2027-06-06","pago":false,"grupoId":"g3vrfyvm0","recorrente":true},{"id":"3kcr0ua8","tipo":"gasto","desc":"Aluguel","valor":1275.0,"cat":"Moradia","data":"2027-07-06","vencimento":"2027-07-06","pago":false,"grupoId":"g3vrfyvm0","recorrente":true},{"id":"23x6qs6s","tipo":"gasto","desc":"Aluguel","valor":1275.0,"cat":"Moradia","data":"2027-08-06","vencimento":"2027-08-06","pago":false,"grupoId":"g3vrfyvm0","recorrente":true},{"id":"lo1sh0ef","tipo":"gasto","desc":"Aluguel","valor":1275.0,"cat":"Moradia","data":"2027-09-06","vencimento":"2027-09-06","pago":false,"grupoId":"g3vrfyvm0","recorrente":true},{"id":"l4djj87f","tipo":"gasto","desc":"Aluguel","valor":1275.0,"cat":"Moradia","data":"2027-10-06","vencimento":"2027-10-06","pago":false,"grupoId":"g3vrfyvm0","recorrente":true},{"id":"830hv6fm","tipo":"gasto","desc":"Aluguel","valor":1275.0,"cat":"Moradia","data":"2027-11-06","vencimento":"2027-11-06","pago":false,"grupoId":"g3vrfyvm0","recorrente":true},{"id":"78ob3z3b","tipo":"gasto","desc":"Aluguel","valor":1275.0,"cat":"Moradia","data":"2027-12-06","vencimento":"2027-12-06","pago":false,"grupoId":"g3vrfyvm0","recorrente":true},{"id":"6gksis2o","tipo":"gasto","desc":"Aluguel","valor":1275.0,"cat":"Moradia","data":"2028-01-06","vencimento":"2028-01-06","pago":false,"grupoId":"g3vrfyvm0","recorrente":true},{"id":"u49pctz5","tipo":"gasto","desc":"Aluguel","valor":1275.0,"cat":"Moradia","data":"2028-02-06","vencimento":"2028-02-06","pago":false,"grupoId":"g3vrfyvm0","recorrente":true},{"id":"5h5bqxbt","tipo":"gasto","desc":"Aluguel","valor":1275.0,"cat":"Moradia","data":"2028-03-06","vencimento":"2028-03-06","pago":false,"grupoId":"g3vrfyvm0","recorrente":true},{"id":"zun430gj","tipo":"gasto","desc":"Aluguel","valor":1275.0,"cat":"Moradia","data":"2028-04-06","vencimento":"2028-04-06","pago":false,"grupoId":"g3vrfyvm0","recorrente":true},{"id":"kt15pliz","tipo":"gasto","desc":"Aluguel","valor":1275.0,"cat":"Moradia","data":"2028-05-06","vencimento":"2028-05-06","pago":false,"grupoId":"g3vrfyvm0","recorrente":true},{"id":"7fe25gsl","tipo":"gasto","desc":"Aluguel","valor":1275.0,"cat":"Moradia","data":"2028-06-06","vencimento":"2028-06-06","pago":false,"grupoId":"g3vrfyvm0","recorrente":true},{"id":"wsw192tu","tipo":"renda","desc":"Salario fran","valor":3380.0,"cat":"Renda","data":"2026-07-03","vencimento":null,"pago":true,"grupoId":"g0mum57t2","recorrente":true},{"id":"kf7w0abf","tipo":"renda","desc":"Salario fran","valor":3380.0,"cat":"Renda","data":"2026-08-03","vencimento":null,"pago":false,"grupoId":"g0mum57t2","recorrente":true},{"id":"mgisdnt2","tipo":"renda","desc":"Salario fran","valor":3380.0,"cat":"Renda","data":"2026-09-03","vencimento":null,"pago":false,"grupoId":"g0mum57t2","recorrente":true},{"id":"degq8vqi","tipo":"renda","desc":"Salario fran","valor":3380.0,"cat":"Renda","data":"2026-10-03","vencimento":null,"pago":false,"grupoId":"g0mum57t2","recorrente":true},{"id":"a0gbe36x","tipo":"renda","desc":"Salario fran","valor":3380.0,"cat":"Renda","data":"2026-11-03","vencimento":null,"pago":false,"grupoId":"g0mum57t2","recorrente":true},{"id":"pkgs8xaj","tipo":"renda","desc":"Salario fran","valor":3380.0,"cat":"Renda","data":"2026-12-03","vencimento":null,"pago":false,"grupoId":"g0mum57t2","recorrente":true},{"id":"nafs07t2","tipo":"renda","desc":"Salario fran","valor":3380.0,"cat":"Renda","data":"2027-01-03","vencimento":null,"pago":false,"grupoId":"g0mum57t2","recorrente":true},{"id":"6f6a0nv8","tipo":"renda","desc":"Salario fran","valor":3380.0,"cat":"Renda","data":"2027-02-03","vencimento":null,"pago":false,"grupoId":"g0mum57t2","recorrente":true},{"id":"w0kghbkn","tipo":"renda","desc":"Salario fran","valor":3380.0,"cat":"Renda","data":"2027-03-03","vencimento":null,"pago":false,"grupoId":"g0mum57t2","recorrente":true},{"id":"pzl00snj","tipo":"renda","desc":"Salario fran","valor":3380.0,"cat":"Renda","data":"2027-04-03","vencimento":null,"pago":false,"grupoId":"g0mum57t2","recorrente":true},{"id":"53ac9bq1","tipo":"renda","desc":"Salario fran","valor":3380.0,"cat":"Renda","data":"2027-05-03","vencimento":null,"pago":false,"grupoId":"g0mum57t2","recorrente":true},{"id":"jxaxdwbs","tipo":"renda","desc":"Salario fran","valor":3380.0,"cat":"Renda","data":"2027-06-03","vencimento":null,"pago":false,"grupoId":"g0mum57t2","recorrente":true},{"id":"ahyb84oo","tipo":"renda","desc":"Salario fran","valor":3380.0,"cat":"Renda","data":"2027-07-03","vencimento":null,"pago":false,"grupoId":"g0mum57t2","recorrente":true},{"id":"fspreg7u","tipo":"renda","desc":"Salario fran","valor":3380.0,"cat":"Renda","data":"2027-08-03","vencimento":null,"pago":false,"grupoId":"g0mum57t2","recorrente":true},{"id":"1ntwg659","tipo":"renda","desc":"Salario fran","valor":3380.0,"cat":"Renda","data":"2027-09-03","vencimento":null,"pago":false,"grupoId":"g0mum57t2","recorrente":true},{"id":"db2fuesd","tipo":"renda","desc":"Salario fran","valor":3380.0,"cat":"Renda","data":"2027-10-03","vencimento":null,"pago":false,"grupoId":"g0mum57t2","recorrente":true},{"id":"v0629zcg","tipo":"renda","desc":"Salario fran","valor":3380.0,"cat":"Renda","data":"2027-11-03","vencimento":null,"pago":false,"grupoId":"g0mum57t2","recorrente":true},{"id":"ziqef33b","tipo":"renda","desc":"Salario fran","valor":3380.0,"cat":"Renda","data":"2027-12-03","vencimento":null,"pago":false,"grupoId":"g0mum57t2","recorrente":true},{"id":"ghxm6vre","tipo":"renda","desc":"Salario fran","valor":3380.0,"cat":"Renda","data":"2028-01-03","vencimento":null,"pago":false,"grupoId":"g0mum57t2","recorrente":true},{"id":"x8dk0v95","tipo":"renda","desc":"Salario fran","valor":3380.0,"cat":"Renda","data":"2028-02-03","vencimento":null,"pago":false,"grupoId":"g0mum57t2","recorrente":true},{"id":"z60fq1z9","tipo":"renda","desc":"Salario fran","valor":3380.0,"cat":"Renda","data":"2028-03-03","vencimento":null,"pago":false,"grupoId":"g0mum57t2","recorrente":true},{"id":"d32gcuh2","tipo":"renda","desc":"Salario fran","valor":3380.0,"cat":"Renda","data":"2028-04-03","vencimento":null,"pago":false,"grupoId":"g0mum57t2","recorrente":true},{"id":"sc8g3oyk","tipo":"renda","desc":"Salario fran","valor":3380.0,"cat":"Renda","data":"2028-05-03","vencimento":null,"pago":false,"grupoId":"g0mum57t2","recorrente":true},{"id":"u75gtylb","tipo":"renda","desc":"Salario fran","valor":3380.0,"cat":"Renda","data":"2028-06-03","vencimento":null,"pago":false,"grupoId":"g0mum57t2","recorrente":true},{"id":"lwxzgg73","tipo":"gasto","desc":"Empréstimo (1/3)","valor":500.0,"cat":"Empréstimo","data":"2026-07-20","vencimento":"2026-07-20","pago":true,"grupoId":"p9rp37bak","parcela":{"atual":1,"total":3}},{"id":"ispe6bvn","tipo":"gasto","desc":"Empréstimo (2/3)","valor":500.0,"cat":"Empréstimo","data":"2026-08-20","vencimento":"2026-08-20","pago":false,"grupoId":"p9rp37bak","parcela":{"atual":2,"total":3}},{"id":"p6be1ein","tipo":"gasto","desc":"Empréstimo (3/3)","valor":500.0,"cat":"Empréstimo","data":"2026-09-20","vencimento":"2026-09-20","pago":false,"grupoId":"p9rp37bak","parcela":{"atual":3,"total":3}},{"id":"lphyibvg","tipo":"gasto","desc":"Carro (1/29)","valor":1300.0,"cat":"Transporte","data":"2026-07-20","vencimento":"2026-07-20","pago":true,"grupoId":"ps16ehv4u","parcela":{"atual":1,"total":29}},{"id":"bhk1tl6v","tipo":"gasto","desc":"Carro (2/29)","valor":1300.0,"cat":"Transporte","data":"2026-08-20","vencimento":"2026-08-20","pago":false,"grupoId":"ps16ehv4u","parcela":{"atual":2,"total":29}},{"id":"1opaehpr","tipo":"gasto","desc":"Carro (3/29)","valor":1300.0,"cat":"Transporte","data":"2026-09-20","vencimento":"2026-09-20","pago":false,"grupoId":"ps16ehv4u","parcela":{"atual":3,"total":29}},{"id":"hkj57imo","tipo":"gasto","desc":"Carro (4/29)","valor":1300.0,"cat":"Transporte","data":"2026-10-20","vencimento":"2026-10-20","pago":false,"grupoId":"ps16ehv4u","parcela":{"atual":4,"total":29}},{"id":"87ckk46r","tipo":"gasto","desc":"Carro (5/29)","valor":1300.0,"cat":"Transporte","data":"2026-11-20","vencimento":"2026-11-20","pago":false,"grupoId":"ps16ehv4u","parcela":{"atual":5,"total":29}},{"id":"llihfg4o","tipo":"gasto","desc":"Carro (6/29)","valor":1300.0,"cat":"Transporte","data":"2026-12-20","vencimento":"2026-12-20","pago":false,"grupoId":"ps16ehv4u","parcela":{"atual":6,"total":29}},{"id":"eebcy39f","tipo":"gasto","desc":"Carro (7/29)","valor":1300.0,"cat":"Transporte","data":"2027-01-20","vencimento":"2027-01-20","pago":false,"grupoId":"ps16ehv4u","parcela":{"atual":7,"total":29}},{"id":"r5ygmycf","tipo":"gasto","desc":"Carro (8/29)","valor":1300.0,"cat":"Transporte","data":"2027-02-20","vencimento":"2027-02-20","pago":false,"grupoId":"ps16ehv4u","parcela":{"atual":8,"total":29}},{"id":"5pcfhtiv","tipo":"gasto","desc":"Carro (9/29)","valor":1300.0,"cat":"Transporte","data":"2027-03-20","vencimento":"2027-03-20","pago":false,"grupoId":"ps16ehv4u","parcela":{"atual":9,"total":29}},{"id":"b5osu373","tipo":"gasto","desc":"Carro (10/29)","valor":1300.0,"cat":"Transporte","data":"2027-04-20","vencimento":"2027-04-20","pago":false,"grupoId":"ps16ehv4u","parcela":{"atual":10,"total":29}},{"id":"3dibpjsu","tipo":"gasto","desc":"Carro (11/29)","valor":1300.0,"cat":"Transporte","data":"2027-05-20","vencimento":"2027-05-20","pago":false,"grupoId":"ps16ehv4u","parcela":{"atual":11,"total":29}},{"id":"gv26ps52","tipo":"gasto","desc":"Carro (12/29)","valor":1300.0,"cat":"Transporte","data":"2027-06-20","vencimento":"2027-06-20","pago":false,"grupoId":"ps16ehv4u","parcela":{"atual":12,"total":29}},{"id":"7s3su42b","tipo":"gasto","desc":"Carro (13/29)","valor":1300.0,"cat":"Transporte","data":"2027-07-20","vencimento":"2027-07-20","pago":false,"grupoId":"ps16ehv4u","parcela":{"atual":13,"total":29}},{"id":"ix6ml3og","tipo":"gasto","desc":"Carro (14/29)","valor":1300.0,"cat":"Transporte","data":"2027-08-20","vencimento":"2027-08-20","pago":false,"grupoId":"ps16ehv4u","parcela":{"atual":14,"total":29}},{"id":"mrdmiu1w","tipo":"gasto","desc":"Carro (15/29)","valor":1300.0,"cat":"Transporte","data":"2027-09-20","vencimento":"2027-09-20","pago":false,"grupoId":"ps16ehv4u","parcela":{"atual":15,"total":29}},{"id":"r44ehsil","tipo":"gasto","desc":"Carro (16/29)","valor":1300.0,"cat":"Transporte","data":"2027-10-20","vencimento":"2027-10-20","pago":false,"grupoId":"ps16ehv4u","parcela":{"atual":16,"total":29}},{"id":"9ww7cimm","tipo":"gasto","desc":"Carro (17/29)","valor":1300.0,"cat":"Transporte","data":"2027-11-20","vencimento":"2027-11-20","pago":false,"grupoId":"ps16ehv4u","parcela":{"atual":17,"total":29}},{"id":"bjb5ql6k","tipo":"gasto","desc":"Carro (18/29)","valor":1300.0,"cat":"Transporte","data":"2027-12-20","vencimento":"2027-12-20","pago":false,"grupoId":"ps16ehv4u","parcela":{"atual":18,"total":29}},{"id":"cuv9srh7","tipo":"gasto","desc":"Carro (19/29)","valor":1300.0,"cat":"Transporte","data":"2028-01-20","vencimento":"2028-01-20","pago":false,"grupoId":"ps16ehv4u","parcela":{"atual":19,"total":29}},{"id":"5zftev1b","tipo":"gasto","desc":"Carro (20/29)","valor":1300.0,"cat":"Transporte","data":"2028-02-20","vencimento":"2028-02-20","pago":false,"grupoId":"ps16ehv4u","parcela":{"atual":20,"total":29}},{"id":"82u7uyg1","tipo":"gasto","desc":"Carro (21/29)","valor":1300.0,"cat":"Transporte","data":"2028-03-20","vencimento":"2028-03-20","pago":false,"grupoId":"ps16ehv4u","parcela":{"atual":21,"total":29}},{"id":"aexxgrmu","tipo":"gasto","desc":"Carro (22/29)","valor":1300.0,"cat":"Transporte","data":"2028-04-20","vencimento":"2028-04-20","pago":false,"grupoId":"ps16ehv4u","parcela":{"atual":22,"total":29}},{"id":"klf0kzea","tipo":"gasto","desc":"Carro (23/29)","valor":1300.0,"cat":"Transporte","data":"2028-05-20","vencimento":"2028-05-20","pago":false,"grupoId":"ps16ehv4u","parcela":{"atual":23,"total":29}},{"id":"2bvj0o51","tipo":"gasto","desc":"Carro (24/29)","valor":1300.0,"cat":"Transporte","data":"2028-06-20","vencimento":"2028-06-20","pago":false,"grupoId":"ps16ehv4u","parcela":{"atual":24,"total":29}},{"id":"zfs10nd1","tipo":"gasto","desc":"Carro (25/29)","valor":1300.0,"cat":"Transporte","data":"2028-07-20","vencimento":"2028-07-20","pago":false,"grupoId":"ps16ehv4u","parcela":{"atual":25,"total":29}},{"id":"9wfia9of","tipo":"gasto","desc":"Carro (26/29)","valor":1300.0,"cat":"Transporte","data":"2028-08-20","vencimento":"2028-08-20","pago":false,"grupoId":"ps16ehv4u","parcela":{"atual":26,"total":29}},{"id":"smcg2tyw","tipo":"gasto","desc":"Carro (27/29)","valor":1300.0,"cat":"Transporte","data":"2028-09-20","vencimento":"2028-09-20","pago":false,"grupoId":"ps16ehv4u","parcela":{"atual":27,"total":29}},{"id":"r252dr8y","tipo":"gasto","desc":"Carro (28/29)","valor":1300.0,"cat":"Transporte","data":"2028-10-20","vencimento":"2028-10-20","pago":false,"grupoId":"ps16ehv4u","parcela":{"atual":28,"total":29}},{"id":"r24rqlnv","tipo":"gasto","desc":"Carro (29/29)","valor":1300.0,"cat":"Transporte","data":"2028-11-20","vencimento":"2028-11-20","pago":false,"grupoId":"ps16ehv4u","parcela":{"atual":29,"total":29}},{"id":"8z39kjlj","tipo":"gasto","desc":"Ps5 (1/8)","valor":387.0,"cat":"Outros","data":"2026-07-03","vencimento":"2026-07-03","pago":true,"grupoId":"p8jwv55xq","parcela":{"atual":1,"total":8}},{"id":"d2zkqt6e","tipo":"gasto","desc":"Ps5 (2/8)","valor":387.0,"cat":"Outros","data":"2026-08-03","vencimento":"2026-08-03","pago":false,"grupoId":"p8jwv55xq","parcela":{"atual":2,"total":8}},{"id":"q0xark5v","tipo":"gasto","desc":"Ps5 (3/8)","valor":387.0,"cat":"Outros","data":"2026-09-03","vencimento":"2026-09-03","pago":false,"grupoId":"p8jwv55xq","parcela":{"atual":3,"total":8}},{"id":"whtqo7br","tipo":"gasto","desc":"Ps5 (4/8)","valor":387.0,"cat":"Outros","data":"2026-10-03","vencimento":"2026-10-03","pago":false,"grupoId":"p8jwv55xq","parcela":{"atual":4,"total":8}},{"id":"6ibs4kv0","tipo":"gasto","desc":"Ps5 (5/8)","valor":387.0,"cat":"Outros","data":"2026-11-03","vencimento":"2026-11-03","pago":false,"grupoId":"p8jwv55xq","parcela":{"atual":5,"total":8}},{"id":"g5x8pbo1","tipo":"gasto","desc":"Ps5 (6/8)","valor":387.0,"cat":"Outros","data":"2026-12-03","vencimento":"2026-12-03","pago":false,"grupoId":"p8jwv55xq","parcela":{"atual":6,"total":8}},{"id":"j413jfsu","tipo":"gasto","desc":"Ps5 (7/8)","valor":387.0,"cat":"Outros","data":"2027-01-03","vencimento":"2027-01-03","pago":false,"grupoId":"p8jwv55xq","parcela":{"atual":7,"total":8}},{"id":"xtszd9a4","tipo":"gasto","desc":"Ps5 (8/8)","valor":387.0,"cat":"Outros","data":"2027-02-03","vencimento":"2027-02-03","pago":false,"grupoId":"p8jwv55xq","parcela":{"atual":8,"total":8}},{"id":"8due9eyb","tipo":"gasto","desc":"Controle (1/4)","valor":100.0,"cat":"Outros","data":"2026-07-03","vencimento":"2026-07-03","pago":true,"grupoId":"ppyj3vvug","parcela":{"atual":1,"total":4}},{"id":"44x140ry","tipo":"gasto","desc":"Controle (2/4)","valor":100.0,"cat":"Outros","data":"2026-08-03","vencimento":"2026-08-03","pago":false,"grupoId":"ppyj3vvug","parcela":{"atual":2,"total":4}},{"id":"gduj2tex","tipo":"gasto","desc":"Controle (3/4)","valor":100.0,"cat":"Outros","data":"2026-09-03","vencimento":"2026-09-03","pago":false,"grupoId":"ppyj3vvug","parcela":{"atual":3,"total":4}},{"id":"rwuevjdc","tipo":"gasto","desc":"Controle (4/4)","valor":100.0,"cat":"Outros","data":"2026-10-03","vencimento":"2026-10-03","pago":false,"grupoId":"ppyj3vvug","parcela":{"atual":4,"total":4}},{"id":"z08fmdv3","tipo":"gasto","desc":"Perfume (1/2)","valor":171.0,"cat":"Vestuário","data":"2026-07-06","vencimento":"2026-07-06","pago":true,"grupoId":"p25vy9n29","parcela":{"atual":1,"total":2}},{"id":"1irukeoe","tipo":"gasto","desc":"Perfume (2/2)","valor":171.0,"cat":"Vestuário","data":"2026-08-06","vencimento":"2026-08-06","pago":false,"grupoId":"p25vy9n29","parcela":{"atual":2,"total":2}},{"id":"7d9kvull","tipo":"gasto","desc":"Empréstimo (1/5)","valor":1079.0,"cat":"Empréstimo","data":"2026-07-03","vencimento":"2026-07-03","pago":true,"grupoId":"pboqjop09","parcela":{"atual":1,"total":5}},{"id":"jtbv4pto","tipo":"gasto","desc":"Empréstimo (2/5)","valor":1079.0,"cat":"Empréstimo","data":"2026-08-03","vencimento":"2026-08-03","pago":false,"grupoId":"pboqjop09","parcela":{"atual":2,"total":5}},{"id":"9re0oh2z","tipo":"gasto","desc":"Empréstimo (3/5)","valor":1079.0,"cat":"Empréstimo","data":"2026-09-03","vencimento":"2026-09-03","pago":false,"grupoId":"pboqjop09","parcela":{"atual":3,"total":5}},{"id":"5iwfgg4m","tipo":"gasto","desc":"Empréstimo (4/5)","valor":1079.0,"cat":"Empréstimo","data":"2026-10-03","vencimento":"2026-10-03","pago":false,"grupoId":"pboqjop09","parcela":{"atual":4,"total":5}},{"id":"8g5drsxo","tipo":"gasto","desc":"Empréstimo (5/5)","valor":1079.0,"cat":"Empréstimo","data":"2026-11-03","vencimento":"2026-11-03","pago":false,"grupoId":"pboqjop09","parcela":{"atual":5,"total":5}},{"id":"b3keqe9e","tipo":"gasto","desc":"Luz","valor":229.0,"cat":"Moradia","data":"2026-07-10","vencimento":"2026-07-10","pago":false},{"id":"8klkxrgf","tipo":"gasto","desc":"Agua","valor":249.0,"cat":"Moradia","data":"2026-07-10","vencimento":"2026-07-10","pago":false},{"id":"c65ta1az","tipo":"gasto","desc":"Sombrancelha","valor":200.0,"cat":"Vestuário","data":"2026-07-15","vencimento":"2026-07-15","pago":false}]
+  };
+}
 function persist() {
   state._ts = Date.now();
   localStorage.setItem(STORE, JSON.stringify(state));
@@ -560,6 +642,76 @@ function statusVenc(l) {
 }
 
 // ══════════════════════════════════════════════
+// BENEFÍCIOS: VR e TICKET
+// ══════════════════════════════════════════════
+function getBeneficios() {
+  try { return JSON.parse(localStorage.getItem("fp_benef") || "{}"); } catch(_) { return {}; }
+}
+function saveBeneficios(obj) {
+  localStorage.setItem("fp_benef", JSON.stringify(obj));
+}
+
+function renderBeneficios() {
+  const b = getBeneficios();
+  const vrVal   = b.vr    || 0;
+  const tickVal = b.ticket || 0;
+  const elVr   = document.getElementById("b-vr");
+  const elTick = document.getElementById("b-tick");
+  const elVrS  = document.getElementById("b-vr-sub");
+  const elTickS= document.getElementById("b-tick-sub");
+  if (elVr)    elVr.textContent    = fmt(vrVal);
+  if (elTick)  elTick.textContent  = fmt(tickVal);
+  if (elVrS)   elVrS.textContent   = b.vrDesc    || "Toque ✏️ para editar";
+  if (elTickS) elTickS.textContent = b.ticketDesc || "Toque ✏️ para editar";
+
+  // Atualizar campos do Config se visíveis
+  const cfgVr   = document.getElementById("cfg-vr");
+  const cfgTick = document.getElementById("cfg-ticket");
+  const cfgVrD  = document.getElementById("cfg-vr-desc");
+  const cfgTickD= document.getElementById("cfg-ticket-desc");
+  if (cfgVr)    cfgVr.value    = vrVal   || "";
+  if (cfgTick)  cfgTick.value  = tickVal || "";
+  if (cfgVrD)   cfgVrD.value   = b.vrDesc    || "";
+  if (cfgTickD) cfgTickD.value = b.ticketDesc || "";
+}
+
+function salvarBeneficios() {
+  const b = getBeneficios();
+  b.vr         = parseFloat(document.getElementById("cfg-vr")?.value)    || 0;
+  b.ticket     = parseFloat(document.getElementById("cfg-ticket")?.value) || 0;
+  b.vrDesc     = document.getElementById("cfg-vr-desc")?.value.trim()    || "";
+  b.ticketDesc = document.getElementById("cfg-ticket-desc")?.value.trim()|| "";
+  saveBeneficios(b);
+  renderBeneficios();
+  toast("✅ Benefícios salvos!");
+}
+
+function editarBenef(tipo) {
+  const b = getBeneficios();
+  document.getElementById("benef-tipo").value  = tipo;
+  document.getElementById("benef-modal-title").textContent = tipo==="vr" ? "🍽️ Vale Refeição" : "🛒 Ticket Alimentação";
+  document.getElementById("benef-val-inp").value  = tipo==="vr" ? (b.vr||"")  : (b.ticket||"");
+  document.getElementById("benef-desc-inp").value = tipo==="vr" ? (b.vrDesc||"") : (b.ticketDesc||"");
+  document.getElementById("overlay-benef").classList.add("open");
+  setTimeout(()=>document.getElementById("benef-val-inp").focus(), 150);
+}
+function fecharBenef() {
+  document.getElementById("overlay-benef").classList.remove("open");
+}
+function salvarBenefModal() {
+  const tipo = document.getElementById("benef-tipo").value;
+  const val  = parseFloat(document.getElementById("benef-val-inp").value)||0;
+  const desc = document.getElementById("benef-desc-inp").value.trim();
+  const b = getBeneficios();
+  if (tipo==="vr")     { b.vr=val;     b.vrDesc=desc; }
+  else                 { b.ticket=val; b.ticketDesc=desc; }
+  saveBeneficios(b);
+  renderBeneficios();
+  fecharBenef();
+  toast("✅ "+(tipo==="vr"?"VR":"Ticket")+" atualizado: "+fmt(val));
+}
+
+// ══════════════════════════════════════════════
 // THEME
 // ══════════════════════════════════════════════
 function initTheme() {
@@ -579,8 +731,8 @@ initTheme();
 // ══════════════════════════════════════════════
 // CATEGORIES
 // ══════════════════════════════════════════════
-const CATS_BASE = ["Alimentação","Moradia","Transporte","Saúde","Lazer","Educação","Vestuário","Outros"];
-const CAT_ICONS = {Alimentação:"🍽️",Moradia:"🏠",Transporte:"🚗",Saúde:"💊",Lazer:"🎮",Educação:"📚",Vestuário:"👔",Outros:"📦",Renda:"💰"};
+const CATS_BASE = ["Alimentação","Moradia","Transporte","Saúde","Lazer","Educação","Vestuário","Empréstimo","Outros"];
+const CAT_ICONS = {Alimentação:"🍽️",Moradia:"🏠",Transporte:"🚗",Saúde:"💊",Lazer:"🎮",Educação:"📚",Vestuário:"👔",Empréstimo:"💳",Outros:"📦",Renda:"💰"};
 
 function getCats() {
   try { return [...CATS_BASE, ...JSON.parse(localStorage.getItem("fp_cats")||"[]")]; }
@@ -597,7 +749,7 @@ function criarCat() {
   if (getCats().some(c=>c.toLowerCase()===v.toLowerCase())) { toast("Já existe!"); return; }
   saveCats([...getCatsExtra(), v]);
   document.getElementById("nova-cat-inp").value = "";
-  toast(`✅ Categoria "${v}" criada!`);
+  toast('✅ Categoria "'+v+'" criada!');
   renderCfg();
 }
 function criarCatSheet() {
@@ -609,7 +761,7 @@ function criarCatSheet() {
   inp.value = "";
   document.getElementById("nova-cat-sheet").classList.remove("show");
   populateCatSelect(v);
-  toast(`✅ "${v}" criada!`);
+  toast('✅ "'+v+'" criada!');
 }
 function excluirCat(c) {
   if (!confirm(`Excluir categoria "${c}"?`)) return;
@@ -748,6 +900,7 @@ function populateMesSel() {
 function render() {
   populateMesSel();
   renderInicio();
+  renderBeneficios();
   renderLanc();
   renderEvolucao();
   renderCfg();
@@ -775,9 +928,19 @@ function renderInicio() {
   })();
 
   // ── Saldo PREVISTO: tudo lançado ────────────────────
-  const rendaPrev   = ls.filter(l=>l.tipo==="renda").reduce((s,l)=>s+l.valor,0);
-  const gastosPrev  = ls.filter(l=>l.tipo==="gasto").reduce((s,l)=>s+l.valor,0);
-  const saldoPrevMes = rendaPrev - gastosPrev;
+  const rendaTodos  = ls.filter(l=>l.tipo==="renda").reduce((s,l)=>s+l.valor,0);
+  const gastosTodos = ls.filter(l=>l.tipo==="gasto").reduce((s,l)=>s+l.valor,0);
+  const saldoPrevMes = rendaTodos - gastosTodos;
+  // Acumulado PREVISTO: saldo inicial + todos os meses até o ativo
+  const acumPrev = (() => {
+    let a = state.saldoInicial||0;
+    mesesComDados().filter(m=>m<=mesAtivo).forEach(m=>{
+      const ml = lancsDoMes(m);
+      a += ml.filter(l=>l.tipo==="renda").reduce((s,l)=>s+l.valor,0)
+         - ml.filter(l=>l.tipo==="gasto").reduce((s,l)=>s+l.valor,0);
+    });
+    return a;
+  })();
 
   // A receber e a pagar
   const aReceber = ls.filter(l=>l.tipo==="renda"&&!l.pago).reduce((s,l)=>s+l.valor,0);
@@ -795,9 +958,9 @@ function renderInicio() {
 
   // Saldo previsto no hero
   const prevEl = document.getElementById("h-prev");
-  prevEl.textContent = (saldoPrevMes<0?"-":"")+fmt(saldoPrevMes);
-  prevEl.style.color = saldoPrevMes>=0?"rgba(74,222,128,.9)":"rgba(248,113,113,.9)";
-  document.getElementById("h-prev-sub").textContent = fmt(rendaPrev)+" receitas − "+fmt(gastosPrev)+" gastos";
+  prevEl.textContent = (acumPrev<0?"-":"")+fmt(acumPrev);
+  prevEl.style.color = acumPrev>=0?"rgba(74,222,128,.9)":"rgba(248,113,113,.9)";
+  document.getElementById("h-prev-sub").textContent = "Acum previsto · Mês: "+fmt(rendaTodos)+" − "+fmt(gastosTodos);
 
   // ── KPIs ─────────────────────────────────────────────
   const saldoEl = document.getElementById("k-saldo");
@@ -805,6 +968,7 @@ function renderInicio() {
   saldoEl.style.color = saldoRealMes>=0?"var(--green)":"var(--red)";
 
   const prevKpiEl = document.getElementById("k-prev");
+  // KPI: saldo previsto do MÊS (renda - gastos do mês ativo)
   prevKpiEl.textContent = (saldoPrevMes<0?"-":"")+fmt(saldoPrevMes);
   prevKpiEl.style.color = saldoPrevMes>=0?"var(--green)":"var(--red)";
 
@@ -828,10 +992,11 @@ function renderInicio() {
     </div>`;
   }).join("");
 
-  // ── Recentes ──────────────────────────────────────────
-  const lista = ls.sort((a,b)=>b.data.localeCompare(a.data)).slice(0,6);
+  // ── Todos os lançamentos do mês ──────────────────────
+  const lista = [...ls].sort((a,b)=>b.data.localeCompare(a.data));
   document.getElementById("lista-inicio").innerHTML = lista.length
-    ? lista.map(l=>lancHTML(l,false)).join("")
+    ? `<div style="font-size:11px;color:var(--muted);margin-bottom:8px">${lista.length} lançamento${lista.length!==1?"s":""} em ${fmtML(mesAtivo)}</div>`
+      + lista.map(l=>lancHTML(l,false)).join("")
     : `<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">Nenhum lançamento em ${fmtML(mesAtivo)}</div></div>`;
 }
 
@@ -904,6 +1069,7 @@ function lancHTML(l, comAcoes) {
 function renderEvolucao() {
   document.getElementById("ev-ini").textContent = fmt(state.saldoInicial||0);
 
+  // Todos os meses que têm dados até o mês ativo
   const meses = mesesComDados().filter(m=>m<=mesAtivo);
   const el = document.getElementById("lista-ev");
 
@@ -1104,7 +1270,7 @@ function salvar() {
     if (rec==="parcelado") {
       const nP = Math.max(2,parseInt(document.getElementById("m-parc").value)||12);
       for (let i=0;i<nP;i++) state.lancamentos.push({id:mkId(),tipo:tipoForm,desc:`${desc} (${i+1}/${nP})`,valor,cat:catF,data:addMes(data,i),vencimento:venc?addMes(venc,i):null,pago:i===0&&pago,grupoId:ng,parcela:{atual:i+1,total:nP}});
-      toast(`✅ ${nP} parcelas criadas!`);
+      toast("`✅ "+nP+" parcelas criadas!");
     } else if (rec==="recorrente") {
       const ate = document.getElementById("m-ate").value;
       const lim = ate||addMes(data,23).slice(0,7);
@@ -1113,7 +1279,7 @@ function salvar() {
         state.lancamentos.push({id:mkId(),tipo:tipoForm,desc,valor,cat:catF,data:da,vencimento:venc?addMes(venc,c):null,pago:c===0&&pago,grupoId:ng,recorrente:true});
         da=addMes(data,++c);
       }
-      toast(`✅ ${c} lançamentos recorrentes criados!`);
+      toast("`✅ "+c+" lançamentos recorrentes criados!");
     } else {
       state.lancamentos.push({id:mkId(),tipo:tipoForm,desc,valor,cat:catF,data,vencimento:venc,pago});
       toast("✅ Adicionado!");
@@ -1173,7 +1339,7 @@ function initApp() {
 
 // Fechar overlay ao clicar fora
 document.getElementById("overlay").addEventListener("click", function(e) {
-  if (e.target===this) fecharModal();
+  if (e.target===document.getElementById("overlay")) fecharModal();
 });
 
 // Auto-login
